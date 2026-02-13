@@ -7,6 +7,7 @@ module
 
 prelude
 public import Init.Data.Iterators.Basic
+public import Init.WFExtrinsicFix
 
 set_option linter.missingDocs true
 
@@ -94,6 +95,31 @@ the `IteratorAccess` typeclass.
 def IterM.nextAtIdx? [Iterator α m β] [IteratorAccess α m] (it : IterM (α := α) m β)
     (n : Nat) : m (PlausibleIterStep (it.IsPlausibleNthOutputStep n)) :=
   IteratorAccess.nextAtIdx? it n
+
+/--
+Slow version of `IterM.nextAtIdx?` that does not require an `IteratorAccess α m` instance.
+
+Returns the step in which `it` yields its `n`-th element, or `.done` if it terminates earlier.
+In contrast to `step`, this function will always return either `.yield` or `.done` but never a
+`.skip` step.
+
+This function terminates after finitely many steps.
+-/
+@[inline]
+def IterM.nextAtIdxSlow? [Monad m] [Iterator α m β] [Productive α m]
+    (it : IterM (α := α) m β)
+    (n : Nat) : m (PlausibleIterStep (it.IsPlausibleNthOutputStep n)) :=
+  go it n (fun s => id)
+where
+  go [Productive α m] it' n' (h : ∀ s, it'.IsPlausibleNthOutputStep n' s → it.IsPlausibleNthOutputStep n s) := do
+    match (← it'.step).inflate with
+    | .yield it'' out hp =>
+      match n' with
+      | 0 => return .yield it'' out (h _ (.zero_yield hp))
+      | k + 1 => go it'' k (fun s hp' => h s (.yield hp hp'))
+    | .skip it'' hp => go it'' n' (fun s hp' => h s (.skip hp hp'))
+    | .done hp => return .done (h _ (.done hp))
+  termination_by (n', it'.finitelyManySkips)
 
 /--
 Returns the `n`-th value emitted by `it`, or `none` if `it` terminates earlier.

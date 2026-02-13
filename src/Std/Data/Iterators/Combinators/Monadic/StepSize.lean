@@ -55,6 +55,12 @@ def IterM.stepSize [Iterator α m β] [IteratorAccess α m] [Monad m]
     IterM (α := Types.StepSizeIterator α m β) m β :=
   ⟨⟨0, n - 1, it⟩⟩
 
+@[inline]
+def IterM.Intermediate.stepSize [Iterator α m β] [IteratorAccess α m] [Monad m]
+    (it : IterM (α := α) m β) (nextIdx : Nat) (n : Nat) :
+    IterM (α := Types.StepSizeIterator α m β) m β :=
+  ⟨⟨0, nextIdx, it⟩⟩
+
 namespace Iterators.Types
 
 instance StepSizeIterator.instIterator [Iterator α m β] [IteratorAccess α m] [Monad m] :
