@@ -15,6 +15,7 @@ import Init.Data.Iterators.Lemmas.Basic
 import Init.Omega
 import Init.Data.Iterators.Lemmas.Consumers.Access
 import Init.Data.Iterators.Lemmas.Consumers.Collect
+import Init.Data.Iterators.Lemmas.Consumers.Loop
 import Init.Data.Iterators.Lemmas.Consumers.Monadic.Access
 import Init.Data.Iterators.Lemmas.Consumers.Monadic.Loop
 import Init.Data.Iterators.Lemmas.Monadic.Basic
@@ -382,5 +383,139 @@ theorem getElem?_toList_stepSize [Iterator α Id β] [Productive α Id]
     {it : Iter (α := α) β} {k n : Nat} :
     (it.stepSize n).toList[k]? = it.toList[(n - 1 + 1) * k]? := by
   simp only [getElem?_toList_eq_atIdxSlow?, atIdxSlow?_stepSize]
+
+private theorem step_eq_nextAtIdxSlow?_zero_val [Iterator α Id β] [Productive α Id]
+    {it : Iter (α := α) β} :
+    (∀ (it' : Iter (α := α) β), ¬ it.IsPlausibleStep (.skip it')) →
+    it.step.val = (it.nextAtIdxSlow? 0).val := by
+  intro hno_skip
+  rw [nextAtIdxSlow?_eq_match]
+  cases it.step using PlausibleIterStep.casesOn with
+  | yield => simp
+  | skip _ hp => exact absurd hp (hno_skip _)
+  | done => simp
+
+private theorem not_isPlausibleStep_skip_intermediate_stepSize [Iterator α Id β]
+    [IteratorAccess α Id] {it : Iter (α := α) β} {i n : Nat}
+    {it' : Iter (α := Types.StepSizeIterator α Id β) β} :
+    ¬ (Intermediate.stepSize it i n).IsPlausibleStep (.skip it') := by
+  simp only [Iter.IsPlausibleStep, IterM.IsPlausibleStep, Iterator.IsPlausibleStep,
+    IterStep.mapIterator, Intermediate.stepSize, IterM.Intermediate.stepSize]
+  intro ⟨h, _⟩
+  exact IterM.not_isPlausibleNthOutputStep_skip h
+
+private theorem step_intermediate_stepSize_val [Iterator α Id β] [Productive α Id]
+    [LawfulDeterministicIterator α Id]
+    [IteratorAccess α Id] {it : Iter (α := α) β} {i n : Nat} :
+    (Intermediate.stepSize it i n).step.val =
+      (it.nextAtIdxSlow? i).val.mapIterator (fun it' => Intermediate.stepSize it' (n - 1) n) := by
+  rw [step_eq_nextAtIdxSlow?_zero_val (fun _ => not_isPlausibleStep_skip_intermediate_stepSize),
+    nextAtIdxSlow?_zero_intermediate_stepSize_val]
+
+private theorem lt_length_of_nextAtIdxSlow?_yield [Iterator α Id β] [Finite α Id]
+    [Productive α Id] [IteratorLoop α Id Id] [LawfulIteratorLoop α Id Id]
+    {it it' : Iter (α := α) β} {i : Nat} {out : β}
+    (h : (it.nextAtIdxSlow? i).val = .yield it' out) :
+    i < it.length := by
+  induction it using Iter.inductSteps generalizing i it' out with
+  | step it ihy ihs =>
+    rw [Std.Iter.length_eq_match_step]
+    rw [nextAtIdxSlow?_eq_match] at h
+    cases hstep : it.step using PlausibleIterStep.casesOn with
+    | yield it'' out'' hp =>
+      simp only [hstep] at h
+      simp only
+      cases i with
+      | zero => omega
+      | succ k =>
+        simp only at h
+        exact Nat.succ_lt_succ (ihy hp h)
+    | skip it'' hp =>
+      simp only [hstep] at h
+      simp only
+      exact ihs hp h
+    | done hp =>
+      simp [hstep] at h
+
+private theorem length_le_of_nextAtIdxSlow?_done [Iterator α Id β] [Finite α Id]
+    [Productive α Id] [IteratorLoop α Id Id] [LawfulIteratorLoop α Id Id]
+    {it : Iter (α := α) β} {i : Nat}
+    (h : (it.nextAtIdxSlow? i).val = .done) :
+    it.length ≤ i := by
+  induction it using Iter.inductSteps generalizing i with
+  | step it ihy ihs =>
+    rw [Std.Iter.length_eq_match_step]
+    rw [nextAtIdxSlow?_eq_match] at h
+    cases hstep : it.step using PlausibleIterStep.casesOn with
+    | yield it'' out'' hp =>
+      simp only [hstep] at h
+      simp only
+      cases i with
+      | zero => simp at h
+      | succ k =>
+        simp only at h
+        have := ihy hp h
+        omega
+    | skip it'' hp =>
+      simp only [hstep] at h
+      simp only
+      have := ihs hp h
+      omega
+    | done hp =>
+      simp only
+      omega
+
+theorem length_intermediate_stepSize [Iterator α Id β] [Finite α Id]
+    [Productive α Id] [LawfulDeterministicIterator α Id]
+    [IteratorAccess α Id] [IteratorLoop α Id Id] [LawfulIteratorLoop α Id Id]
+    {it : Iter (α := α) β} {i n : Nat} :
+    (Intermediate.stepSize it i n).length = (it.length + (n - 1) - i) / (n - 1 + 1) := by
+  suffices ∀ (oit : Iter (α := Types.StepSizeIterator α Id β) β)
+      (it : Iter (α := α) β) (i : Nat),
+      oit = Intermediate.stepSize it i n →
+      oit.length = (it.length + (n - 1) - i) / (n - 1 + 1) from
+    this _ _ _ rfl
+  intro oit
+  induction oit using Iter.inductSteps with
+  | step oit ih_yield ih_skip =>
+    intro it i hoit
+    rw [Std.Iter.length_eq_match_step]
+    subst hoit
+    rw [step_intermediate_stepSize_val]
+    cases h : (it.nextAtIdxSlow? i) using PlausibleIterStep.casesOn with
+    | yield it' out hp =>
+      simp only [IterStep.mapIterator]
+      have hstep : (Intermediate.stepSize it i n).step.val =
+          .yield (Intermediate.stepSize it' (n - 1) n) out := by
+        rw [step_intermediate_stepSize_val, h]; rfl
+      have hps : (Intermediate.stepSize it i n).IsPlausibleStep
+          (.yield (Intermediate.stepSize it' (n - 1) n) out) := by
+        rw [← hstep]; exact (Intermediate.stepSize it i n).step.property
+      rw [ih_yield hps it' (n - 1) rfl]
+      have hlength := length_nextAtIdxSlow? (it := it) (n := i)
+      rw [h] at hlength
+      simp only at hlength
+      rw [hlength]
+      have hi := lt_length_of_nextAtIdxSlow?_yield (by rw [h])
+      have h1 : it.length - i - 1 + (n - 1) - (n - 1) = it.length - i - 1 := by omega
+      rw [h1, ← Nat.add_div_right (it.length - i - 1) (by omega : 0 < n - 1 + 1)]
+      congr 1
+      omega
+    | skip _ hp => exact IterM.not_isPlausibleNthOutputStep_skip.elim hp
+    | done hp =>
+      simp only [IterStep.mapIterator]
+      have hi := length_le_of_nextAtIdxSlow?_done (by rw [h])
+      symm
+      apply Nat.div_eq_of_lt
+      omega
+
+theorem length_stepSize [Iterator α Id β] [Finite α Id]
+    [Productive α Id] [LawfulDeterministicIterator α Id]
+    [IteratorAccess α Id] [IteratorLoop α Id Id] [LawfulIteratorLoop α Id Id]
+    {it : Iter (α := α) β} {n : Nat} :
+    (it.stepSize n).length = (it.length + (n - 1)) / (n - 1 + 1) := by
+  show (Intermediate.stepSize it 0 n).length = _
+  rw [length_intermediate_stepSize]
+  simp
 
 end Std.Iter
