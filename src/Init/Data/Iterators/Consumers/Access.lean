@@ -19,6 +19,7 @@ set_option linter.missingDocs true
 namespace Std
 open Std.Iterators
 
+/-- Characterizes the plausible step when advancing to the `n`-th output of a pure iterator. -/
 def Iter.IsPlausibleNthOutputStep {α β : Type w} [Iterator α Id β]
     (n : Nat) (it : Iter (α := α) β) (step : IterStep (Iter (α := α) β) β) : Prop :=
   it.toIterM.IsPlausibleNthOutputStep n (step.mapIterator Iter.toIterM)

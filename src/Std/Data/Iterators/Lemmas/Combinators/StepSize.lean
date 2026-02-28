@@ -11,7 +11,10 @@ public import Init.Data.Iterators.Consumers.Collect
 public import Init.Data.Iterators.Consumers.Loop
 public import Init.Data.Iterators.Combinators.Take
 public import Std.Data.Iterators.Combinators.StepSize
+import Init.Data.Iterators.Lemmas.Basic
+import Init.Omega
 import Init.Data.Iterators.Lemmas.Consumers.Access
+import Init.Data.Iterators.Lemmas.Consumers.Collect
 import Init.Data.Iterators.Lemmas.Consumers.Monadic.Access
 import Init.Data.Iterators.Lemmas.Consumers.Monadic.Loop
 import Init.Data.Iterators.Lemmas.Monadic.Basic
@@ -170,9 +173,9 @@ theorem _root_.Std.IterM.nextAtIdxSlow?_stepSize_aux [Iterator α Id β] [Produc
 theorem _root_.Std.IterM.length_nextAtIdxSlow? [Monad m] [LawfulMonad m] [Iterator α m β] [Finite α m] [IteratorLoop α m m] [LawfulIteratorLoop α m m]
     {it : IterM (α := α) m β} :
     (do match ← it.nextAtIdxSlow? n with
-      | .yield it' out _ => it'.length
-      | .skip it' h => IterM.not_isPlausibleNthOutputStep_skip.elim h
-      | .done h => return .up 0) = (fun len => .up (len.down - n - 1)) <$> it.length := by
+      | .yield it' _out _ => it'.length
+      | .skip _it' h => IterM.not_isPlausibleNthOutputStep_skip.elim h
+      | .done _h => return .up 0) = (fun len => .up (len.down - n - 1)) <$> it.length := by
   induction it using IterM.inductSteps generalizing n with | step it ihy ihs
   rw [it.nextAtIdxSlow?_eq_match, it.length_eq_match_step]
   simp only [map_eq_pure_bind, bind_assoc]
@@ -204,9 +207,9 @@ theorem _root_.Std.IterM.length_nextAtIdxSlow? [Monad m] [LawfulMonad m] [Iterat
 theorem length_nextAtIdxSlow? [Iterator α Id β] [Finite α Id] [IteratorLoop α Id Id] [LawfulIteratorLoop α Id Id]
     {it : Iter (α := α) β} :
     (match it.nextAtIdxSlow? n with
-      | .yield it' out _ => it'.length
-      | .skip it' h => IterM.not_isPlausibleNthOutputStep_skip.elim h
-      | .done h => 0) = it.length - n - 1 := by
+      | .yield it' _out _ => it'.length
+      | .skip _it' h => IterM.not_isPlausibleNthOutputStep_skip.elim h
+      | .done _h => 0) = it.length - n - 1 := by
   have := IterM.length_nextAtIdxSlow? (it := it.toIterM) (n := n)
   replace this := congrArg Id.run this
   replace this := congrArg ULift.down this
@@ -217,46 +220,9 @@ theorem length_nextAtIdxSlow? [Iterator α Id β] [Finite α Id] [IteratorLoop �
   · exact IterM.not_isPlausibleNthOutputStep_skip.elim ‹_›
   · simp [*]
 
-theorem _root_.Std.IterM.length_stepSize [Iterator α Id β] [Finite α Id] [IteratorLoop α Id Id] [LawfulIteratorLoop α Id Id]
-    [IteratorAccess α Id] {it : IterM (α := α) Id β} :
-    (IterM.Intermediate.stepSize it i n).length.run.down = (it.length.run.down + (n - 1) - i) / (n - 1 + 1) := by
-  induction n generalizing it i
-  · rw [IterM.length_eq_match_step, IterM.length_eq_match_step, IterM.step_eq]
-    simp [IterM.Intermediate.stepSize]
-    cases (it.nextAtIdx? i).run using PlausibleIterStep.casesOn
-    · simp
-      rw [IterM.length_eq_match_step]
-      simp
-
-theorem _root_.Std.IterM.step_stepSize [Iterator α Id β] [Finite α Id] [LawfulDeterministicIterator α Id]
-    [IteratorAccess α Id] {it : IterM (α := α) Id β} :
-    (IterM.Intermediate.stepSize it i n).step.run.inflate.val =
-      match it.step.run.inflate.val with
-      | .yield it' out =>
-        match i with
-        | 0 => .yield (IterM.Intermediate.stepSize it' (n - 1) n) out
-        | i + 1 => .skip (IterM.Intermediate.stepSize it' i n)
-      | .skip it' => .skip (IterM.Intermediate.stepSize it' i n)
-      | .done => .done := by
-  rw [IterM.step_eq]
-  simp [IterM.Intermediate.stepSize, IterM.nextAtIdx?_eq_nextAtIdxSlow?]
-  rw [IterM.nextAtIdxSlow?_eq_match]
-  simp
-  cases it.step.run.inflate using PlausibleIterStep.casesOn
-  · simp
-    split
-    · simp
-    · simp
-
-
-theorem _root_.Std.IterM.length_stepSize [Iterator α Id β] [Finite α Id] [LawfulDeterministicIterator α Id]
-    [IteratorAccess α Id] [IteratorLoop α Id Id] [LawfulIteratorLoop α Id Id] {it : IterM (α := α) Id β} {i n : Nat} :
-    (IterM.Intermediate.stepSize it i n).length.run.down = (it.length.run.down + (n - 1) - i) / (n - 1 + 1) := by
-  induction it using IterM.inductSteps with | step it ihy ihs
-  rw [IterM.length_eq_match_step, IterM.length_eq_match_step, step_stepSize]
-
-theorem atIdxSlow?_stepSize_aux [Iterator α Id β] [Productive α Id] [LawfulDeterministicIterator α Id]
-    [IteratorAccess α Id] {it : Iter (α := α) β} {n : Nat} :
+theorem nextAtIdxSlow?_zero_intermediate_stepSize [Iterator α Id β] [Productive α Id]
+    [LawfulDeterministicIterator α Id]
+    [IteratorAccess α Id] {it : Iter (α := α) β} {i n : Nat} :
     (Intermediate.stepSize it i n).nextAtIdxSlow? 0 =
       match it.nextAtIdxSlow? i with
       | .yield it' out h =>
@@ -283,41 +249,138 @@ theorem atIdxSlow?_stepSize_aux [Iterator α Id β] [Productive α Id] [LawfulDe
   · simp [show (it.toIterM.nextAtIdxSlow? i).run = step from rfl]
     simp [hs]
 
-theorem atIdxSlow?_stepSize_aux [Iterator α Id β] [Productive α Id] [LawfulDeterministicIterator α Id]
-    [IteratorAccess α Id] {it : Iter (α := α) β} {n : Nat} :
-    (Iter.Intermediate.stepSize it i n).atIdxSlow? k = it.atIdxSlow? (i + (n - 1 + 1) * k) := by
-  induction k
-  · simp
-    induction i, it using Iter.atIdxSlow?.induct_unfolding
-    case yield_zero it it' _ h _ =>
-      rw [atIdxSlow?_eq_match]
-      simp [Intermediate.stepSize, IterM.Intermediate.stepSize, Iter.step_eq]
-      cases (it.toIterM.nextAtIdx? 0).run using PlausibleIterStep.casesOn
-      · rename_i h'
-        simp [Iter.IsPlausibleStep] at h
-        replace h := IterM.IsPlausibleNthOutputStep.zero_yield h
-        cases IterM.eq_of_isPlausibleNthOutputStep_of_isPlausibleNthOutputStep h h'
-        simp
-      · rename_i h'
-        simp [Iter.IsPlausibleStep] at h
-        replace h := IterM.IsPlausibleNthOutputStep.zero_yield h
-        cases IterM.eq_of_isPlausibleNthOutputStep_of_isPlausibleNthOutputStep h h'
-      · rename_i h'
-        simp [Iter.IsPlausibleStep] at h
-        replace h := IterM.IsPlausibleNthOutputStep.zero_yield h
-        cases IterM.eq_of_isPlausibleNthOutputStep_of_isPlausibleNthOutputStep h h'
-    case yield_succ it it' _ h _ =>
-      rw [atIdxSlow?_eq_match, atIdxSlow?_eq_match]
+private theorem atIdxSlow?_eq_of_nextAtIdxSlow? [Iterator α Id β] [Productive α Id]
+    {it : Iter (α := α) β} {i : Nat} :
+    it.atIdxSlow? i = match (it.nextAtIdxSlow? i).val with
+    | .yield _ out => some out
+    | .skip _ => none
+    | .done => none := by
+  induction i, it using Iter.atIdxSlow?.induct_unfolding with
+  | yield_zero it it' out hp hs =>
+    rw [nextAtIdxSlow?_eq_match]; simp [hs]
+  | yield_succ it it' out hp hs k ih =>
+    rw [nextAtIdxSlow?_eq_match]; simp [hs, ih]
+  | skip_case n it it' hp hs ih =>
+    rw [nextAtIdxSlow?_eq_match]; simp [hs, ih]
+  | done_case n it hp hs =>
+    rw [nextAtIdxSlow?_eq_match]; simp [hs]
 
-  generalize h : Iter.Intermediate.stepSize it i n = sit
-  induction k, sit using Iter.atIdxSlow?.induct_unfolding
-  case yield_zero =>
-    simp
-    simp [Intermediate.stepSize, IterM.Intermediate.stepSize] at h
+private theorem atIdxSlow?_none_of_nextAtIdxSlow?_done [Iterator α Id β] [Productive α Id]
+    {it : Iter (α := α) β} {i j : Nat}
+    (h : (it.nextAtIdxSlow? i).val = .done) (hij : i ≤ j) :
+    it.atIdxSlow? j = none := by
+  induction j generalizing it i with
+  | zero =>
+    have : i = 0 := Nat.le_antisymm hij (Nat.zero_le _)
+    subst this; rw [atIdxSlow?_eq_of_nextAtIdxSlow?, h]
+  | succ j ih =>
+    suffices ∀ (it : Iter (α := α) β), (it.nextAtIdxSlow? i).val = .done →
+        it.atIdxSlow? (j + 1) = none from this it h
+    intro it h
+    induction it using Iter.inductSkips with | step it ih_skip
+    rw [atIdxSlow?_eq_match]
+    cases hstep : it.step using PlausibleIterStep.casesOn with
+    | yield it' out hp =>
+      rw [nextAtIdxSlow?_eq_match] at h; simp [hstep] at h
+      cases i with
+      | zero => cases h
+      | succ i => exact ih h (Nat.le_of_succ_le_succ hij)
+    | skip it' hp =>
+      rw [nextAtIdxSlow?_eq_match] at h; simp [hstep] at h
+      exact ih_skip hp h
+    | done hp => simp
 
-theorem atIdxSlow?_stepSize [Iterator α Id β] [Productive α Id] [LawfulDeterministicIterator α Id]
-    [IteratorAccess α Id] {it : Iter (α := α) β} {n : Nat} :
+private theorem atIdxSlow?_succ_of_nextAtIdxSlow?_yield [Iterator α Id β] [Productive α Id]
+    {it it' : Iter (α := α) β} {i j : Nat} {out : β}
+    (h : (it.nextAtIdxSlow? i).val = .yield it' out) :
+    it.atIdxSlow? (i + 1 + j) = it'.atIdxSlow? j := by
+  induction i, it using Iter.atIdxSlow?.induct_unfolding generalizing j with
+  | yield_zero it it'' out' hp hs =>
+    rw [nextAtIdxSlow?_eq_match] at h; simp [hs] at h
+    obtain ⟨rfl, rfl⟩ := h
+    show atIdxSlow? (0 + 1 + j) it = atIdxSlow? j it''
+    rw [show (0 : Nat) + 1 + j = Nat.succ j from by omega, atIdxSlow?_eq_match]
+    simp [hs]
+  | yield_succ it it'' out' hp hs k ih =>
+    rw [nextAtIdxSlow?_eq_match] at h; simp [hs] at h
+    show atIdxSlow? (k + 1 + 1 + j) it = atIdxSlow? j it'
+    rw [show k + 1 + 1 + j = Nat.succ (k + 1 + j) from by omega, atIdxSlow?_eq_match]
+    simp [hs]
+    exact ih h
+  | skip_case n it it'' hp hs ih =>
+    rw [nextAtIdxSlow?_eq_match] at h; simp [hs] at h
+    rw [atIdxSlow?_eq_match]; simp [hs]
+    exact ih h
+  | done_case n it hp hs =>
+    rw [nextAtIdxSlow?_eq_match] at h; simp [hs] at h
+
+private theorem nextAtIdxSlow?_zero_intermediate_stepSize_val [Iterator α Id β] [Productive α Id]
+    [LawfulDeterministicIterator α Id]
+    [IteratorAccess α Id] {it : Iter (α := α) β} {i n : Nat} :
+    ((Intermediate.stepSize it i n).nextAtIdxSlow? 0).val =
+      (it.nextAtIdxSlow? i).val.mapIterator (fun it' => Intermediate.stepSize it' (n - 1) n) := by
+  have h := congrArg Subtype.val (nextAtIdxSlow?_zero_intermediate_stepSize (it := it) (i := i) (n := n))
+  simp only at h
+  rw [h]
+  cases (it.nextAtIdxSlow? i) using PlausibleIterStep.casesOn with
+  | yield => simp [IterStep.mapIterator]
+  | skip _ h => exact IterM.not_isPlausibleNthOutputStep_skip.elim h
+  | done => simp [IterStep.mapIterator]
+
+theorem atIdxSlow?_intermediate_stepSize [Iterator α Id β] [Productive α Id]
+    [LawfulDeterministicIterator α Id]
+    [IteratorAccess α Id] {it : Iter (α := α) β} {i k n : Nat} :
+    (Intermediate.stepSize it i n).atIdxSlow? k = it.atIdxSlow? (i + (n - 1 + 1) * k) := by
+  induction k generalizing it i with
+  | zero =>
+    simp only [Nat.mul_zero, Nat.add_zero]
+    rw [atIdxSlow?_eq_of_nextAtIdxSlow?, nextAtIdxSlow?_zero_intermediate_stepSize_val]
+    rw [atIdxSlow?_eq_of_nextAtIdxSlow?]
+    cases (it.nextAtIdxSlow? i).val with
+    | yield => simp [IterStep.mapIterator]
+    | skip => simp [IterStep.mapIterator]
+    | done => simp [IterStep.mapIterator]
+  | succ k ih =>
+    cases hstep : (it.nextAtIdxSlow? i).val with
+    | yield it' out =>
+      have hss : ((Intermediate.stepSize it i n).nextAtIdxSlow? 0).val =
+          .yield (Intermediate.stepSize it' (n - 1) n) out := by
+        rw [nextAtIdxSlow?_zero_intermediate_stepSize_val, hstep]; rfl
+      have h1 : (Intermediate.stepSize it i n).atIdxSlow? (0 + 1 + k) =
+          (Intermediate.stepSize it' (n - 1) n).atIdxSlow? k :=
+        atIdxSlow?_succ_of_nextAtIdxSlow?_yield hss
+      have h2 : (Intermediate.stepSize it i n).atIdxSlow? (k + 1) =
+          (Intermediate.stepSize it i n).atIdxSlow? (0 + 1 + k) := by
+        congr 1; omega
+      have h3 : it.atIdxSlow? (i + 1 + ((n - 1) + (n - 1 + 1) * k)) =
+          it'.atIdxSlow? ((n - 1) + (n - 1 + 1) * k) :=
+        atIdxSlow?_succ_of_nextAtIdxSlow?_yield hstep
+      have h4 : i + (n - 1 + 1) * (k + 1) = i + 1 + ((n - 1) + (n - 1 + 1) * k) := by
+        rw [Nat.mul_succ]; omega
+      rw [h2, h1, ih, ← h3, h4]
+    | skip it' =>
+      exfalso
+      have := (it.nextAtIdxSlow? i).property
+      rw [hstep] at this
+      exact IterM.not_isPlausibleNthOutputStep_skip this
+    | done =>
+      have hss : ((Intermediate.stepSize it i n).nextAtIdxSlow? 0).val = .done := by
+        rw [nextAtIdxSlow?_zero_intermediate_stepSize_val, hstep]; rfl
+      rw [atIdxSlow?_none_of_nextAtIdxSlow?_done hss (by omega)]
+      exact (atIdxSlow?_none_of_nextAtIdxSlow?_done hstep (by omega)).symm
+
+theorem atIdxSlow?_stepSize [Iterator α Id β] [Productive α Id]
+    [LawfulDeterministicIterator α Id]
+    [IteratorAccess α Id] {it : Iter (α := α) β} {k n : Nat} :
     (it.stepSize n).atIdxSlow? k = it.atIdxSlow? ((n - 1 + 1) * k) := by
+  show (Intermediate.stepSize it 0 n).atIdxSlow? k = _
+  rw [atIdxSlow?_intermediate_stepSize]; simp
 
+theorem getElem?_toList_stepSize [Iterator α Id β] [Productive α Id]
+    [LawfulDeterministicIterator α Id]
+    [IteratorAccess α Id] [Finite α Id]
+    {it : Iter (α := α) β} {k n : Nat} :
+    (it.stepSize n).toList[k]? = it.toList[(n - 1 + 1) * k]? := by
+  simp only [getElem?_toList_eq_atIdxSlow?, atIdxSlow?_stepSize]
 
 end Std.Iter

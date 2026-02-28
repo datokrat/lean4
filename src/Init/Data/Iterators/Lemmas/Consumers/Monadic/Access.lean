@@ -25,7 +25,10 @@ public theorem atIdxSlow?_eq_match [Monad m] [LawfulMonad m] [Iterator α m β] 
         | n + 1 => it'.atIdxSlow? n
       | .skip it' => it'.atIdxSlow? n
       | .done => return none) := by
-  sorry
+  rw [IterM.atIdxSlow?]
+  apply bind_congr; intro step
+  obtain ⟨val, prop⟩ := step.inflate
+  cases val <;> rfl
 
 private theorem val_nextAtIdxSlow?Go [Monad m] [LawfulMonad m] [Iterator α m β] [Productive α m]
     {n : Nat} {it : IterM (α := α) m β} {n' it' h} :
@@ -99,10 +102,10 @@ public theorem nextAtIdxSlow?_eq_match_nextAtIdxSlow? [Monad m] [LawfulMonad m] 
       | 0 => return step
       | n + 1 =>
         match step with
-        | .yield it' out hp =>
+        | .yield it' _out hp =>
           let s ← it'.nextAtIdxSlow? n
           return ⟨s.val, isPlausibleNthOutputStep_trans_of_yield hp s.property⟩
-        | .skip it' hp => not_isPlausibleNthOutputStep_skip.elim hp
+        | .skip _it' hp => not_isPlausibleNthOutputStep_skip.elim hp
         | .done hp => return ⟨.done, isPlausibleNthOutputStep_trans_of_done (k := 0) hp (Nat.zero_le _)⟩) := by
   fun_induction it.atIdxSlow? n
   rename_i ih₁ ih₂
