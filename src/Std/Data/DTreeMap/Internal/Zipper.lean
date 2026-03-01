@@ -487,6 +487,12 @@ def RxcIterator.FinitenessRelation [Ord α] : FinitenessRelation (RxcIterator α
 public instance instFinite [Ord α] : Finite (RxcIterator α β) Id :=
   .of_finitenessRelation RxcIterator.FinitenessRelation
 
+public instance [Ord α] : LawfulDeterministicIterator (RxcIterator α β) Id where
+  isPlausibleStep_eq_eq it := ⟨it.internalState.step, by
+    ext step
+    simp only [IterM.IsPlausibleStep, Iterator.IsPlausibleStep, instIteratorRxcIteratorIdSigma,
+      eq_comm]⟩
+
 @[simp]
 theorem RxcIterator.step_done [Ord α] {upper : α} : ({ iter := .done, upper := upper } : RxcIterator α β).step = .done := rfl
 
@@ -615,6 +621,12 @@ def RxoIterator.instFinitenessRelation [Ord α] : FinitenessRelation (RxoIterato
 @[no_expose]
 public instance Rxo.instFinite [Ord α] : Finite (RxoIterator α β) Id :=
   .of_finitenessRelation RxoIterator.instFinitenessRelation
+
+public instance [Ord α] : LawfulDeterministicIterator (RxoIterator α β) Id where
+  isPlausibleStep_eq_eq it := ⟨it.internalState.step, by
+    ext step
+    simp only [IterM.IsPlausibleStep, Iterator.IsPlausibleStep, instIteratorRxoIteratorIdSigma,
+      eq_comm]⟩
 
 @[simp]
 theorem RxoIterator.step_done [Ord α] {upper : α} : ({ iter := .done, upper := upper } : RxoIterator α β).step = .done := rfl
