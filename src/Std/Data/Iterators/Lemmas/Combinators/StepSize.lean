@@ -286,6 +286,13 @@ theorem getElem?_toList_stepSize [Iterator α Id β] [Productive α Id]
     (it.stepSize n).toList[k]? = it.toList[(n - 1 + 1) * k]? := by
   simp only [getElem?_toList_eq_atIdxSlow?, atIdxSlow?_stepSize]
 
+theorem getElem?_toArray_stepSize [Iterator α Id β] [Productive α Id]
+    [LawfulDeterministicIterator α Id]
+    [IteratorAccess α Id] [Finite α Id]
+    {it : Iter (α := α) β} {k n : Nat} :
+    (it.stepSize n).toArray[k]? = it.toArray[(n - 1 + 1) * k]? := by
+  simp only [← Array.getElem?_toList, Iter.toList_toArray, getElem?_toList_stepSize]
+
 private theorem val_nextAtIdxSlow?_zero_eq_val_step [Iterator α Id β] [Productive α Id]
     {it : Iter (α := α) β} :
     (∀ (it' : Iter (α := α) β), ¬ it.IsPlausibleStep (.skip it')) →
