@@ -27,20 +27,6 @@ open Std Std.Iterators Std.Iterators.Types
 
 namespace Std.Iter
 
--- example [Iterator α Id β] [IteratorAccess α Id] [LawfulDeterministicIterator α Id] :
---     Productive α Id where
---   wf := by
---     constructor
---     intro it
---     have :=
-
--- instance [Iterator α m β] [LawfulDeterministicIterator α m] [IteratorAccess α m] [Monad m] :
---     LawfulDeterministicIterator (StepSizeIterator α m β) m where
---   isPlausibleStep_eq_eq it := by
---     simp only [IterM.IsPlausibleStep, Iterator.IsPlausibleStep, funext_iff]
---     obtain ⟨⟨
-
--- theorem step_stepSize
 
 instance [Iterator α Id β] [LawfulDeterministicIterator α Id] {it : IterM (α := α) Id β} :
     Subsingleton it.Step where
@@ -134,6 +120,44 @@ instance [Iterator α Id β] [LawfulDeterministicIterator α Id] {it : IterM (α
     obtain ⟨s', hs'⟩ := s'
     have := IterM.eq_of_isPlausibleNthOutputStep_of_isPlausibleNthOutputStep hs hs'
     rwa [Subtype.mk.injEq]
+
+instance instLawfulDeterministicIteratorStepSizeIterator
+    [Iterator α Id β] [LawfulDeterministicIterator α Id] [IteratorAccess α Id] :
+    LawfulDeterministicIterator (Types.StepSizeIterator α Id β) Id where
+  isPlausibleStep_eq_eq it := by
+    refine ⟨it.step.run.inflate.val, ?_⟩
+    have hp := it.step.run.inflate.property
+    ext step
+    constructor
+    · intro ⟨h1, h2⟩
+      obtain ⟨hp1, hp2⟩ := hp
+      have heq := IterM.eq_of_isPlausibleNthOutputStep_of_isPlausibleNthOutputStep h1 hp1
+      generalize it.step.run.inflate.val = cstep at heq hp1 hp2 ⊢
+      cases step with
+      | skip _ =>
+        exfalso; simp only [IterStep.mapIterator] at h1
+        exact IterM.not_isPlausibleNthOutputStep_skip h1
+      | done =>
+        cases cstep with
+        | done => rfl
+        | yield _ _ => simp [IterStep.mapIterator] at heq
+        | skip _ =>
+          exfalso; simp only [IterStep.mapIterator] at hp1
+          exact IterM.not_isPlausibleNthOutputStep_skip hp1
+      | yield it₁ out₁ =>
+        cases cstep with
+        | done => simp [IterStep.mapIterator] at heq
+        | skip _ =>
+          exfalso; simp only [IterStep.mapIterator] at hp1
+          exact IterM.not_isPlausibleNthOutputStep_skip hp1
+        | yield it₂ out₂ =>
+          simp only [IterStep.mapIterator, IterStep.yield.injEq, Function.comp_apply] at heq
+          obtain ⟨hinner, rfl⟩ := heq
+          congr 1
+          obtain ⟨hn₁, hi₁⟩ := h2 _ _ rfl
+          obtain ⟨hn₂, hi₂⟩ := hp2 _ _ rfl
+          rcases it₁ with ⟨⟨_, _, _⟩⟩; rcases it₂ with ⟨⟨_, _, _⟩⟩; simp_all
+    · rintro rfl; exact hp
 
 theorem _root_.Std.IterM.nextAtIdx?_eq_nextAtIdxSlow? [Iterator α Id β] [Productive α Id] [LawfulDeterministicIterator α Id]
     [IteratorAccess α Id] {it : IterM (α := α) Id β} {n : Nat} :
