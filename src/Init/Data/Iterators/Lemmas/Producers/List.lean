@@ -23,6 +23,26 @@ open Std Std.Iterators
 
 variable {β : Type w}
 
+instance : LawfulDeterministicIterator (Iterators.Types.ListIterator β) Id where
+  isPlausibleStep_eq_eq it := by
+    rcases it with ⟨⟨_ | ⟨x, xs⟩⟩⟩
+    · exact ⟨.done, by
+        ext step
+        simp only [IterM.IsPlausibleStep, Iterator.IsPlausibleStep,
+          Iterators.Types.ListIterator.instIterator]
+        cases step <;> simp⟩
+    · exact ⟨.yield ⟨⟨xs⟩⟩ x, by
+        ext step
+        simp only [IterM.IsPlausibleStep, Iterator.IsPlausibleStep,
+          Iterators.Types.ListIterator.instIterator]
+        cases step with
+        | yield it' out =>
+          constructor
+          · intro h; rcases it' with ⟨⟨l⟩⟩; simp_all
+          · intro h; cases h; rfl
+        | skip => simp
+        | done => simp⟩
+
 @[simp]
 theorem List.step_iter_nil :
     (([] : List β).iter).step = ⟨.done, rfl⟩ := by

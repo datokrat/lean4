@@ -337,6 +337,12 @@ public instance : Iterator (Zipper α β) Id ((a : α) × β a) where
   IsPlausibleStep it step := it.internalState.step = step
   step it := pure <| Shrink.deflate ⟨it.internalState.step, rfl⟩
 
+public instance : LawfulDeterministicIterator (Zipper α β) Id where
+  isPlausibleStep_eq_eq it := ⟨it.internalState.step, by
+    ext step
+    simp only [IterM.IsPlausibleStep, Iterator.IsPlausibleStep, instIteratorZipperIdSigma,
+      eq_comm]⟩
+
 def Zipper.FinitenessRelation : FinitenessRelation (Zipper α β) Id where
   Rel t' t := t'.internalState.size < t.internalState.size
   wf := by

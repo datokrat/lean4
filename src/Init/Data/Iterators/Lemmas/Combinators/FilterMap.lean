@@ -1055,4 +1055,123 @@ theorem Iter.all_map {α β β' : Type w}
   · simp [ihs ‹_›]
   · simp
 
+section LawfulDeterministic
+
+variable {α β γ : Type w} [Iterator α Id β] [LawfulDeterministicIterator α Id]
+
+private theorem PostconditionT.map_some_pure_property' {v : Option γ} {x : γ}
+    (h : (PostconditionT.map some (PostconditionT.pure (m := Id) x)).Property v) : v = some x := by
+  obtain ⟨⟨a, ha⟩, rfl⟩ := h; congr 1; exact ha.symm
+
+instance instLawfulDeterministicIteratorFilterMapPure
+    {lift : ⦃α : Type w⦄ → Id α → Id α}
+    {f : β → Option γ} :
+    LawfulDeterministicIterator
+      (Iterators.Types.FilterMap α Id Id lift (fun b => pure (f b))) Id where
+  isPlausibleStep_eq_eq it := by
+    obtain ⟨innerStep, hinner⟩ := LawfulDeterministicIterator.isPlausibleStep_eq_eq
+      it.internalState.inner
+    cases innerStep with
+    | done =>
+      exact ⟨.done, by
+        ext step; simp only [IterM.IsPlausibleStep, Iterator.IsPlausibleStep]
+        constructor
+        · intro h; cases h with
+          | done h => rfl
+          | yieldNone h => rw [hinner] at h; cases h
+          | yieldSome h => rw [hinner] at h; cases h
+          | skip h => rw [hinner] at h; cases h
+        · intro h; cases h; exact .done (by rw [hinner])⟩
+    | skip it' =>
+      exact ⟨.skip (IterM.InternalCombinators.filterMap lift _ it'), by
+        ext step; simp only [IterM.IsPlausibleStep, Iterator.IsPlausibleStep]
+        constructor
+        · intro h; cases h with
+          | skip h => rw [hinner] at h; cases h; rfl
+          | done h => rw [hinner] at h; cases h
+          | yieldNone h => rw [hinner] at h; cases h
+          | yieldSome h => rw [hinner] at h; cases h
+        · intro h; cases h; exact .skip (by rw [hinner])⟩
+    | yield it' out =>
+      cases hfout : f out with
+      | none =>
+        exact ⟨.skip (IterM.InternalCombinators.filterMap lift _ it'), by
+          ext step; simp only [IterM.IsPlausibleStep, Iterator.IsPlausibleStep]
+          constructor
+          · intro h; cases h with
+            | yieldNone h hp =>
+              rw [hinner] at h; cases h; rfl
+            | yieldSome h hp =>
+              rw [hinner] at h; cases h
+              rw [hfout] at hp; cases hp
+            | skip h => rw [hinner] at h; cases h
+            | done h => rw [hinner] at h; cases h
+          · intro h; cases h
+            exact .yieldNone (by rw [hinner]) (show f out = none from hfout)⟩
+      | some out' =>
+        exact ⟨.yield (IterM.InternalCombinators.filterMap lift _ it') out', by
+          ext step; simp only [IterM.IsPlausibleStep, Iterator.IsPlausibleStep]
+          constructor
+          · intro h; cases h with
+            | yieldSome h hp =>
+              rw [hinner] at h; cases h
+              rw [hfout] at hp; cases hp; rfl
+            | yieldNone h hp =>
+              rw [hinner] at h; cases h
+              rw [hfout] at hp; cases hp
+            | skip h => rw [hinner] at h; cases h
+            | done h => rw [hinner] at h; cases h
+          · intro h; cases h
+            exact .yieldSome (by rw [hinner]) (show f out = some out' from hfout)⟩
+
+instance instLawfulDeterministicIteratorMapPure
+    {lift : ⦃α : Type w⦄ → Id α → Id α}
+    {f : β → γ} :
+    LawfulDeterministicIterator
+      (Iterators.Types.Map α Id Id lift (fun b => pure (f b))) Id where
+  isPlausibleStep_eq_eq it := by
+    obtain ⟨innerStep, hinner⟩ := LawfulDeterministicIterator.isPlausibleStep_eq_eq
+      it.internalState.inner
+    cases innerStep with
+    | done =>
+      exact ⟨.done, by
+        ext step; simp only [IterM.IsPlausibleStep, Iterator.IsPlausibleStep]
+        constructor
+        · intro h; cases h with
+          | done h => rfl
+          | yieldNone h => rw [hinner] at h; cases h
+          | yieldSome h => rw [hinner] at h; cases h
+          | skip h => rw [hinner] at h; cases h
+        · intro h; cases h; exact .done (by rw [hinner])⟩
+    | skip it' =>
+      exact ⟨.skip (IterM.InternalCombinators.filterMap lift _ it'), by
+        ext step; simp only [IterM.IsPlausibleStep, Iterator.IsPlausibleStep]
+        constructor
+        · intro h; cases h with
+          | skip h => rw [hinner] at h; cases h; rfl
+          | done h => rw [hinner] at h; cases h
+          | yieldNone h => rw [hinner] at h; cases h
+          | yieldSome h => rw [hinner] at h; cases h
+        · intro h; cases h; exact .skip (by rw [hinner])⟩
+    | yield it' out =>
+      exact ⟨.yield (IterM.InternalCombinators.filterMap lift _ it') (f out), by
+        ext step; simp only [IterM.IsPlausibleStep, Iterator.IsPlausibleStep]
+        constructor
+        · intro h; cases h with
+          | yieldSome h hp =>
+            rw [hinner] at h; cases h
+            have := PostconditionT.map_some_pure_property' hp
+            cases this; rfl
+          | yieldNone h hp =>
+            rw [hinner] at h; cases h
+            have := PostconditionT.map_some_pure_property' hp
+            cases this
+          | skip h => rw [hinner] at h; cases h
+          | done h => rw [hinner] at h; cases h
+        · intro h; cases h
+          refine .yieldSome (by rw [hinner]) ?_
+          exact ⟨⟨f out, rfl⟩, rfl⟩⟩
+
+end LawfulDeterministic
+
 end Std
