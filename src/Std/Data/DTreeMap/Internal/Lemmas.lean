@@ -13,6 +13,7 @@ public meta import Std.Data.HashMap.Basic
 import Init.Data.List.Find
 import Init.Data.List.Pairwise
 import Init.Data.Prod
+import Init.Data.Array.Bootstrap
 import Init.Omega
 
 @[expose] public section
@@ -2426,6 +2427,18 @@ theorem ofList_eq_insertMany! {l : List ((a : α) × β a)} :
     ofList l = insertMany! .empty l := by
   rw [ofList_eq_insertMany, insertMany_eq_insertMany!]
 
+theorem ofArray_eq_insertMany {a : Array ((x : α) × β x)} :
+    ofArray a = insertMany .empty a balanced_empty := rfl
+
+theorem ofArray_eq_insertMany! {a : Array ((x : α) × β x)} :
+    ofArray a = insertMany! .empty a := by
+  rw [ofArray_eq_insertMany, insertMany_array_eq_insertMany!]
+
+theorem ofArray_eq_ofList_toList {a : Array ((x : α) × β x)} :
+    ofArray a = ofList a.toList := by
+  simp only [ofArray_eq_insertMany!, ofList_eq_insertMany!,
+    insertMany!_array_eq_foldl, insertMany!_eq_foldl, Array.foldl_toList]
+
 namespace Const
 
 variable {β : Type v} {t : Impl α β}
@@ -2836,6 +2849,18 @@ theorem ofList_eq_insertMany! {l : List (α × β)} :
     ofList l = insertMany! .empty l := by
   rw [ofList_eq_insertMany, insertMany_eq_insertMany!]
 
+theorem ofArray_eq_insertMany {a : Array (α × β)} :
+    ofArray a = insertMany .empty a balanced_empty := rfl
+
+theorem ofArray_eq_insertMany! {a : Array (α × β)} :
+    ofArray a = insertMany! .empty a := by
+  rw [ofArray_eq_insertMany, insertMany_array_eq_insertMany!]
+
+theorem ofArray_eq_ofList_toList {a : Array (α × β)} :
+    ofArray a = ofList a.toList := by
+  simp only [ofArray_eq_insertMany!, ofList_eq_insertMany!,
+    insertMany!_array_eq_foldl, insertMany!_eq_foldl, Array.foldl_toList]
+
 variable {t : Impl α Unit}
 
 theorem insertManyIfNewUnit_cons (h : t.WF) {l : List α} {k : α} :
@@ -3114,6 +3139,18 @@ theorem unitOfList_eq_insertManyIfNewUnit {l : List α} :
 theorem unitOfList_eq_insertManyIfNewUnit! {l : List α} :
     unitOfList l = insertManyIfNewUnit! .empty l := by
   rw [unitOfList_eq_insertManyIfNewUnit, insertManyIfNewUnit_eq_insertManyIfNewUnit!]
+
+theorem unitOfArray_eq_insertManyIfNewUnit {a : Array α} :
+    unitOfArray a = insertManyIfNewUnit .empty a balanced_empty := rfl
+
+theorem unitOfArray_eq_insertManyIfNewUnit! {a : Array α} :
+    unitOfArray a = insertManyIfNewUnit! .empty a := by
+  rw [unitOfArray_eq_insertManyIfNewUnit, insertManyIfNewUnit_array_eq_insertManyIfNewUnit!]
+
+theorem unitOfArray_eq_unitOfList_toList {a : Array α} :
+    unitOfArray a = unitOfList a.toList := by
+  simp only [unitOfArray_eq_insertManyIfNewUnit!, unitOfList_eq_insertManyIfNewUnit!,
+    insertManyIfNewUnit!_array_eq_foldl, insertManyIfNewUnit!_eq_foldl, Array.foldl_toList]
 
 end Const
 

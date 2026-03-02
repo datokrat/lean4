@@ -9,6 +9,7 @@ prelude
 import Std.Data.TreeMap.Lemmas
 import Std.Data.DTreeMap.Lemmas
 public import Init.Data.Array.Perm
+import Init.Data.Array.Bootstrap
 public import Std.Data.TreeSet.AdditionalOperations
 
 @[expose] public section
@@ -1262,6 +1263,97 @@ theorem isEmpty_ofList [TransCmp cmp] {l : List α} :
     (ofList l cmp).isEmpty = l.isEmpty :=
   TreeMap.isEmpty_unitOfList
 
+@[simp, grind =]
+theorem ofArray_empty :
+    ofArray (#[] : Array α) cmp =
+      (∅ : TreeSet α cmp) :=
+  rfl
+
+@[simp, grind =]
+theorem ofArray_singleton {k : α} :
+    ofArray #[k] cmp = (∅ : TreeSet α cmp).insert k :=
+  rfl
+
+theorem ofArray_eq_ofList_toList {a : Array α} :
+    ofArray a cmp = ofList a.toList cmp :=
+  ext TreeMap.unitOfArray_eq_unitOfList_toList
+
+theorem ofArray_eq_insertMany_empty {a : Array α} :
+    ofArray a cmp = insertMany (∅ : TreeSet α cmp) a :=
+  ext TreeMap.unitOfArray_eq_insertManyIfNewUnit_empty
+
+@[simp, grind =]
+theorem contains_ofArray [TransCmp cmp] [BEq α] [LawfulBEqCmp cmp] {a : Array α} {k : α} :
+    (ofArray a cmp).contains k = a.contains k :=
+  TreeMap.contains_unitOfArray
+
+@[simp, grind =]
+theorem mem_ofArray [TransCmp cmp] [BEq α] [LawfulBEqCmp cmp] {a : Array α} {k : α} :
+    k ∈ ofArray a cmp ↔ a.contains k := by
+  simp [← contains_iff_mem]
+
+theorem get?_ofArray_of_contains_eq_false [TransCmp cmp] [BEq α] [LawfulBEqCmp cmp]
+    {a : Array α} {k : α}
+    (contains_eq_false : a.contains k = false) :
+    get? (ofArray a cmp) k = none :=
+  TreeMap.getKey?_unitOfArray_of_contains_eq_false contains_eq_false
+
+theorem get?_ofArray_of_mem [TransCmp cmp]
+    {a : Array α} {k k' : α} (k_eq : cmp k k' = .eq)
+    (distinct : a.toList.Pairwise (fun a b => ¬ cmp a b = .eq)) (mem : k ∈ a) :
+    get? (ofArray a cmp) k' = some k :=
+  TreeMap.getKey?_unitOfArray_of_mem k_eq distinct mem
+
+theorem get_ofArray_of_mem [TransCmp cmp]
+    {a : Array α}
+    {k k' : α} (k_eq : cmp k k' = .eq)
+    (distinct : a.toList.Pairwise (fun a b => ¬ cmp a b = .eq))
+    (mem : k ∈ a) {h'} :
+    get (ofArray a cmp) k' h' = k :=
+  TreeMap.getKey_unitOfArray_of_mem k_eq distinct mem
+
+theorem get!_ofArray_of_contains_eq_false [TransCmp cmp] [BEq α]
+    [LawfulBEqCmp cmp] [Inhabited α] {a : Array α} {k : α}
+    (contains_eq_false : a.contains k = false) :
+    get! (ofArray a cmp) k = default :=
+  TreeMap.getKey!_unitOfArray_of_contains_eq_false contains_eq_false
+
+theorem get!_ofArray_of_mem [TransCmp cmp]
+    [Inhabited α] {a : Array α} {k k' : α} (k_eq : cmp k k' = .eq)
+    (distinct : a.toList.Pairwise (fun a b => ¬ cmp a b = .eq))
+    (mem : k ∈ a) :
+    get! (ofArray a cmp) k' = k :=
+  TreeMap.getKey!_unitOfArray_of_mem k_eq distinct mem
+
+theorem getD_ofArray_of_contains_eq_false [TransCmp cmp] [BEq α]
+    [LawfulBEqCmp cmp] {a : Array α} {k fallback : α}
+    (contains_eq_false : a.contains k = false) :
+    getD (ofArray a cmp) k fallback = fallback :=
+  TreeMap.getKeyD_unitOfArray_of_contains_eq_false contains_eq_false
+
+theorem getD_ofArray_of_mem [TransCmp cmp]
+    {a : Array α} {k k' fallback : α} (k_eq : cmp k k' = .eq)
+    (distinct : a.toList.Pairwise (fun a b => ¬ cmp a b = .eq))
+    (mem : k ∈ a) :
+    getD (ofArray a cmp) k' fallback = k :=
+  TreeMap.getKeyD_unitOfArray_of_mem k_eq distinct mem
+
+theorem size_ofArray [TransCmp cmp] {a : Array α}
+    (distinct : a.toList.Pairwise (fun a b => ¬ cmp a b = .eq)) :
+    (ofArray a cmp).size = a.size :=
+  TreeMap.size_unitOfArray distinct
+
+theorem size_ofArray_le [TransCmp cmp] {a : Array α} :
+    (ofArray a cmp).size ≤ a.size :=
+  TreeMap.size_unitOfArray_le
+
+grind_pattern size_ofArray_le => (ofArray a cmp).size
+
+@[simp, grind =]
+theorem isEmpty_ofArray [TransCmp cmp] {a : Array α} :
+    (ofArray a cmp).isEmpty = a.isEmpty :=
+  TreeMap.isEmpty_unitOfArray
+
 section Min
 
 @[simp, grind =]
@@ -2422,6 +2514,11 @@ theorem insertMany_list_equiv_foldl {l : List α} :
 theorem ofList_equiv_foldl {l : List α} :
     ofList l cmp ~m l.foldl (init := ∅) fun acc a => acc.insert a := by
   simpa only [ofList_eq_insertMany_empty] using insertMany_list_equiv_foldl
+
+theorem ofArray_equiv_foldl {a : Array α} :
+    ofArray a cmp ~m a.foldl (init := ∅) fun acc k => acc.insert k := by
+  rw [ofArray_eq_ofList_toList, ← Array.foldl_toList]
+  exact ofList_equiv_foldl
 
 end Equiv
 
