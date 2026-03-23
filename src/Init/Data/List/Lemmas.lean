@@ -809,7 +809,6 @@ theorem length_eq_of_beq [BEq α] {l₁ l₂ : List α} (h : l₁ == l₂) : l�
 
 /-! ### getLast -/
 
-@[grind =]
 theorem getLast_eq_getElem : ∀ {l : List α} (h : l ≠ []),
     getLast l h = l[l.length - 1]'(by
       match l with
@@ -823,7 +822,7 @@ theorem getElem_length_sub_one_eq_getLast {l : List α} (h : l.length - 1 < l.le
     l[l.length - 1] = getLast l (by cases l; simp at h; simp) := by
   rw [← getLast_eq_getElem]
 
-@[simp, grind =] theorem getLast_cons_cons {a : α} {l : List α} :
+theorem getLast_cons_cons {a : α} {l : List α} :
     getLast (a :: b :: l) (by simp) = getLast (b :: l) (by simp) :=
   rfl
 
@@ -839,12 +838,12 @@ theorem getLast_eq_getLastD {a l} (h) : @getLast α (a::l) h = getLastD l a := b
 @[simp, grind =] theorem getLastD_eq_getLast? {a l} : @getLastD α l a = (getLast? l).getD a := by
   cases l <;> rfl
 
-@[simp, grind =] theorem getLast_singleton {a} (h) : @getLast α [a] h = a := rfl
+theorem getLast_singleton {a} (h) : @getLast α [a] h = a := rfl
 
 theorem getLast!_cons_eq_getLastD [Inhabited α] : @getLast! α _ (a::l) = getLastD l a := by
   simp [getLast!, getLast_eq_getLastD]
 
-@[simp] theorem getLast_mem : ∀ {l : List α} (h : l ≠ []), getLast l h ∈ l
+theorem getLast_mem : ∀ {l : List α} (h : l ≠ []), getLast l h ∈ l
   | [], h => absurd rfl h
   | [_], _ => .head ..
   | _::a::l, _ => .tail _ <| getLast_mem (cons_ne_nil a l)
@@ -944,6 +943,7 @@ theorem getLastV_eq_getElemV [Nonempty α] {l : List α} : l.getLastV = l｢l.le
   simp only [getLastV, getElemV_def, getLast?_eq_getElem?]
   cases l[l.length - 1]? <;> rfl
 
+@[simp, grind norm]
 theorem getLast_eq_getLastV [Nonempty α] {l : List α} (h : l ≠ []) :
     l.getLast h = l.getLastV := by
   unfold getLastV
@@ -966,7 +966,6 @@ theorem head?_eq_getElem? : ∀ {l : List α}, l.head? = l[0]?
 
 theorem head_singleton {a : α} : head [a] (by simp) = a := by simp
 
-@[grind =]
 theorem head_eq_getElem {l : List α} (h : l ≠ []) : head l h = l[0]'(length_pos_iff.mpr h) := by
   cases l with
   | nil => simp at h
@@ -998,7 +997,7 @@ theorem head?_eq_some_iff {xs : List α} {a : α} : xs.head? = some a ↔ ∃ ys
 @[simp] theorem isSome_head? : l.head?.isSome ↔ l ≠ [] := by
   cases l <;> simp
 
-@[simp] theorem head_mem : ∀ {l : List α} (h : l ≠ []), head l h ∈ l
+theorem head_mem : ∀ {l : List α} (h : l ≠ []), head l h ∈ l
   | [], h => absurd rfl h
   | _::_, _ => .head ..
 
@@ -1057,6 +1056,7 @@ theorem headV_eq_getElemV [Nonempty α] {l : List α} : headV l = l｢0｣ := by
   simp only [headV, getElemV_def, head?_eq_getElem?]
   cases l[0]? <;> rfl
 
+@[simp, grind norm]
 theorem head_eq_headV [Nonempty α] {l : List α} (h : l ≠ []) : l.head h = l.headV := by
   cases l with
   | nil => exact absurd rfl h
@@ -1103,7 +1103,7 @@ theorem one_lt_length_of_tail_ne_nil {l : List α} (h : l.tail ≠ []) : 1 < l.l
     simp only [tail_cons, ne_eq] at h
     exact Nat.lt_add_of_pos_left (length_pos_iff.mpr h)
 
-@[simp] theorem head_tail {l : List α} (h : l.tail ≠ []) :
+theorem head_tail {l : List α} (h : l.tail ≠ []) :
     (tail l).head h = l[1]'(one_lt_length_of_tail_ne_nil h) := by
   cases l with
   | nil => simp at h
@@ -1112,7 +1112,7 @@ theorem one_lt_length_of_tail_ne_nil {l : List α} (h : l.tail ≠ []) : 1 < l.l
 @[simp] theorem head?_tail {l : List α} : (tail l).head? = l[1]? := by
   simp [head?_eq_getElem?]
 
-@[simp, grind =] theorem getLast_tail {l : List α} (h : l.tail ≠ []) :
+theorem getLast_tail {l : List α} (h : l.tail ≠ []) :
     (tail l).getLast h = l.getLast (ne_nil_of_tail_ne_nil h) := by
   simp only [getLast_eq_getElem, length_tail, getElem_tail]
   congr
@@ -1128,7 +1128,6 @@ theorem getLast?_tail {l : List α} : (tail l).getLast? = if l.length = 1 then n
     rw [if_neg]
     rintro ⟨⟩
 
-@[simp, grind =]
 theorem cons_head_tail (h : l ≠ []) : l.head h :: l.tail = l := by
   induction l with
   | nil => contradiction
@@ -1269,7 +1268,7 @@ theorem map_eq_foldr {f : α → β} {l : List α} : map f l = foldr (fun a bs =
   | nil => simp
   | cons b l ih => cases i <;> simp_all
 
-@[simp] theorem head_map {f : α → β} {l : List α} (w) :
+theorem head_map {f : α → β} {l : List α} (w) :
     (map f l).head w = f (l.head (by simpa using w)) := by
   cases l
   · simp at w
@@ -1291,7 +1290,7 @@ theorem headD_map {f : α → β} {l : List α} {a : α} : (map f l).headD (f a)
 theorem tailD_map {f : α → β} {l l' : List α} :
     tailD (map f l) (map f l') = map f (tailD l l') := by simp [← map_tail?]
 
-@[simp] theorem getLast_map {f : α → β} {l : List α} (h) :
+theorem getLast_map {f : α → β} {l : List α} (h) :
     getLast (map f l) h = f (getLast l (by simpa using h)) := by
   cases l
   · simp at h
@@ -1788,12 +1787,12 @@ theorem append_eq_append_iff {ws xs ys zs : List α} :
   | nil => simp_all
   | cons a as ih => cases ys <;> simp [eq_comm, and_assoc, ih, and_or_left]
 
-@[simp, grind =] theorem head_append_of_ne_nil {l : List α} {w₁} (w₂) :
+theorem head_append_of_ne_nil {l : List α} {w₁} (w₂) :
     head (l ++ l') w₁ = head l w₂ := by
   match l, w₂ with
   | a :: l, _ => rfl
 
-@[grind =] theorem head_append {l₁ l₂ : List α} (w : l₁ ++ l₂ ≠ []) :
+theorem head_append {l₁ l₂ : List α} (w : l₁ ++ l₂ ≠ []) :
     head (l₁ ++ l₂) w =
       if h : l₁.isEmpty then
         head l₂ (by simp_all [isEmpty_iff])
@@ -2267,7 +2266,7 @@ theorem forall_mem_replicate {p : α → Prop} {a : α} {n} :
 @[grind =] theorem head?_replicate {a : α} {n : Nat} : (replicate n a).head? = if n = 0 then none else some a := by
   cases n <;> simp [replicate_succ]
 
-@[simp] theorem head_replicate (w : replicate n a ≠ []) : (replicate n a).head w = a := by
+theorem head_replicate (w : replicate n a ≠ []) : (replicate n a).head w = a := by
   cases n
   · simp at w
   · simp_all [replicate_succ]
@@ -2958,7 +2957,7 @@ theorem foldr_rel {l : List α} {f : α → β → β} {g : α → γ → γ} {a
 
 /-! #### Further results about `getLast` and `getLast?` -/
 
-@[simp, grind =] theorem head_reverse {l : List α} (h : l.reverse ≠ []) :
+theorem head_reverse {l : List α} (h : l.reverse ≠ []) :
     l.reverse.head h = getLast l (by simp_all) := by
   induction l with
   | nil => contradiction
@@ -2985,7 +2984,7 @@ theorem getLast?_eq_some_iff {xs : List α} {a : α} : xs.getLast? = some a ↔ 
   rw [getLast?_eq_head?_reverse, isSome_head?]
   simp
 
-@[simp, grind =] theorem getLast_reverse {l : List α} (h : l.reverse ≠ []) :
+theorem getLast_reverse {l : List α} (h : l.reverse ≠ []) :
     l.reverse.getLast h = l.head (by simp_all) := by
   simp [getLast_eq_head_reverse]
 
@@ -2993,12 +2992,12 @@ theorem head_eq_getLast_reverse {l : List α} (h : l ≠ []) :
     l.head h = l.reverse.getLast (by simp_all) := by
   rw [← getLast_reverse]
 
-@[simp] theorem getLast_append_of_ne_nil {l : List α} (h₁) (h₂ : l' ≠ []) :
+theorem getLast_append_of_ne_nil {l : List α} (h₁) (h₂ : l' ≠ []) :
     (l ++ l').getLast h₁ = l'.getLast h₂ := by
   simp only [getLast_eq_head_reverse, reverse_append]
   rw [head_append_of_ne_nil]
 
-@[grind =] theorem getLast_append {l : List α} (h : l ++ l' ≠ []) :
+theorem getLast_append {l : List α} (h : l ++ l' ≠ []) :
     (l ++ l').getLast h =
       if h' : l'.isEmpty then
         l.getLast (by simp_all [isEmpty_iff])
@@ -3047,7 +3046,7 @@ theorem getLast_filterMap_of_eq_some {f : α → Option β} {l : List α} (w : l
 theorem getLast?_replicate {a : α} {n : Nat} : (replicate n a).getLast? = if n = 0 then none else some a := by
   simp only [← head?_reverse, reverse_replicate, head?_replicate]
 
-@[simp] theorem getLast_replicate (w : replicate n a ≠ []) : (replicate n a).getLast w = a := by
+theorem getLast_replicate (w : replicate n a ≠ []) : (replicate n a).getLast w = a := by
   simp [getLast_eq_head_reverse]
 
 /-! ## Additional operations -/

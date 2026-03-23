@@ -1141,9 +1141,8 @@ private theorem beq_of_beq_singleton [BEq α] {a b : α} : #[a] == #[b] → a ==
 
 /-! ### back -/
 
-@[grind =] theorem back_singleton {a : α} : #[a].back = a := by simp
+theorem back_singleton {a : α} : #[a].back = a := by simp
 
-@[grind =]
 theorem back_eq_getElem {xs : Array α} (h : 0 < xs.size) : xs.back = xs[xs.size - 1] := by
   cases xs
   simp [List.getLast_eq_getElem]
@@ -1154,7 +1153,7 @@ theorem back_eq_getElem {xs : Array α} (h : 0 < xs.size) : xs.back = xs[xs.size
   cases xs
   simp [List.getLast?_eq_getElem?]
 
-@[simp] theorem back_mem {xs : Array α} (h : 0 < xs.size) : xs.back h ∈ xs := by
+theorem back_mem {xs : Array α} (h : 0 < xs.size) : xs.back h ∈ xs := by
   cases xs
   simp
 
@@ -3587,14 +3586,14 @@ theorem mem_of_back? {xs : Array α} {a : α} (h : xs.back? = some a) : a ∈ xs
   obtain ⟨ys, rfl⟩ := back?_eq_some_iff.1 h
   simp
 
-@[simp] theorem back_append_of_size_pos {xs ys : Array α} {h₁} (h₂ : 0 < ys.size) :
+theorem back_append_of_size_pos {xs ys : Array α} {h₁} (h₂ : 0 < ys.size) :
     (xs ++ ys).back h₁ = ys.back h₂ := by
   rcases xs with ⟨l⟩
   rcases ys with ⟨l'⟩
   simp only [List.append_toArray, List.back_toArray]
   rw [List.getLast_append_of_ne_nil]
 
-@[grind =] theorem back_append {xs : Array α} (h : 0 < (xs ++ ys).size) :
+theorem back_append {xs : Array α} (h : 0 < (xs ++ ys).size) :
     (xs ++ ys).back h =
       if h' : ys.isEmpty then
         xs.back (by simp_all)
@@ -3654,7 +3653,7 @@ theorem back?_replicate {a : α} {n : Nat} :
   rw [replicate_eq_toArray_replicate]
   simp only [List.back?_toArray, List.getLast?_replicate]
 
-@[simp] theorem back_replicate {xs : Array α} (w : 0 < n) : (replicate n xs).back (by simpa using w) = xs := by
+theorem back_replicate {xs : Array α} (w : 0 < n) : (replicate n xs).back (by simpa using w) = xs := by
   simp [back_eq_getElem]
 
 /-! ## Additional operations -/
@@ -4453,6 +4452,7 @@ theorem backV_eq_back?_getD [Nonempty α] {xs : Array α} :
 @[simp] theorem backV_push [Nonempty α] {xs : Array α} {x : α} : (xs.push x).backV = x := by
   simp [backV_eq_back?_getD]
 
+@[simp, grind norm]
 theorem back_eq_backV [Nonempty α] {xs : Array α} (h : 0 < xs.size) :
     xs.back h = xs.backV := by
   rw [backV_eq_back?_getD]

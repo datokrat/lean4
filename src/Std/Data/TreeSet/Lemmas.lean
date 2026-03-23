@@ -283,7 +283,7 @@ theorem get?_eq_some [TransCmp cmp] [LawfulEqCmp cmp] {k : α} (h' : k ∈ t) :
     t.get? k = some k :=
   TreeMap.getKey?_eq_some_of_contains h'
 
-@[grind =] theorem get_insert [TransCmp cmp] {k a : α} {h₁} :
+theorem get_insert [TransCmp cmp] {k a : α} {h₁} :
     (t.insert k).get a h₁ =
       if h₂ : cmp k a = .eq ∧ ¬ k ∈ t then k
       else t.get a (mem_of_mem_insert' h₁ h₂) :=
@@ -297,7 +297,7 @@ theorem toArray_insert_perm [BEq α] [TransCmp cmp] [LawfulBEqCmp cmp] {k : α} 
     (t.insert k).toArray.Perm (if k ∈ t then t.toArray else t.toArray.push k) :=
   DTreeMap.keysArray_insertIfNew_perm
 
-@[simp, grind =] theorem get_erase [TransCmp cmp] {k a : α} {h'} :
+theorem get_erase [TransCmp cmp] {k a : α} {h'} :
     (t.erase k).get a h' = t.get a (mem_of_mem_erase h') :=
   TreeMap.getKey_erase
 
@@ -309,7 +309,7 @@ theorem get_eq_get_get? [TransCmp cmp] {k : α} {h} :
     t.get k h = (t.get? k).get (mem_iff_isSome_get?.mp h) :=
   TreeMap.getKey_eq_get_getKey?
 
-@[grind =] theorem get_get? [TransCmp cmp] {k : α} {h} :
+theorem get_get? [TransCmp cmp] {k : α} {h} :
     (t.get? k).get h = t.get k (mem_iff_isSome_get?.mpr h) :=
   TreeMap.get_getKey?
 
@@ -321,7 +321,6 @@ theorem get_congr [TransCmp cmp] {k₁ k₂ : α} (h' : cmp k₁ k₂ = .eq)
     (h₁ : k₁ ∈ t) : t.get k₁ h₁ = t.get k₂ ((mem_congr h').mp h₁) :=
   TreeMap.getKey_congr h' h₁
 
-@[simp, grind =]
 theorem get_eq [TransCmp cmp] [LawfulEqCmp cmp] {k : α} (h' : k ∈ t) :
     t.get k h' = k :=
   TreeMap.getKey_eq h'
@@ -455,6 +454,7 @@ theorem getV_eq_getD_classicalOfNonempty [TransCmp cmp] [Nonempty α] {a : α} :
   rfl
 
 /-- This is a technical lemma relating `get` and `getV`. -/
+@[simp, grind norm]
 theorem get_eq_getV [TransCmp cmp] [Nonempty α] {a : α} {h} :
     t.get a h = t.getV a := by
   simpa [getV] using get_eq_getD
@@ -807,7 +807,6 @@ theorem get?_inter_of_not_mem_right [TransCmp cmp]
   TreeMap.getKey?_inter_of_not_mem_right not_mem
 
 /- get -/
-@[simp]
 theorem get_inter [TransCmp cmp]
     {k : α} {h_mem : k ∈ t₁ ∩ t₂} :
     (t₁ ∩ t₂).get k h_mem =
@@ -1600,7 +1599,7 @@ theorem min_eq_iff_mem_and_forall [TransCmp cmp] [LawfulEqCmp cmp] {he km} :
     t.min he = km ↔ km ∈ t ∧ ∀ k ∈ t, (cmp km k).isLE :=
   TreeMap.minKey_eq_iff_mem_and_forall
 
-@[grind =] theorem min_insert [TransCmp cmp] {k} :
+theorem min_insert [TransCmp cmp] {k} :
     (t.insert k).min isEmpty_insert =
       t.min?.elim k fun k' => if cmp k k' = .lt then k else k' :=
   TreeMap.minKey_insertIfNew
@@ -1614,7 +1613,7 @@ theorem min_insert_le_self [TransCmp cmp] {k} :
     cmp (t.insert k |>.min <| isEmpty_insert) k |>.isLE :=
   TreeMap.minKey_insertIfNew_le_self
 
-@[grind =] theorem contains_min [TransCmp cmp] {he} :
+theorem contains_min [TransCmp cmp] {he} :
     t.contains (t.min he) :=
   TreeMap.contains_minKey
 
@@ -1636,32 +1635,26 @@ theorem le_min [TransCmp cmp] {k he} :
     (cmp k (t.min he)).isLE ↔ (∀ k', k' ∈ t → (cmp k k').isLE) :=
   TreeMap.le_minKey
 
-@[simp, grind =]
 theorem get?_min [TransCmp cmp] {he} :
     t.get? (t.min he) = some (t.min he) :=
   TreeMap.getKey?_minKey
 
-@[simp, grind =]
 theorem get_min [TransCmp cmp] {he hc} :
     t.get (t.min he) hc = t.min he :=
   TreeMap.getKey_minKey
 
-@[simp, grind =]
 theorem get!_min [TransCmp cmp] [Inhabited α] {he} :
     t.get! (t.min he) = t.min he :=
   TreeMap.getKey!_minKey
 
-@[simp, grind =]
 theorem getD_min [TransCmp cmp] {he fallback} :
     t.getD (t.min he) fallback = t.min he :=
   TreeMap.getKeyD_minKey
 
-@[simp, grind =]
 theorem getV_min [TransCmp cmp] [Nonempty α] {he} :
     t.getV (t.min he) = t.min he := by
   simpa [getV] using getD_min
 
-@[simp]
 theorem min_erase_eq_iff_not_compare_eq_min [TransCmp cmp] {k he} :
     (t.erase k |>.min he) =
         t.min (isEmpty_eq_false_of_isEmpty_erase_eq_false he) ↔
@@ -1748,11 +1741,10 @@ theorem get?_min! [TransCmp cmp] [Inhabited α] (he : t.isEmpty = false) :
     t.get? t.min! = some t.min! :=
   TreeMap.getKey?_minKey! he
 
-@[grind =] theorem get_min! [TransCmp cmp] [Inhabited α] {hc} :
+theorem get_min! [TransCmp cmp] [Inhabited α] {hc} :
     t.get t.min! hc = t.min! :=
   TreeMap.getKey_minKey!
 
-@[simp, grind =]
 theorem get_min!_eq_min [TransCmp cmp] [Inhabited α] {hc} :
     t.get t.min! hc = t.min (isEmpty_eq_false_of_contains hc) :=
   TreeMap.getKey_minKey!_eq_minKey
@@ -1849,7 +1841,7 @@ theorem get?_minD [TransCmp cmp] (he : t.isEmpty = false) {fallback} :
     t.get? (t.minD fallback) = some (t.minD fallback) :=
   TreeMap.getKey?_minKeyD he
 
-@[grind =] theorem get_minD [TransCmp cmp] {fallback hc} :
+theorem get_minD [TransCmp cmp] {fallback hc} :
     t.get (t.minD fallback) hc = t.minD fallback :=
   TreeMap.getKey_minKeyD
 
@@ -1887,10 +1879,12 @@ theorem minV_insert_of_isEmpty [TransCmp cmp] [Nonempty α] {k} (he : t.isEmpty)
     (t.insert k).minV = k := by
   simpa [TreeSet.minV] using minD_insert_of_isEmpty he
 
+@[simp, grind norm]
 theorem min?_eq_some_minV [TransCmp cmp] [Nonempty α] (he : t.isEmpty = false) :
     t.min? = some t.minV := by
   simpa [TreeSet.minV] using min?_eq_some_minD he
 
+@[simp, grind norm]
 theorem min_eq_minV [TransCmp cmp] [Nonempty α] {he : t.isEmpty = false} :
     t.min he = t.minV :=
   DTreeMap.minKey_eq_minKeyV
@@ -1948,11 +1942,10 @@ theorem get?_minV [TransCmp cmp] [Nonempty α] (he : t.isEmpty = false) :
     t.get? t.minV = some t.minV := by
   simpa [TreeSet.minV] using get?_minD he
 
-@[grind =] theorem get_minV [TransCmp cmp] [Nonempty α] {hc} :
+theorem get_minV [TransCmp cmp] [Nonempty α] {hc} :
     t.get t.minV hc = t.minV := by
   simpa [TreeSet.minV] using get_minD
 
-@[simp, grind =]
 theorem get_minV_eq_min [TransCmp cmp] [Nonempty α] {hc} :
     t.get t.minV hc = t.min (isEmpty_eq_false_of_contains hc) := by
   rw [get_minV, min_eq_minV]
@@ -2141,7 +2134,7 @@ theorem max_eq_iff_mem_and_forall [TransCmp cmp] [LawfulEqCmp cmp] {he km} :
     t.max he = km ↔ km ∈ t ∧ ∀ k ∈ t, (cmp k km).isLE :=
   TreeMap.maxKey_eq_iff_mem_and_forall
 
-@[grind =] theorem max_insert [TransCmp cmp] {k} :
+theorem max_insert [TransCmp cmp] {k} :
     (t.insert k).max isEmpty_insert =
       t.max?.elim k fun k' => if cmp k' k = .lt then k else k' :=
   TreeMap.maxKey_insertIfNew
@@ -2155,7 +2148,7 @@ theorem self_le_max_insert [TransCmp cmp] {k} :
     cmp k (t.insert k |>.max <| isEmpty_insert) |>.isLE :=
   TreeMap.self_le_maxKey_insertIfNew
 
-@[grind =] theorem contains_max [TransCmp cmp] {he} :
+theorem contains_max [TransCmp cmp] {he} :
     t.contains (t.max he) :=
   TreeMap.contains_maxKey
 
@@ -2177,32 +2170,26 @@ theorem max_le [TransCmp cmp] {k he} :
     (cmp (t.max he) k).isLE ↔ (∀ k', k' ∈ t → (cmp k' k).isLE) :=
   TreeMap.maxKey_le
 
-@[simp, grind =]
 theorem get?_max [TransCmp cmp] {he} :
     t.get? (t.max he) = some (t.max he) :=
   TreeMap.getKey?_maxKey
 
-@[simp, grind =]
 theorem get_max [TransCmp cmp] {he hc} :
     t.get (t.max he) hc = t.max he :=
   TreeMap.getKey_maxKey
 
-@[simp, grind =]
 theorem get!_max [TransCmp cmp] [Inhabited α] {he} :
     t.get! (t.max he) = t.max he :=
   TreeMap.getKey!_maxKey
 
-@[simp, grind =]
 theorem getD_max [TransCmp cmp] {he fallback} :
     t.getD (t.max he) fallback = t.max he :=
   TreeMap.getKeyD_maxKey
 
-@[simp, grind =]
 theorem getV_max [TransCmp cmp] [Nonempty α] {he} :
     t.getV (t.max he) = t.max he := by
   simpa [getV] using getD_max
 
-@[simp]
 theorem max_erase_eq_iff_not_compare_eq_max [TransCmp cmp] {k he} :
     (t.erase k |>.max he) =
         t.max (isEmpty_eq_false_of_isEmpty_erase_eq_false he) ↔
@@ -2220,12 +2207,10 @@ theorem max_erase_le_max [TransCmp cmp] {k he} :
       (t.max <| isEmpty_eq_false_of_isEmpty_erase_eq_false he) |>.isLE :=
   TreeMap.maxKey_erase_le_maxKey
 
-@[grind =_]
 theorem max_eq_getLast_toList [TransCmp cmp] {he} :
     t.max he = t.toList.getLast (List.isEmpty_eq_false_iff.mp <| isEmpty_toList ▸ he) :=
   TreeMap.maxKey_eq_getLast_keys
 
-@[grind =_]
 theorem max_eq_back_toArray [TransCmp cmp] {he} :
     t.max he = t.toArray.back (Nat.zero_lt_of_ne_zero (by simpa [isEmpty_eq_size_eq_zero] using he)) := by
   exact TreeMap.maxKey_eq_back_keysArray
@@ -2291,11 +2276,10 @@ theorem get?_max! [TransCmp cmp] [Inhabited α] (he : t.isEmpty = false) :
     t.get? t.max! = some t.max! :=
   TreeMap.getKey?_maxKey! he
 
-@[grind =] theorem get_max! [TransCmp cmp] [Inhabited α] {hc} :
+theorem get_max! [TransCmp cmp] [Inhabited α] {hc} :
     t.get t.max! hc = t.max! :=
   TreeMap.getKey_maxKey!
 
-@[simp, grind =]
 theorem get_max!_eq_max [TransCmp cmp] [Inhabited α] {hc} :
     t.get t.max! hc = t.max (isEmpty_eq_false_of_contains hc) :=
   TreeMap.getKey_maxKey!_eq_maxKey
@@ -2394,7 +2378,7 @@ theorem get?_maxD [TransCmp cmp] (he : t.isEmpty = false) {fallback} :
     t.get? (t.maxD fallback) = some (t.maxD fallback) :=
   TreeMap.getKey?_maxKeyD he
 
-@[grind =] theorem get_maxD [TransCmp cmp] {fallback hc} :
+theorem get_maxD [TransCmp cmp] {fallback hc} :
     t.get (t.maxD fallback) hc = t.maxD fallback :=
   TreeMap.getKey_maxKeyD
 
@@ -2428,10 +2412,12 @@ theorem maxD_eq_getD_back?_toArray [TransCmp cmp] {fallback} :
     t.maxD fallback = t.toArray.back?.getD fallback :=
   TreeMap.maxKeyD_eq_getD_back?_keysArray
 
+@[simp, grind norm]
 theorem max?_eq_some_maxV [TransCmp cmp] [Nonempty α] (he : t.isEmpty = false) :
     t.max? = some t.maxV := by
   simpa [TreeSet.maxV] using max?_eq_some_maxD he
 
+@[simp, grind norm]
 theorem max_eq_maxV [TransCmp cmp] [Nonempty α] {he : t.isEmpty = false} :
     t.max he = t.maxV :=
   DTreeMap.maxKey_eq_maxKeyV
@@ -2489,11 +2475,10 @@ theorem get?_maxV [TransCmp cmp] [Nonempty α] (he : t.isEmpty = false) :
     t.get? t.maxV = some t.maxV := by
   simpa [TreeSet.maxV] using get?_maxD he
 
-@[grind =] theorem get_maxV [TransCmp cmp] [Nonempty α] {hc} :
+theorem get_maxV [TransCmp cmp] [Nonempty α] {hc} :
     t.get t.maxV hc = t.maxV := by
   simpa [TreeSet.maxV] using get_maxD
 
-@[simp, grind =]
 theorem get_maxV_eq_max [TransCmp cmp] [Nonempty α] {hc} :
     t.get t.maxV hc = t.max (isEmpty_eq_false_of_contains hc) := by
   rw [get_maxV, max_eq_maxV]
@@ -2855,7 +2840,7 @@ theorem toArray_filter {f : α → Bool} :
     (t.filter f).toArray = t.toArray.filter f :=
   TreeMap.keysArray_filter_key
 
-@[grind =] theorem isEmpty_filter_iff [TransCmp cmp]
+theorem isEmpty_filter_iff [TransCmp cmp]
     {f : α → Bool} :
     (t.filter f).isEmpty ↔ ∀ k h, f (t.get k h) = false :=
   TreeMap.isEmpty_filter_iff
@@ -2867,7 +2852,6 @@ theorem isEmpty_filter_eq_false_iff [TransCmp cmp]
 
 -- TODO: `contains_filter` is missing.
 
-@[simp, grind =]
 theorem mem_filter [TransCmp cmp]
     {f : α → Bool} {k : α} :
     k ∈ t.filter f ↔ ∃ h, f (t.get k h) :=
@@ -2907,7 +2891,6 @@ theorem get?_filter [TransCmp cmp]
     (t.filter f).get? k = (t.get? k).filter f :=
   TreeMap.getKey?_filter_key
 
-@[simp, grind =]
 theorem get_filter [TransCmp cmp]
     {f : α → Bool} {k : α} {h} :
     (t.filter f).get k h = t.get k (mem_of_mem_filter h) :=

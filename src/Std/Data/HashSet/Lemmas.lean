@@ -283,7 +283,7 @@ theorem get?_eq_some_of_contains [LawfulBEq α] {k : α} (h : m.contains k) : m.
 theorem get?_eq_some [LawfulBEq α] {k : α} (h : k ∈ m) : m.get? k = some k :=
   HashMap.getKey?_eq_some h
 
-@[grind =] theorem get_insert [EquivBEq α] [LawfulHashable α] {k a : α} {h₁} :
+theorem get_insert [EquivBEq α] [LawfulHashable α] {k a : α} {h₁} :
     (m.insert k).get a h₁ =
       if h₂ : k == a ∧ ¬k ∈ m then k else m.get a (mem_of_mem_insert' h₁ h₂) :=
   HashMap.getKey_insertIfNew (h₁ := h₁)
@@ -292,7 +292,6 @@ theorem toList_insert_perm [EquivBEq α] [LawfulHashable α] {k : α} :
     (m.insert k).toList.Perm (if k ∈ m then m.toList else k :: m.toList) :=
   HashMap.keys_insertIfNew_perm
 
-@[simp, grind =]
 theorem get_erase [EquivBEq α] [LawfulHashable α] {k a : α} {h'} :
     (m.erase k).get a h' = m.get a (mem_of_mem_erase h') :=
   HashMap.getKey_erase (h' := h')
@@ -305,7 +304,7 @@ theorem get_eq_get_get? [EquivBEq α] [LawfulHashable α] {k : α} {h} :
     m.get k h = (m.get? k).get (mem_iff_isSome_get?.mp h) :=
   HashMap.getKey_eq_get_getKey?
 
-@[grind =] theorem get_get? [EquivBEq α] [LawfulHashable α] {k : α} {h} :
+theorem get_get? [EquivBEq α] [LawfulHashable α] {k : α} {h} :
     (m.get? k).get h = m.get k (mem_iff_isSome_get?.mpr h) :=
   HashMap.get_getKey?
 
@@ -316,7 +315,6 @@ theorem get_congr [EquivBEq α] [LawfulHashable α] {k₁ k₂ : α} (h : k₁ =
     (h₁ : k₁ ∈ m) : m.get k₁ h₁ = m.get k₂ ((mem_congr h).mp h₁) :=
   HashMap.getKey_congr h h₁
 
-@[simp, grind =]
 theorem get_eq [LawfulBEq α] {k : α} (h : k ∈ m) : m.get k h = k :=
   HashMap.getKey_eq h
 
@@ -450,6 +448,7 @@ theorem getV_eq_getD_classicalOfNonempty [EquivBEq α] [LawfulHashable α] [None
   rfl
 
 /-- This is a technical lemma relating `get` and `getV`. -/
+@[simp, grind norm]
 theorem get_eq_getV [EquivBEq α] [LawfulHashable α] [Nonempty α] {a : α} {h} :
     m.get a h = m.getV a :=
   get_eq_getD
@@ -492,6 +491,7 @@ theorem get?_eq_some_getV_of_contains [EquivBEq α] [LawfulHashable α] [Nonempt
     {a : α} : m.contains a = true → m.get? a = some (m.getV a) :=
   get?_eq_some_getD_of_contains
 
+@[simp, grind norm]
 theorem get?_eq_some_getV [EquivBEq α] [LawfulHashable α] [Nonempty α] {a : α} :
     a ∈ m → m.get? a = some (m.getV a) :=
   get?_eq_some_getD
@@ -1123,7 +1123,7 @@ theorem get?_inter_of_not_mem_right [EquivBEq α] [LawfulHashable α]
   @HashMap.getKey?_inter_of_not_mem_right _ _ _ _ m₁.inner m₂.inner _ _ k not_mem
 
 /- get -/
-@[simp] theorem get_inter [EquivBEq α] [LawfulHashable α]
+theorem get_inter [EquivBEq α] [LawfulHashable α]
     {k : α} {h_mem : k ∈ m₁ ∩ m₂} :
     (m₁ ∩ m₂).get k h_mem =
     m₁.get k ((mem_inter_iff.1 h_mem).1) :=
@@ -1300,7 +1300,7 @@ theorem get?_diff_of_mem_right [EquivBEq α] [LawfulHashable α]
   @HashMap.getKey?_diff_of_mem_right _ _ _ _ m₁.inner m₂.inner _ _ k mem
 
 /- get -/
-@[simp] theorem get_diff [EquivBEq α] [LawfulHashable α]
+theorem get_diff [EquivBEq α] [LawfulHashable α]
     {k : α} {h_mem : k ∈ m₁ \ m₂} :
     (m₁ \ m₂).get k h_mem =
     m₁.get k ((mem_diff_iff.1 h_mem).1) :=
@@ -1704,7 +1704,6 @@ theorem get?_filter [EquivBEq α] [LawfulHashable α]
     (m.filter f).get? k = (m.get? k).filter f :=
   HashMap.getKey?_filter_key
 
-@[simp, grind =]
 theorem get_filter [EquivBEq α] [LawfulHashable α]
     {f : α → Bool} {k : α} {h} :
     (m.filter f).get k h = m.get k (mem_of_mem_filter h) :=

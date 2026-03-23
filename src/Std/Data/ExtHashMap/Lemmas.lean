@@ -193,7 +193,7 @@ theorem containsThenInsertIfNew_snd [EquivBEq α] [LawfulHashable α] {k : α} {
     (m.containsThenInsertIfNew k v).2 = m.insertIfNew k v :=
   ext ExtDHashMap.containsThenInsertIfNew_snd
 
-@[simp, grind =] theorem get_eq_getElem [EquivBEq α] [LawfulHashable α] {a : α} {h} : get m a h = m[a]'h := rfl
+theorem get_eq_getElem [EquivBEq α] [LawfulHashable α] {a : α} {h} : get m a h = m[a]'h := rfl
 @[simp, grind =] theorem get?_eq_getElem? [EquivBEq α] [LawfulHashable α] {a : α} : get? m a = m[a]? := rfl
 @[simp, grind =] theorem get!_eq_getElem! [EquivBEq α] [LawfulHashable α] [Inhabited β] {a : α} : get! m a = m[a]! := rfl
 
@@ -251,17 +251,15 @@ theorem getElem?_erase_self [EquivBEq α] [LawfulHashable α] {k : α} : (m.eras
 theorem getElem?_congr [EquivBEq α] [LawfulHashable α] {a b : α} (hab : a == b) : m[a]? = m[b]? :=
   ExtDHashMap.Const.get?_congr hab
 
-@[grind =] theorem getElem_insert [EquivBEq α] [LawfulHashable α] {k a : α} {v : β} {h₁} :
+theorem getElem_insert [EquivBEq α] [LawfulHashable α] {k a : α} {v : β} {h₁} :
     (m.insert k v)[a]'h₁ =
       if h₂ : k == a then v else m[a]'(mem_of_mem_insert h₁ (Bool.eq_false_iff.2 h₂)) :=
   ExtDHashMap.Const.get_insert (h₁ := h₁)
 
-@[simp]
 theorem getElem_insert_self [EquivBEq α] [LawfulHashable α] {k : α} {v : β} :
     (m.insert k v)[k]'mem_insert_self = v :=
   ExtDHashMap.Const.get_insert_self
 
-@[simp, grind =]
 theorem getElem_erase [EquivBEq α] [LawfulHashable α] {k a : α} {h'} :
     (m.erase k)[a]'h' = m[a]'(mem_of_mem_erase h') :=
   ExtDHashMap.Const.get_erase (h' := h')
@@ -274,7 +272,6 @@ theorem getElem_eq_get_getElem? [EquivBEq α] [LawfulHashable α] {a : α} {h} :
     m[a]'h = m[a]?.get (mem_iff_isSome_getElem?.mp h) :=
   ExtDHashMap.Const.get_eq_get_get? (h := h)
 
-@[grind =]
 theorem get_getElem? [EquivBEq α] [LawfulHashable α] {a : α} {h} :
     m[a]?.get h = m[a]'(mem_iff_isSome_getElem?.mpr h) :=
   ExtDHashMap.Const.get_get?
@@ -425,6 +422,7 @@ theorem getElemV_eq_getD_getElem? [EquivBEq α] [LawfulHashable α] [Nonempty β
     m｢a｣ = m[a]?.getD Classical.ofNonempty :=
   ExtDHashMap.Const.getV_eq_getD_get?
 
+@[simp, grind norm]
 theorem getElem_eq_getElemV [EquivBEq α] [LawfulHashable α] [Nonempty β] {a : α} {h'} :
     m[a]'h' = m｢a｣ :=
   @ExtDHashMap.Const.get_eq_getV _ _ _ _ _ _ _ _ _ h'
@@ -506,17 +504,15 @@ theorem getKey?_eq_some_of_contains [LawfulBEq α] {k : α} (h : m.contains k) :
 theorem getKey?_eq_some [LawfulBEq α] {k : α} (h : k ∈ m) : m.getKey? k = some k := by
   simpa only [mem_iff_contains] using getKey?_eq_some_of_contains h
 
-@[grind =] theorem getKey_insert [EquivBEq α] [LawfulHashable α] {k a : α} {v : β} {h₁} :
+theorem getKey_insert [EquivBEq α] [LawfulHashable α] {k a : α} {v : β} {h₁} :
     (m.insert k v).getKey a h₁ =
       if h₂ : k == a then k else m.getKey a ((mem_of_mem_insert h₁ (by simpa using h₂))) :=
   ExtDHashMap.getKey_insert (h₁ := h₁)
 
-@[simp]
 theorem getKey_insert_self [EquivBEq α] [LawfulHashable α] {k : α} {v : β} :
     (m.insert k v).getKey k mem_insert_self = k :=
   ExtDHashMap.getKey_insert_self
 
-@[simp, grind =]
 theorem getKey_erase [EquivBEq α] [LawfulHashable α] {k a : α} {h'} :
     (m.erase k).getKey a h' = m.getKey a (mem_of_mem_erase h') :=
   ExtDHashMap.getKey_erase (h' := h')
@@ -529,7 +525,6 @@ theorem getKey_eq_get_getKey? [EquivBEq α] [LawfulHashable α] {a : α} {h} :
     m.getKey a h = (m.getKey? a).get (mem_iff_isSome_getKey?.mp h) :=
   ExtDHashMap.getKey_eq_get_getKey?
 
-@[simp, grind =]
 theorem get_getKey? [EquivBEq α] [LawfulHashable α] {a : α} {h} :
     (m.getKey? a).get h = m.getKey a (mem_iff_isSome_getKey?.mpr h) :=
   ExtDHashMap.get_getKey?
@@ -541,7 +536,6 @@ theorem getKey_congr [EquivBEq α] [LawfulHashable α] {k₁ k₂ : α} (h : k�
     (h₁ : k₁ ∈ m) : m.getKey k₁ h₁ = m.getKey k₂ ((mem_congr h).mp h₁) :=
   ExtDHashMap.getKey_congr h h₁
 
-@[simp, grind =]
 theorem getKey_eq [LawfulBEq α] {k : α} (h : k ∈ m) : m.getKey k h = k :=
   ExtDHashMap.getKey_eq h
 
@@ -682,6 +676,21 @@ theorem getKey_eq_getKeyD [EquivBEq α] [LawfulHashable α] {a : α} {fallback :
     m.getKey a h' = m.getKeyD a fallback :=
   @ExtDHashMap.getKey_eq_getKeyD _ _ _ _ _ _ _ _ _ h'
 
+theorem getKey?_eq_some_getKeyV_of_contains [EquivBEq α] [LawfulHashable α] [Nonempty α]
+    {a : α} :
+    m.contains a = true → m.getKey? a = some (m.getKeyV a) :=
+  ExtDHashMap.getKey?_eq_some_getKeyV_of_contains
+
+@[simp, grind norm]
+theorem getKey?_eq_some_getKeyV [EquivBEq α] [LawfulHashable α] [Nonempty α] {a : α} :
+    a ∈ m → m.getKey? a = some (m.getKeyV a) :=
+  ExtDHashMap.getKey?_eq_some_getKeyV
+
+@[simp, grind norm]
+theorem getKey_eq_getKeyV [EquivBEq α] [LawfulHashable α] [Nonempty α] {a : α} {h'} :
+    m.getKey a h' = m.getKeyV a :=
+  ExtDHashMap.getKey_eq_getKeyV
+
 theorem getKey!_eq_getKeyD_default [EquivBEq α] [LawfulHashable α] [Inhabited α] {a : α} :
     m.getKey! a = m.getKeyD a default :=
   ExtDHashMap.getKey!_eq_getKeyD_default
@@ -772,7 +781,7 @@ theorem size_insertIfNew_le [EquivBEq α] [LawfulHashable α] {k : α} {v : β} 
     (m.insertIfNew k v)[a]? = if k == a ∧ ¬k ∈ m then some v else m[a]? :=
   ExtDHashMap.Const.get?_insertIfNew
 
-@[grind =] theorem getElem_insertIfNew [EquivBEq α] [LawfulHashable α] {k a : α} {v : β} {h₁} :
+theorem getElem_insertIfNew [EquivBEq α] [LawfulHashable α] {k a : α} {v : β} {h₁} :
     (m.insertIfNew k v)[a]'h₁ =
       if h₂ : k == a ∧ ¬k ∈ m then v else m[a]'(mem_of_mem_insertIfNew' h₁ h₂) :=
   ExtDHashMap.Const.get_insertIfNew (h₁ := h₁)
@@ -794,7 +803,7 @@ theorem size_insertIfNew_le [EquivBEq α] [LawfulHashable α] {k : α} {v : β} 
     getKey? (m.insertIfNew k v) a = if k == a ∧ ¬k ∈ m then some k else getKey? m a :=
   ExtDHashMap.getKey?_insertIfNew
 
-@[grind =] theorem getKey_insertIfNew [EquivBEq α] [LawfulHashable α] {k a : α} {v : β} {h₁} :
+theorem getKey_insertIfNew [EquivBEq α] [LawfulHashable α] {k a : α} {v : β} {h₁} :
     getKey (m.insertIfNew k v) a h₁ =
       if h₂ : k == a ∧ ¬k ∈ m then k else getKey m a (mem_of_mem_insertIfNew' h₁ h₂) :=
   ExtDHashMap.getKey_insertIfNew
@@ -1483,7 +1492,6 @@ theorem getElem?_unitOfList [EquivBEq α] [LawfulHashable α]
     if l.contains k then some () else none :=
   ExtDHashMap.Const.get?_unitOfList
 
-@[simp]
 theorem getElem_unitOfList [EquivBEq α] [LawfulHashable α]
     {l : List α} {k : α} {h} :
     (unitOfList l)[k] = () :=
@@ -1927,7 +1935,6 @@ theorem get?_inter_of_not_mem_right [EquivBEq α] [LawfulHashable α]
   ExtDHashMap.Const.get?_inter_of_not_mem_right not_mem
 
 /- getElem -/
-@[simp]
 theorem getElem_inter [EquivBEq α] [LawfulHashable α]
     {k : α} {h_mem : k ∈ m₁ ∩ m₂} :
     (m₁ ∩ m₂)[k]'h_mem = m₁[k]'(mem_inter_iff.1 h_mem).1 :=
@@ -2048,7 +2055,6 @@ theorem getKey?_inter_of_not_mem_left [EquivBEq α] [LawfulHashable α]
   ExtDHashMap.getKey?_inter_of_not_mem_left not_mem
 
 /- getKey -/
-@[simp]
 theorem getKey_inter [EquivBEq α] [LawfulHashable α]
     {k : α} {h_mem : k ∈ m₁ ∩ m₂} :
     (m₁ ∩ m₂).getKey k h_mem =
@@ -2212,7 +2218,6 @@ theorem get?_diff_of_mem_right [EquivBEq α] [LawfulHashable α]
   ExtDHashMap.Const.get?_diff_of_mem_right mem
 
 /- get -/
-@[simp]
 theorem get_diff [EquivBEq α] [LawfulHashable α]
     {k : α} {h_mem : k ∈ m₁ \ m₂} :
     (m₁ \ m₂).get k h_mem =
@@ -2304,7 +2309,6 @@ theorem getKey?_diff_of_mem_right [EquivBEq α] [LawfulHashable α]
   ExtDHashMap.getKey?_diff_of_mem_right mem
 
 /- getKey -/
-@[simp]
 theorem getKey_diff [EquivBEq α] [LawfulHashable α]
     {k : α} {h_mem : k ∈ m₁ \ m₂} :
     (m₁ \ m₂).getKey k h_mem =
@@ -2494,7 +2498,7 @@ theorem getElem?_alter_self [EquivBEq α] [LawfulHashable α] {k : α} {f : Opti
     (alter m k f)[k]? = f m[k]? :=
   ExtDHashMap.Const.get?_alter_self
 
-@[grind =] theorem getElem_alter [EquivBEq α] [LawfulHashable α] {k k' : α} {f : Option β → Option β}
+theorem getElem_alter [EquivBEq α] [LawfulHashable α] {k k' : α} {f : Option β → Option β}
     {h : k' ∈ alter m k f} :
     (alter m k f)[k'] =
       if heq : k == k' then
@@ -2505,7 +2509,6 @@ theorem getElem?_alter_self [EquivBEq α] [LawfulHashable α] {k : α} {f : Opti
         m[(k')]'h' :=
   ExtDHashMap.Const.get_alter (h := h)
 
-@[simp]
 theorem getElem_alter_self [EquivBEq α] [LawfulHashable α] {k : α} {f : Option β → Option β}
     {h : k ∈ alter m k f} :
     haveI h' : (f m[k]?).isSome := mem_alter_self.mp h
@@ -2577,7 +2580,7 @@ theorem getKey!_alter_self [EquivBEq α] [LawfulHashable α] [Inhabited α] {k :
     (alter m k f).getKey! k = if (f m[k]?).isSome then k else default :=
   ExtDHashMap.Const.getKey!_alter_self
 
-@[grind =] theorem getKey_alter [EquivBEq α] [LawfulHashable α] [Inhabited α] {k k' : α}
+theorem getKey_alter [EquivBEq α] [LawfulHashable α] [Inhabited α] {k k' : α}
     {f : Option β → Option β} {h : k' ∈ alter m k f} :
     (alter m k f).getKey k' h =
       if heq : k == k' then
@@ -2587,7 +2590,6 @@ theorem getKey!_alter_self [EquivBEq α] [LawfulHashable α] [Inhabited α] {k :
         m.getKey k' h' :=
   ExtDHashMap.Const.getKey_alter
 
-@[simp]
 theorem getKey_alter_self [EquivBEq α] [LawfulHashable α] [Inhabited α] {k : α}
     {f : Option β → Option β} {h : k ∈ alter m k f} :
     (alter m k f).getKey k h = k :=
@@ -2659,7 +2661,7 @@ theorem getElem?_modify_self [EquivBEq α] [LawfulHashable α] {k : α} {f : β 
     (modify m k f)[k]? = m[k]?.map f :=
   ExtDHashMap.Const.get?_modify_self
 
-@[grind =] theorem getElem_modify [EquivBEq α] [LawfulHashable α] {k k' : α} {f : β → β}
+theorem getElem_modify [EquivBEq α] [LawfulHashable α] {k k' : α} {f : β → β}
     {h : k' ∈ modify m k f} :
     (modify m k f)[k'] =
       if heq : k == k' then
@@ -2670,7 +2672,6 @@ theorem getElem?_modify_self [EquivBEq α] [LawfulHashable α] {k : α} {f : β 
         m[k'] :=
   ExtDHashMap.Const.get_modify (h := h)
 
-@[simp]
 theorem getElem_modify_self [EquivBEq α] [LawfulHashable α] {k : α} {f : β → β}
     {h : k ∈ modify m k f} :
     haveI h' : k ∈ m := mem_modify.mp h
@@ -2740,7 +2741,7 @@ theorem getKey!_modify_self [EquivBEq α] [LawfulHashable α] [Inhabited α] {k 
     (modify m k f).getKey! k = if k ∈ m then k else default :=
   ExtDHashMap.Const.getKey!_modify_self
 
-@[grind =] theorem getKey_modify [EquivBEq α] [LawfulHashable α] [Inhabited α] {k k' : α} {f : β → β}
+theorem getKey_modify [EquivBEq α] [LawfulHashable α] [Inhabited α] {k k' : α} {f : β → β}
     {h : k' ∈ modify m k f} :
     (modify m k f).getKey k' h =
       if k == k' then
@@ -2750,7 +2751,6 @@ theorem getKey!_modify_self [EquivBEq α] [LawfulHashable α] [Inhabited α] {k 
         m.getKey k' h' :=
   ExtDHashMap.Const.getKey_modify
 
-@[simp]
 theorem getKey_modify_self [EquivBEq α] [LawfulHashable α] [Inhabited α] {k : α} {f : β → β}
     {h : k ∈ modify m k f} : (modify m k f).getKey k h = k :=
   ExtDHashMap.Const.getKey_modify_self
@@ -2872,7 +2872,7 @@ theorem isSome_apply_of_mem_filterMap [EquivBEq α] [LawfulHashable α]
         (m[k]'(mem_of_mem_filterMap h))).isSome :=
   ExtDHashMap.Const.isSome_apply_of_mem_filterMap
 
-@[simp] theorem getElem_filterMap [EquivBEq α] [LawfulHashable α]
+theorem getElem_filterMap [EquivBEq α] [LawfulHashable α]
     {f : α → β → Option γ} {k : α} {h} :
     (m.filterMap f)[k]'h =
       (f (m.getKey k (mem_of_mem_filterMap h))
@@ -2881,7 +2881,6 @@ theorem isSome_apply_of_mem_filterMap [EquivBEq α] [LawfulHashable α]
   ExtDHashMap.Const.get_filterMap (h := h)
 
 /-- Simpler variant of `getElem_filterMap` when `LawfulBEq` is available. -/
-@[grind =]
 theorem getElem_filterMap' [LawfulBEq α]
     {f : α → β → Option γ} {k : α} {h} :
     (m.filterMap f)[k]'h =
@@ -2932,7 +2931,6 @@ theorem getElemV_filterMap_of_getKey?_eq_some [EquivBEq α] [LawfulHashable α] 
       (f x (m[x]'(mem_of_getKey?_eq_some h'))).isSome) :=
   ExtDHashMap.Const.getKey?_filterMap
 
-@[simp, grind =]
 theorem getKey_filterMap [EquivBEq α] [LawfulHashable α]
     {f : α → β → Option γ} {k : α} {h'} :
     (m.filterMap f).getKey k h' = m.getKey k (mem_of_mem_filterMap h') :=
@@ -3024,7 +3022,7 @@ theorem getElem?_filter_of_getKey?_eq_some [EquivBEq α] [LawfulHashable α]
       (m.filter f)[k]? = m[k]?.filter (fun x => f k' x) :=
   ExtDHashMap.Const.get?_filter_of_getKey?_eq_some
 
-@[simp, grind =] theorem getElem_filter [EquivBEq α] [LawfulHashable α]
+theorem getElem_filter [EquivBEq α] [LawfulHashable α]
     {f : α → β → Bool} {k : α} {h'} :
     (m.filter f)[k]'(h') = m[k]'(mem_of_mem_filter h') :=
   ExtDHashMap.Const.get_filter (h' := h')
@@ -3101,7 +3099,6 @@ theorem getKey?_filter_key [EquivBEq α] [LawfulHashable α]
     (m.filter fun k _ => f k).getKey? k = (m.getKey? k).filter f :=
   ExtDHashMap.getKey?_filter_key
 
-@[simp, grind =]
 theorem getKey_filter [EquivBEq α] [LawfulHashable α]
     {f : α → β → Bool} {k : α} {h'} :
     (m.filter f).getKey k h' = m.getKey k (mem_of_mem_filter h') :=
@@ -3215,7 +3212,6 @@ theorem getElem?_map_of_getKey?_eq_some [EquivBEq α] [LawfulHashable α]
     (m.map f)[k]? = m[k]?.map (f k') :=
   ExtDHashMap.Const.get?_map_of_getKey?_eq_some h
 
-@[simp, grind =]
 theorem getElem_map [LawfulBEq α]
     {f : α → β → γ} {k : α} {h'} :
     (m.map f)[k]' h' =
@@ -3223,7 +3219,6 @@ theorem getElem_map [LawfulBEq α]
   ExtDHashMap.Const.get_map (h' := h')
 
 /-- Variant of `getElem_map` that holds with `EquivBEq` (i.e. without `LawfulBEq`). -/
-@[simp (low)]
 theorem getElem_map' [EquivBEq α] [LawfulHashable α]
     {f : α → β → γ} {k : α} {h'} :
     (m.map f)[k]'(h') =
@@ -3292,7 +3287,6 @@ theorem getKey?_map [EquivBEq α] [LawfulHashable α]
     (m.map f).getKey? k = m.getKey? k :=
   ExtDHashMap.getKey?_map
 
-@[simp, grind =]
 theorem getKey_map [EquivBEq α] [LawfulHashable α]
     {f : α → β → γ} {k : α} {h'} :
     (m.map f).getKey k h' = m.getKey k (mem_of_mem_map h') :=

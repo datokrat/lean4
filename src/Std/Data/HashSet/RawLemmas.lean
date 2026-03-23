@@ -295,7 +295,7 @@ theorem get?_eq_some [LawfulBEq α] (h : m.WF) {k : α} (h' : k ∈ m) :
     m.get? k = some k :=
   HashMap.Raw.getKey?_eq_some h.out h'
 
-@[grind =] theorem get_insert [EquivBEq α] [LawfulHashable α] (h : m.WF) {k a : α} {h₁} :
+theorem get_insert [EquivBEq α] [LawfulHashable α] (h : m.WF) {k a : α} {h₁} :
     (m.insert k).get a h₁ =
       if h₂ : k == a ∧ ¬k ∈ m then k else m.get a (mem_of_mem_insert' h h₁ h₂) :=
   HashMap.Raw.getKey_insertIfNew (h₁ := h₁) h.out
@@ -304,7 +304,6 @@ theorem toList_insert_perm [EquivBEq α] [LawfulHashable α] (h : m.WF) {k : α}
     (m.insert k).toList.Perm (if k ∈ m then m.toList else k :: m.toList) :=
   HashMap.Raw.keys_insertIfNew_perm (v := ()) h.out
 
-@[simp, grind =]
 theorem get_erase [EquivBEq α] [LawfulHashable α] (h : m.WF) {k a : α} {h'} :
     (m.erase k).get a h' = m.get a (mem_of_mem_erase h h') :=
   HashMap.Raw.getKey_erase (h' := h') h.out
@@ -317,7 +316,7 @@ theorem get_eq_get_get? [EquivBEq α] [LawfulHashable α] (h : m.WF) {k : α} {h
     m.get k h' = (m.get? k).get ((mem_iff_isSome_get? h).mp h') :=
   HashMap.Raw.getKey_eq_get_getKey? h.out
 
-@[grind =] theorem get_get? [EquivBEq α] [LawfulHashable α] (h : m.WF) {k : α} {h'} :
+theorem get_get? [EquivBEq α] [LawfulHashable α] (h : m.WF) {k : α} {h'} :
     (m.get? k).get h' = m.get k ((mem_iff_isSome_get? h).mpr h') :=
   HashMap.Raw.get_getKey? h.out
 
@@ -335,7 +334,6 @@ theorem get_congr [EquivBEq α] [LawfulHashable α] (h : m.WF) {k₁ k₂ : α}
     m.get k₁ h₁ = m.get k₂ (((mem_congr h h').mp h₁)) :=
   HashMap.Raw.getKey_congr h.out h' h₁
 
-@[simp, grind =]
 theorem get_eq [LawfulBEq α] (h : m.WF) {k : α} (h' : m.contains k) :
     m.get k h' = k :=
   HashMap.Raw.getKey_eq h.out h'
@@ -507,6 +505,7 @@ theorem get?_eq_some_getV_of_contains [EquivBEq α] [LawfulHashable α] [Nonempt
     (h : m.WF) {a : α} : m.contains a = true → m.get? a = some (m.getV a) :=
   by simpa [getV] using get?_eq_some_getD_of_contains h
 
+@[simp, grind norm]
 theorem get?_eq_some_getV [EquivBEq α] [LawfulHashable α] [Nonempty α] (h : m.WF) {a : α} :
     a ∈ m → m.get? a = some (m.getV a) :=
   by simpa [getV] using get?_eq_some_getD h
@@ -515,6 +514,7 @@ theorem getV_eq_getD_get? [EquivBEq α] [LawfulHashable α] [Nonempty α] (h : m
     m.getV a = (m.get? a).getD Classical.ofNonempty :=
   by simpa [getV] using getD_eq_getD_get? h
 
+@[simp, grind norm]
 theorem get_eq_getV [EquivBEq α] [LawfulHashable α] [Nonempty α] (h : m.WF) {a : α} {h'} :
     m.get a h' = m.getV a :=
   by simpa [getV] using get_eq_getD h
@@ -1177,7 +1177,7 @@ theorem get?_inter_of_not_mem_right [EquivBEq α] [LawfulHashable α]
   @HashMap.Raw.getKey?_inter_of_not_mem_right _ _ _ _ m₁.inner m₂.inner _ _ h₁.out h₂.out k not_mem
 
 /- get -/
-@[simp] theorem get_inter [EquivBEq α] [LawfulHashable α] (h₁ : m₁.WF) (h₂ : m₂.WF)
+theorem get_inter [EquivBEq α] [LawfulHashable α] (h₁ : m₁.WF) (h₂ : m₂.WF)
     {k : α} {h_mem : k ∈ m₁ ∩ m₂} :
     (m₁ ∩ m₂).get k h_mem =
     m₁.get k ((mem_inter_iff h₁ h₂).1 h_mem).1 :=
@@ -1380,7 +1380,7 @@ theorem get?_diff_of_mem_right [EquivBEq α] [LawfulHashable α]
   @HashMap.Raw.getKey?_diff_of_mem_right _ _ _ _ m₁.inner m₂.inner _ _ h₁.out h₂.out k mem
 
 /- get -/
-@[simp] theorem get_diff [EquivBEq α] [LawfulHashable α] (h₁ : m₁.WF) (h₂ : m₂.WF)
+theorem get_diff [EquivBEq α] [LawfulHashable α] (h₁ : m₁.WF) (h₂ : m₂.WF)
     {k : α} {h_mem : k ∈ m₁ \ m₂} :
     (m₁ \ m₂).get k h_mem =
     m₁.get k ((mem_diff_iff h₁ h₂).1 h_mem).1 :=
@@ -1786,7 +1786,6 @@ theorem get?_filter [EquivBEq α] [LawfulHashable α]
     (m.filter f).get? k = (m.get? k).filter f :=
   HashMap.Raw.getKey?_filter_key h.out
 
-@[simp, grind =]
 theorem get_filter [EquivBEq α] [LawfulHashable α]
     {f : α → Bool} {k : α} {h'} (h : m.WF) :
     (m.filter f).get k h' = (m.get k (mem_of_mem_filter h h')) :=

@@ -1461,12 +1461,17 @@ theorem mem_setIfInBounds {xs : Vector α n} {a : α} (hi : i < n) :
 
 /-! ### back -/
 
-@[grind =] theorem back_singleton {a : α} : #v[a].back = a := by simp
+theorem back_singleton {a : α} : #v[a].back = a := by simp
 
-@[grind =]
 theorem back_eq_getElem [NeZero n] {xs : Vector α n} : xs.back = xs[n - 1]'(by have := NeZero.ne n; omega) := by
   rcases xs with ⟨xs, rfl⟩
   simp [Array.back_eq_getElem]
+
+@[simp, grind norm]
+theorem back_eq_backV [Nonempty α] [NeZero n] {xs : Vector α n} :
+    xs.back = xs.backV := by
+  rcases xs with ⟨xs, rfl⟩
+  simp [Array.back_eq_backV]
 
 @[grind =] theorem back?_empty : (#v[] : Vector α 0).back? = none := by simp
 
@@ -1474,7 +1479,7 @@ theorem back_eq_getElem [NeZero n] {xs : Vector α n} : xs.back = xs[n - 1]'(by 
   rcases xs with ⟨xs, rfl⟩
   simp [Array.back?_eq_getElem?]
 
-@[simp] theorem back_mem [NeZero n] {xs : Vector α n} : xs.back ∈ xs := by
+theorem back_mem [NeZero n] {xs : Vector α n} : xs.back ∈ xs := by
   cases xs
   simp
 
@@ -2576,14 +2581,14 @@ theorem back?_eq_some_iff {xs : Vector α n} {a : α} :
   rcases xs with ⟨xs, rfl⟩
   simp
 
-@[simp] theorem back_append_of_neZero {xs : Vector α n} {ys : Vector α m} [NeZero m] :
+theorem back_append_of_neZero {xs : Vector α n} {ys : Vector α m} [NeZero m] :
     (xs ++ ys).back = ys.back := by
   rcases xs with ⟨xs, rfl⟩
   rcases ys with ⟨ys, rfl⟩
   simp only [mk_append_mk, back_mk]
   rw [Array.back_append_of_size_pos]
 
-@[grind =] theorem back_append {xs : Vector α n} {ys : Vector α m} [NeZero (n + m)] :
+theorem back_append {xs : Vector α n} {ys : Vector α m} [NeZero (n + m)] :
     (xs ++ ys).back =
       if h' : m = 0 then
         have : NeZero n := by subst h'; simp_all
@@ -2631,7 +2636,7 @@ theorem back?_replicate {a : α} {n : Nat} :
   rw [replicate_eq_mk_replicate]
   simp only [back?_mk, Array.back?_replicate]
 
-@[simp] theorem back_replicate [NeZero n] : (replicate n a).back = a := by
+theorem back_replicate [NeZero n] : (replicate n a).back = a := by
   simp [back_eq_getElem]
 
 /-! ### leftpad and rightpad -/
@@ -2979,7 +2984,7 @@ theorem getElem_push_last {xs : Vector α n} {x : α} : (xs.push x)[n] = x := by
   simp
 
 set_option backward.isDefEq.respectTransparency false in
-@[simp] theorem push_pop_back (xs : Vector α (n + 1)) : xs.pop.push xs.back = xs := by
+theorem push_pop_back (xs : Vector α (n + 1)) : xs.pop.push xs.back = xs := by
   ext i
   by_cases h : i < n
   · simp [h]
