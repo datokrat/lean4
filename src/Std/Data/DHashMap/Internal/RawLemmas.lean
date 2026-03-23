@@ -697,8 +697,10 @@ theorem getV_eq_getD_get? [EquivBEq α] [LawfulHashable α] [Nonempty β] (h : m
     Const.getV m a = (get? m a).getD Classical.ofNonempty := by
   simpa [Const.getV] using getD_eq_getD_get? _ h
 
-theorem get_eq_getV [EquivBEq α] [LawfulHashable α] [Nonempty β] (h : m.1.WF) {a : α}
-    {h' : m.contains a} : get m a h' = Const.getV m a := by
+theorem get_eq_getV [EquivBEq α] [LawfulHashable α] (h : m.1.WF) {a : α}
+    {h' : m.contains a} :
+    haveI : Nonempty β := ⟨get m a h'⟩
+    get m a h' = Const.getV m a := by
   simpa [Const.getV] using get_eq_getD _ h
 
 theorem getV_eq_getD_classicalOfNonempty [EquivBEq α] [LawfulHashable α] [Nonempty β] (h : m.1.WF)
@@ -949,8 +951,9 @@ theorem getKeyV_eq_getD_getKey? [EquivBEq α] [LawfulHashable α] [Nonempty α] 
     m.getKeyV a = (m.getKey? a).getD Classical.ofNonempty := by
   simpa [getKeyV] using getKeyD_eq_getD_getKey? _ h
 
-theorem getKey_eq_getKeyV [EquivBEq α] [LawfulHashable α] [Nonempty α] (h : m.1.WF) {a : α}
+theorem getKey_eq_getKeyV [EquivBEq α] [LawfulHashable α] (h : m.1.WF) {a : α}
     {h'} :
+    haveI : Nonempty α := ⟨m.getKey a h'⟩
     m.getKey a h' = m.getKeyV a := by
   simpa [getKeyV] using getKey_eq_getKeyD _ h
 

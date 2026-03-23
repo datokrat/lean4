@@ -423,7 +423,8 @@ theorem getElemV_eq_getD_getElem? [EquivBEq α] [LawfulHashable α] [Nonempty β
   ExtDHashMap.Const.getV_eq_getD_get?
 
 @[simp, grind norm]
-theorem getElem_eq_getElemV [EquivBEq α] [LawfulHashable α] [Nonempty β] {a : α} {h'} :
+theorem getElem_eq_getElemV [EquivBEq α] [LawfulHashable α] {a : α} {h'} :
+    haveI : Nonempty β := ⟨m[a]'h'⟩
     m[a]'h' = m｢a｣ :=
   @ExtDHashMap.Const.get_eq_getV _ _ _ _ _ _ _ _ _ h'
 
@@ -686,7 +687,8 @@ theorem getKey?_eq_some_getKeyV [EquivBEq α] [LawfulHashable α] [Nonempty α] 
   ExtDHashMap.getKey?_eq_some_getKeyV
 
 @[simp, grind norm]
-theorem getKey_eq_getKeyV [EquivBEq α] [LawfulHashable α] [Nonempty α] {a : α} {h'} :
+theorem getKey_eq_getKeyV [EquivBEq α] [LawfulHashable α] {a : α} {h'} :
+    haveI : Nonempty α := ⟨m.getKey a h'⟩
     m.getKey a h' = m.getKeyV a :=
   ExtDHashMap.getKey_eq_getKeyV
 

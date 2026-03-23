@@ -4453,8 +4453,8 @@ theorem backV_eq_back?_getD [Nonempty α] {xs : Array α} :
   simp [backV_eq_back?_getD]
 
 @[simp, grind norm]
-theorem back_eq_backV [Nonempty α] {xs : Array α} (h : 0 < xs.size) :
-    xs.back h = xs.backV := by
+theorem back_eq_backV {xs : Array α} (h : 0 < xs.size) :
+    haveI : Nonempty α := ⟨xs.back h⟩; xs.back h = xs.backV := by
   rw [backV_eq_back?_getD]
   simp [back, back?, getElem?_pos, Nat.sub_one_lt_of_lt h]
 

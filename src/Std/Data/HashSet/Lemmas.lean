@@ -449,7 +449,8 @@ theorem getV_eq_getD_classicalOfNonempty [EquivBEq α] [LawfulHashable α] [None
 
 /-- This is a technical lemma relating `get` and `getV`. -/
 @[simp, grind norm]
-theorem get_eq_getV [EquivBEq α] [LawfulHashable α] [Nonempty α] {a : α} {h} :
+theorem get_eq_getV [EquivBEq α] [LawfulHashable α] {a : α} {h} :
+    haveI : Nonempty α := ⟨m.get a h⟩
     m.get a h = m.getV a :=
   get_eq_getD
 

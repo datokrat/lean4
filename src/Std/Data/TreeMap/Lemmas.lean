@@ -482,8 +482,9 @@ theorem getElem_eq_getD [TransCmp cmp] {a : α} {fallback : β} {h} :
   DTreeMap.Const.get_eq_getD
 
 @[simp, grind norm]
-theorem getElem_eq_getElemV [TransCmp cmp] [Nonempty β] {a : α} {h} :
+theorem getElem_eq_getElemV [TransCmp cmp] {a : α} {h} :
     t[a]'h = t｢a｣ := by
+  haveI : Nonempty β := ⟨t[a]'h⟩
   simpa [TreeMap.getV] using getElem_eq_getD
 
 theorem getElem!_eq_getD_default [TransCmp cmp] [Inhabited β] {a : α} :
@@ -802,8 +803,9 @@ theorem getKeyV_eq_getKeyD_classicalOfNonempty [TransCmp cmp] [Nonempty α] {a :
   simp [TreeMap.getKeyV]
 
 @[simp, grind norm]
-theorem getKey_eq_getKeyV [TransCmp cmp] [Nonempty α] {a : α} {h} :
+theorem getKey_eq_getKeyV [TransCmp cmp] {a : α} {h} :
     t.getKey a h = t.getKeyV a := by
+  haveI : Nonempty α := ⟨t.getKey a h⟩
   simp [getKeyV]
 
 @[simp, grind =]
@@ -3874,9 +3876,10 @@ theorem minKey?_eq_some_minKeyV [TransCmp cmp] [Nonempty α] (he : t.isEmpty = f
   simpa [TreeMap.minKeyV] using minKey?_eq_some_minKeyD he
 
 @[simp, grind norm]
-theorem minKey_eq_minKeyV [TransCmp cmp] [Nonempty α] {he : t.isEmpty = false} :
-    t.minKey he = t.minKeyV :=
-  DTreeMap.minKey_eq_minKeyV
+theorem minKey_eq_minKeyV [TransCmp cmp] {he : t.isEmpty = false} :
+    t.minKey he = t.minKeyV := by
+  haveI : Nonempty α := ⟨t.minKey he⟩
+  exact DTreeMap.minKey_eq_minKeyV
 
 theorem minKeyV_eq_classicalOfNonempty [TransCmp cmp] [Nonempty α] (he : t.isEmpty) :
     t.minKeyV = Classical.ofNonempty := by
@@ -3997,8 +4000,9 @@ theorem minKeyV_alter_eq_self [TransCmp cmp] [Nonempty α] {k f}
   simpa [TreeMap.minKeyV] using minKeyD_alter_eq_self he
 
 @[simp, grind norm]
-theorem minEntry_eq_minEntryV [TransCmp cmp] [Nonempty (α × β)] {he : t.isEmpty = false} :
+theorem minEntry_eq_minEntryV [TransCmp cmp] {he : t.isEmpty = false} :
     t.minEntry he = t.minEntryV := by
+  haveI : Nonempty (α × β) := ⟨t.minEntry he⟩
   simp [TreeMap.minEntryV]
 
 end Min
@@ -4613,9 +4617,10 @@ theorem maxKey?_eq_some_maxKeyV [TransCmp cmp] [Nonempty α] (he : t.isEmpty = f
   simpa [TreeMap.maxKeyV] using maxKey?_eq_some_maxKeyD he
 
 @[simp, grind norm]
-theorem maxKey_eq_maxKeyV [TransCmp cmp] [Nonempty α] {he : t.isEmpty = false} :
-    t.maxKey he = t.maxKeyV :=
-  DTreeMap.maxKey_eq_maxKeyV
+theorem maxKey_eq_maxKeyV [TransCmp cmp] {he : t.isEmpty = false} :
+    t.maxKey he = t.maxKeyV := by
+  haveI : Nonempty α := ⟨t.maxKey he⟩
+  exact DTreeMap.maxKey_eq_maxKeyV
 
 theorem maxKeyV_eq_classicalOfNonempty [TransCmp cmp] [Nonempty α] (he : t.isEmpty) :
     t.maxKeyV = Classical.ofNonempty := by
@@ -4736,61 +4741,72 @@ theorem maxKeyV_alter_eq_self [TransCmp cmp] [Nonempty α] {k f}
   simpa [TreeMap.maxKeyV] using maxKeyD_alter_eq_self he
 
 @[simp, grind norm]
-theorem maxEntry_eq_maxEntryV [TransCmp cmp] [Nonempty (α × β)] {he : t.isEmpty = false} :
+theorem maxEntry_eq_maxEntryV [TransCmp cmp] {he : t.isEmpty = false} :
     t.maxEntry he = t.maxEntryV := by
+  haveI : Nonempty (α × β) := ⟨t.maxEntry he⟩
   simp [TreeMap.maxEntryV]
 
 end Max
 
 @[simp, grind norm]
-theorem entryAtIdx_eq_entryAtIdxV [TransCmp cmp] [Nonempty (α × β)] {n : Nat}
+theorem entryAtIdx_eq_entryAtIdxV [TransCmp cmp] {n : Nat}
     {h : n < t.size} :
     t.entryAtIdx n h = t.entryAtIdxV n := by
+  haveI : Nonempty (α × β) := ⟨t.entryAtIdx n h⟩
   simp [TreeMap.entryAtIdxV]
 
 @[simp, grind norm]
-theorem keyAtIdx_eq_keyAtIdxV [TransCmp cmp] [Nonempty α] {n : Nat} {h : n < t.size} :
+theorem keyAtIdx_eq_keyAtIdxV [TransCmp cmp] {n : Nat} {h : n < t.size} :
     t.keyAtIdx n h = t.keyAtIdxV n := by
+  haveI : Nonempty α := ⟨t.keyAtIdx n h⟩
   simp [TreeMap.keyAtIdxV]
 
 @[simp, grind norm]
-theorem getEntryGE_eq_getEntryGEV [TransCmp cmp] [Nonempty (α × β)] {k : α} {h} :
+theorem getEntryGE_eq_getEntryGEV [TransCmp cmp] {k : α} {h} :
     t.getEntryGE k h = t.getEntryGEV k := by
+  haveI : Nonempty (α × β) := ⟨t.getEntryGE k h⟩
   simp [TreeMap.getEntryGEV]
 
 @[simp, grind norm]
-theorem getEntryGT_eq_getEntryGTV [TransCmp cmp] [Nonempty (α × β)] {k : α} {h} :
+theorem getEntryGT_eq_getEntryGTV [TransCmp cmp] {k : α} {h} :
     t.getEntryGT k h = t.getEntryGTV k := by
+  haveI : Nonempty (α × β) := ⟨t.getEntryGT k h⟩
   simp [TreeMap.getEntryGTV]
 
 @[simp, grind norm]
-theorem getEntryLE_eq_getEntryLEV [TransCmp cmp] [Nonempty (α × β)] {k : α} {h} :
+theorem getEntryLE_eq_getEntryLEV [TransCmp cmp] {k : α} {h} :
     t.getEntryLE k h = t.getEntryLEV k := by
+  haveI : Nonempty (α × β) := ⟨t.getEntryLE k h⟩
   simp [TreeMap.getEntryLEV]
 
 @[simp, grind norm]
-theorem getEntryLT_eq_getEntryLTV [TransCmp cmp] [Nonempty (α × β)] {k : α} {h} :
+theorem getEntryLT_eq_getEntryLTV [TransCmp cmp] {k : α} {h} :
     t.getEntryLT k h = t.getEntryLTV k := by
+  haveI : Nonempty (α × β) := ⟨t.getEntryLT k h⟩
   simp [TreeMap.getEntryLTV]
 
 @[simp, grind norm]
-theorem getKeyGE_eq_getKeyGEV [TransCmp cmp] [Nonempty α] {k : α} {h} :
+theorem getKeyGE_eq_getKeyGEV [TransCmp cmp] {k : α} {h} :
     t.getKeyGE k h = t.getKeyGEV k := by
+  haveI : Nonempty α := ⟨t.getKeyGE k h⟩
   simp [TreeMap.getKeyGEV]
 
 @[simp, grind norm]
-theorem getKeyGT_eq_getKeyGTV [TransCmp cmp] [Nonempty α] {k : α} {h} :
+theorem getKeyGT_eq_getKeyGTV [TransCmp cmp] {k : α} {h} :
     t.getKeyGT k h = t.getKeyGTV k := by
+  haveI : Nonempty α := ⟨t.getKeyGT k h⟩
   simp [TreeMap.getKeyGTV]
 
 @[simp, grind norm]
-theorem getKeyLE_eq_getKeyLEV [TransCmp cmp] [Nonempty α] {k : α} {h} :
+theorem getKeyLE_eq_getKeyLEV [TransCmp cmp] {k : α} {h} :
     t.getKeyLE k h = t.getKeyLEV k := by
+  haveI : Nonempty α := ⟨t.getKeyLE k h⟩
   simp [TreeMap.getKeyLEV]
 
 @[simp, grind norm]
-theorem getKeyLT_eq_getKeyLTV [TransCmp cmp] [Nonempty α] {k : α} {h} :
+theorem getKeyLT_eq_getKeyLTV [TransCmp cmp] {k : α} {h} :
     t.getKeyLT k h = t.getKeyLTV k := by
+  haveI : Nonempty α := ⟨t.getKeyLT k h⟩
   simp [TreeMap.getKeyLTV]
 
 namespace Equiv

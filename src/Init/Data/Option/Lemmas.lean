@@ -71,7 +71,7 @@ theorem get_eq_get! [Inhabited α] : (o : Option α) → {h : o.isSome} → o.ge
   | some _, _ => rfl
 
 @[simp, grind norm]
-theorem get_eq_getV [Nonempty α] : (o : Option α) → {h : o.isSome} → o.get h = o.getV
+theorem get_eq_getV : (o : Option α) → {h : o.isSome} → haveI : Nonempty α := ⟨o.get h⟩; o.get h = o.getV
   | some _, _ => (rfl)
 
 theorem get_eq_getD {fallback : α} : (o : Option α) → {h : o.isSome} → o.get h = o.getD fallback
@@ -209,7 +209,8 @@ theorem forall_ne_none {p : Option α → Prop} : (∀ x (_ : x ≠ none), p x) 
   ⟨fun h x => h (some x) (some_ne_none x),
     fun h x hx => by
       have := h <| x.get <| ne_none_iff_isSome.1 hx
-      simp [some_get] at this ⊢
+      simp only [ne_none_iff_isSome] at hx
+      simp [some_getV, hx] at this ⊢
       exact this⟩
 
 @[simp] theorem pure_def : pure = @some α := rfl
@@ -635,6 +636,7 @@ theorem get_none_eq_iff_true {h} : (none : Option α).get h = a ↔ True := by
 theorem get_guard : (guard p a).get h = a := by
   simp only [guard]
   split <;> simp
+  rw [Option.get_eq_getV]
 
 @[grind =] theorem getD_guard : (guard p a).getD b = if p a then a else b := by
   simp only [guard]

@@ -696,7 +696,8 @@ theorem get_eq_getD [LawfulBEq α] (h : m.WF) {a : α} {fallback : β a} {h} :
   simp_to_raw using Raw₀.get_eq_getD
 
 @[simp, grind norm]
-theorem get_eq_getV [LawfulBEq α] (h : m.WF) {a : α} [Nonempty (β a)] {h'} :
+theorem get_eq_getV [LawfulBEq α] (h : m.WF) {a : α} {h'} :
+    haveI : Nonempty (β a) := ⟨m.get a h'⟩
     m.get a h' = m.getV a := by
   simpa [Raw.getV] using get_eq_getD h
 
@@ -822,7 +823,8 @@ theorem getV_eq_getD_get? [EquivBEq α] [LawfulHashable α] [Nonempty β] (h : m
   simpa [Const.getV] using getD_eq_getD_get? h
 
 @[simp, grind norm]
-theorem get_eq_getV [EquivBEq α] [LawfulHashable α] [Nonempty β] (h : m.WF) {a : α} {h'} :
+theorem get_eq_getV [EquivBEq α] [LawfulHashable α] (h : m.WF) {a : α} {h'} :
+    haveI : Nonempty β := ⟨get m a h'⟩
     get m a h' = Const.getV m a := by
   simpa [Const.getV] using get_eq_getD h
 
@@ -1173,8 +1175,9 @@ theorem getKeyV_eq_getD_getKey? [EquivBEq α] [LawfulHashable α] [Nonempty α] 
   simpa [Raw.getKeyV] using getKeyD_eq_getD_getKey? h
 
 @[simp, grind norm]
-theorem getKey_eq_getKeyV [EquivBEq α] [LawfulHashable α] [Nonempty α] (h : m.WF)
+theorem getKey_eq_getKeyV [EquivBEq α] [LawfulHashable α] (h : m.WF)
     {a : α} {h'} :
+    haveI : Nonempty α := ⟨m.getKey a h'⟩
     m.getKey a h' = m.getKeyV a := by
   simpa [Raw.getKeyV] using getKey_eq_getKeyD h
 

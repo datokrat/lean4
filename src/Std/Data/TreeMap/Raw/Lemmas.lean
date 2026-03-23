@@ -483,8 +483,9 @@ theorem getElem_eq_getD [TransCmp cmp] (h : t.WF) {a : α} {fallback : β} {h'} 
   DTreeMap.Raw.Const.get_eq_getD h
 
 @[simp, grind norm]
-theorem getElem_eq_getElemV [TransCmp cmp] [Nonempty β] (h : t.WF) {a : α} {h'} :
+theorem getElem_eq_getElemV [TransCmp cmp] (h : t.WF) {a : α} {h'} :
     t[a]'h' = t｢a｣ := by
+  haveI : Nonempty β := ⟨t[a]'h'⟩
   simpa [Raw.getV] using getElem_eq_getD h
 
 theorem getElemV_eq_getD_classicalOfNonempty [TransCmp cmp] [Nonempty β] (h : t.WF) {a : α} :
@@ -777,8 +778,9 @@ theorem getKey_eq_getKeyD [TransCmp cmp] (h : t.WF) {a fallback : α} {h'} :
   DTreeMap.Raw.getKey_eq_getKeyD h
 
 @[simp, grind norm]
-theorem getKey_eq_getKeyV [TransCmp cmp] [Nonempty α] (h : t.WF) {a : α} {h'} :
+theorem getKey_eq_getKeyV [TransCmp cmp] (h : t.WF) {a : α} {h'} :
     t.getKey a h' = t.getKeyV a := by
+  haveI : Nonempty α := ⟨t.getKey a h'⟩
   simpa [Raw.getKeyV] using getKey_eq_getKeyD h
 
 theorem getKey!_eq_getKeyD_default [TransCmp cmp] [Inhabited α] (h : t.WF) {a : α} :
@@ -3955,14 +3957,16 @@ theorem minKeyV_eq_minKeyD_classicalOfNonempty [TransCmp cmp] [Nonempty α] (_h 
   simp [Raw.minKeyV]
 
 @[simp, grind norm]
-theorem minKey_eq_minKeyV [TransCmp cmp] [Nonempty α] (h : t.WF) {he : t.isEmpty = false} :
+theorem minKey_eq_minKeyV [TransCmp cmp] (h : t.WF) {he : t.isEmpty = false} :
     t.minKey he = t.minKeyV := by
+  haveI : Nonempty α := ⟨t.minKey he⟩
   simp [Raw.minKeyV]
 
 @[simp, grind norm]
-theorem minEntry_eq_minEntryV [TransCmp cmp] [Nonempty (α × β)] (h : t.WF)
+theorem minEntry_eq_minEntryV [TransCmp cmp] (h : t.WF)
     {he : t.isEmpty = false} :
     t.minEntry he = t.minEntryV := by
+  haveI : Nonempty (α × β) := ⟨t.minEntry he⟩
   simp [Raw.minEntryV]
 
 end Min
@@ -4572,66 +4576,78 @@ theorem maxKeyV_eq_maxKeyD_classicalOfNonempty [TransCmp cmp] [Nonempty α] (_h 
   simp [Raw.maxKeyV]
 
 @[simp, grind norm]
-theorem maxKey_eq_maxKeyV [TransCmp cmp] [Nonempty α] (h : t.WF) {he : t.isEmpty = false} :
+theorem maxKey_eq_maxKeyV [TransCmp cmp] (h : t.WF) {he : t.isEmpty = false} :
     t.maxKey he = t.maxKeyV := by
+  haveI : Nonempty α := ⟨t.maxKey he⟩
   simp [Raw.maxKeyV]
 
 @[simp, grind norm]
-theorem maxEntry_eq_maxEntryV [TransCmp cmp] [Nonempty (α × β)] (h : t.WF)
+theorem maxEntry_eq_maxEntryV [TransCmp cmp] (h : t.WF)
     {he : t.isEmpty = false} :
     t.maxEntry he = t.maxEntryV := by
+  haveI : Nonempty (α × β) := ⟨t.maxEntry he⟩
   simp [Raw.maxEntryV]
 
 @[simp, grind norm]
-theorem entryAtIdx_eq_entryAtIdxV [TransCmp cmp] [Nonempty (α × β)] (h : t.WF) {n : Nat}
+theorem entryAtIdx_eq_entryAtIdxV [TransCmp cmp] (h : t.WF) {n : Nat}
     {h' : n < t.size} :
     t.entryAtIdx n h' = t.entryAtIdxV n := by
+  haveI : Nonempty (α × β) := ⟨t.entryAtIdx n h'⟩
   simp [Raw.entryAtIdxV]
 
 @[simp, grind norm]
-theorem keyAtIdx_eq_keyAtIdxV [TransCmp cmp] [Nonempty α] (h : t.WF) {n : Nat}
+theorem keyAtIdx_eq_keyAtIdxV [TransCmp cmp] (h : t.WF) {n : Nat}
     {h' : n < t.size} :
     t.keyAtIdx n h' = t.keyAtIdxV n := by
+  haveI : Nonempty α := ⟨t.keyAtIdx n h'⟩
   simp [Raw.keyAtIdxV]
 
 @[simp, grind norm]
-theorem getEntryGE_eq_getEntryGEV [TransCmp cmp] [Nonempty (α × β)] (h : t.WF) {k : α} {h'} :
+theorem getEntryGE_eq_getEntryGEV [TransCmp cmp] (h : t.WF) {k : α} {h'} :
     t.getEntryGE k h' = t.getEntryGEV k := by
+  haveI : Nonempty (α × β) := ⟨t.getEntryGE k h'⟩
   simp [Raw.getEntryGEV]
 
 @[simp, grind norm]
-theorem getEntryGT_eq_getEntryGTV [TransCmp cmp] [Nonempty (α × β)] (h : t.WF) {k : α} {h'} :
+theorem getEntryGT_eq_getEntryGTV [TransCmp cmp] (h : t.WF) {k : α} {h'} :
     t.getEntryGT k h' = t.getEntryGTV k := by
+  haveI : Nonempty (α × β) := ⟨t.getEntryGT k h'⟩
   simp [Raw.getEntryGTV]
 
 @[simp, grind norm]
-theorem getEntryLE_eq_getEntryLEV [TransCmp cmp] [Nonempty (α × β)] (h : t.WF) {k : α} {h'} :
+theorem getEntryLE_eq_getEntryLEV [TransCmp cmp] (h : t.WF) {k : α} {h'} :
     t.getEntryLE k h' = t.getEntryLEV k := by
+  haveI : Nonempty (α × β) := ⟨t.getEntryLE k h'⟩
   simp [Raw.getEntryLEV]
 
 @[simp, grind norm]
-theorem getEntryLT_eq_getEntryLTV [TransCmp cmp] [Nonempty (α × β)] (h : t.WF) {k : α} {h'} :
+theorem getEntryLT_eq_getEntryLTV [TransCmp cmp] (h : t.WF) {k : α} {h'} :
     t.getEntryLT k h' = t.getEntryLTV k := by
+  haveI : Nonempty (α × β) := ⟨t.getEntryLT k h'⟩
   simp [Raw.getEntryLTV]
 
 @[simp, grind norm]
-theorem getKeyGE_eq_getKeyGEV [TransCmp cmp] [Nonempty α] (h : t.WF) {k : α} {h'} :
+theorem getKeyGE_eq_getKeyGEV [TransCmp cmp] (h : t.WF) {k : α} {h'} :
     t.getKeyGE k h' = t.getKeyGEV k := by
+  haveI : Nonempty α := ⟨t.getKeyGE k h'⟩
   simp [Raw.getKeyGEV]
 
 @[simp, grind norm]
-theorem getKeyGT_eq_getKeyGTV [TransCmp cmp] [Nonempty α] (h : t.WF) {k : α} {h'} :
+theorem getKeyGT_eq_getKeyGTV [TransCmp cmp] (h : t.WF) {k : α} {h'} :
     t.getKeyGT k h' = t.getKeyGTV k := by
+  haveI : Nonempty α := ⟨t.getKeyGT k h'⟩
   simp [Raw.getKeyGTV]
 
 @[simp, grind norm]
-theorem getKeyLE_eq_getKeyLEV [TransCmp cmp] [Nonempty α] (h : t.WF) {k : α} {h'} :
+theorem getKeyLE_eq_getKeyLEV [TransCmp cmp] (h : t.WF) {k : α} {h'} :
     t.getKeyLE k h' = t.getKeyLEV k := by
+  haveI : Nonempty α := ⟨t.getKeyLE k h'⟩
   simp [Raw.getKeyLEV]
 
 @[simp, grind norm]
-theorem getKeyLT_eq_getKeyLTV [TransCmp cmp] [Nonempty α] (h : t.WF) {k : α} {h'} :
+theorem getKeyLT_eq_getKeyLTV [TransCmp cmp] (h : t.WF) {k : α} {h'} :
     t.getKeyLT k h' = t.getKeyLTV k := by
+  haveI : Nonempty α := ⟨t.getKeyLT k h'⟩
   simp [Raw.getKeyLTV]
 
 end Max

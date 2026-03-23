@@ -944,8 +944,8 @@ theorem getLastV_eq_getElemV [Nonempty α] {l : List α} : l.getLastV = l｢l.le
   cases l[l.length - 1]? <;> rfl
 
 @[simp, grind norm]
-theorem getLast_eq_getLastV [Nonempty α] {l : List α} (h : l ≠ []) :
-    l.getLast h = l.getLastV := by
+theorem getLast_eq_getLastV {l : List α} (h : l ≠ []) :
+    haveI : Nonempty α := ⟨l.getLast h⟩; l.getLast h = l.getLastV := by
   unfold getLastV
   rw [getLast?_eq_some_getLast h]; rfl
 
@@ -1057,7 +1057,7 @@ theorem headV_eq_getElemV [Nonempty α] {l : List α} : headV l = l｢0｣ := by
   cases l[0]? <;> rfl
 
 @[simp, grind norm]
-theorem head_eq_headV [Nonempty α] {l : List α} (h : l ≠ []) : l.head h = l.headV := by
+theorem head_eq_headV {l : List α} (h : l ≠ []) : haveI : Nonempty α := ⟨l.head h⟩; l.head h = l.headV := by
   cases l with
   | nil => exact absurd rfl h
   | cons _ _ => unfold headV; simp

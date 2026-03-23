@@ -523,8 +523,10 @@ theorem getElemV_eq_getD_getElem? [EquivBEq α] [LawfulHashable α] [Nonempty β
   DHashMap.Raw.Const.getV_eq_getD_get? h.out
 
 @[simp, grind norm]
-theorem getElem_eq_getElemV [EquivBEq α] [LawfulHashable α] [Nonempty β] (h : m.WF) {a : α}
-    {h'} : m[a]'h' = m｢a｣ :=
+theorem getElem_eq_getElemV [EquivBEq α] [LawfulHashable α] (h : m.WF) {a : α}
+    {h'} :
+    haveI : Nonempty β := ⟨m[a]'h'⟩
+    m[a]'h' = m｢a｣ :=
   @DHashMap.Raw.Const.get_eq_getV _ _ _ _ _ _ _ _ h.out _ h'
 
 theorem getElemV_eq_getD_classicalOfNonempty [EquivBEq α] [LawfulHashable α] [Nonempty β]
@@ -830,8 +832,9 @@ theorem getKey?_eq_some_getKeyV [EquivBEq α] [LawfulHashable α] [Nonempty α] 
   simpa [← contains_iff_mem] using getKey?_eq_some_getKeyV_of_contains h
 
 @[simp, grind norm]
-theorem getKey_eq_getKeyV [EquivBEq α] [LawfulHashable α] [Nonempty α] (h : m.WF) {a : α}
+theorem getKey_eq_getKeyV [EquivBEq α] [LawfulHashable α] (h : m.WF) {a : α}
     {h'} :
+    haveI : Nonempty α := ⟨m.getKey a h'⟩
     m.getKey a h' = m.getKeyV a := by
   simpa [Raw.getKeyV] using getKey_eq_getKeyD h
 

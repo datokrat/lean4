@@ -515,7 +515,8 @@ theorem getV_eq_getD_get? [EquivBEq α] [LawfulHashable α] [Nonempty α] (h : m
   by simpa [getV] using getD_eq_getD_get? h
 
 @[simp, grind norm]
-theorem get_eq_getV [EquivBEq α] [LawfulHashable α] [Nonempty α] (h : m.WF) {a : α} {h'} :
+theorem get_eq_getV [EquivBEq α] [LawfulHashable α] (h : m.WF) {a : α} {h'} :
+    haveI : Nonempty α := ⟨m.get a h'⟩
     m.get a h' = m.getV a :=
   by simpa [getV] using get_eq_getD h
 

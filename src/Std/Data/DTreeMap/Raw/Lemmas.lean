@@ -689,9 +689,21 @@ theorem getV_eq_getD_get? [TransCmp cmp] [LawfulEqCmp cmp] (h : t.WF) {a : α} [
   simpa [Raw.getV] using getD_eq_getD_get? h
 
 @[simp, grind norm]
-theorem get_eq_getV [TransCmp cmp] [LawfulEqCmp cmp] (h : t.WF) {a : α} [Nonempty (β a)] {h'} :
+theorem get_eq_getV [TransCmp cmp] [LawfulEqCmp cmp] (h : t.WF) {a : α} {h'} :
+    haveI : Nonempty (β a) := ⟨t.get a h'⟩
     t.get a h' = t.getV a := by
   simpa [Raw.getV] using get_eq_getD h
+
+@[simp, grind norm]
+theorem getEntry_eq_getEntryV [TransCmp cmp] [LawfulEqCmp cmp] (h : t.WF) {a : α} {h'} :
+    haveI : Nonempty ((a : α) × β a) := ⟨t.getEntry a h'⟩
+    t.getEntry a h' = t.getEntryV a := by
+  letI : Ord α := ⟨cmp⟩
+  have : t.inner.getEntry a h' = t.inner.getEntryD a Classical.ofNonempty := by
+    have h1 := Impl.getEntry_eq_getEntry? a t.inner (h := h')
+    rw [Impl.getEntryD_eq_getEntryDₘ, Impl.getEntryDₘ, ← Impl.getEntry?_eq_getEntry?ₘ,
+      ← h1, Option.getD_some]
+  simpa [Raw.getEntryV] using this
 
 namespace Const
 
@@ -804,7 +816,8 @@ theorem getV_eq_getD_get? [TransCmp cmp] [Nonempty β] (h : t.WF) {a : α} :
   simpa [Const.getV] using getD_eq_getD_get? h
 
 @[simp, grind norm]
-theorem get_eq_getV [TransCmp cmp] [Nonempty β] (h : t.WF) {a : α} {h'} :
+theorem get_eq_getV [TransCmp cmp] (h : t.WF) {a : α} {h'} :
+    haveI : Nonempty β := ⟨get t a h'⟩
     get t a h' = getV t a := by
   simpa [Const.getV] using get_eq_getD h
 
@@ -1094,7 +1107,8 @@ theorem getKey_eq_getKeyD [TransCmp cmp] (h : t.WF) {a fallback : α} {h'} :
   Impl.getKey_eq_getKeyD h
 
 @[simp, grind norm]
-theorem getKey_eq_getKeyV [TransCmp cmp] [Nonempty α] (h : t.WF) {a : α} {h'} :
+theorem getKey_eq_getKeyV [TransCmp cmp] (h : t.WF) {a : α} {h'} :
+    haveI : Nonempty α := ⟨t.getKey a h'⟩
     t.getKey a h' = t.getKeyV a := by
   simpa [Raw.getKeyV] using getKey_eq_getKeyD h
 

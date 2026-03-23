@@ -1468,8 +1468,8 @@ theorem back_eq_getElem [NeZero n] {xs : Vector α n} : xs.back = xs[n - 1]'(by 
   simp [Array.back_eq_getElem]
 
 @[simp, grind norm]
-theorem back_eq_backV [Nonempty α] [NeZero n] {xs : Vector α n} :
-    xs.back = xs.backV := by
+theorem back_eq_backV [NeZero n] {xs : Vector α n} :
+    haveI : Nonempty α := ⟨xs.back⟩; xs.back = xs.backV := by
   rcases xs with ⟨xs, rfl⟩
   simp [Array.back_eq_backV]
 

@@ -552,7 +552,8 @@ theorem get_eq_getD [LawfulBEq α] {a : α} {fallback : β a} {h} :
   m.inductionOn (fun _ _ => DHashMap.get_eq_getD) h
 
 @[simp, grind norm]
-theorem get_eq_getV [LawfulBEq α] {a : α} [Nonempty (β a)] {h} :
+theorem get_eq_getV [LawfulBEq α] {a : α} {h} :
+    haveI : Nonempty (β a) := ⟨m.get a h⟩
     m.get a h = m.getV a := by
   simpa [ExtDHashMap.getV] using get_eq_getD
 
@@ -647,7 +648,8 @@ theorem get_eq_getD [EquivBEq α] [LawfulHashable α] {a : α} {fallback : β} {
   m.inductionOn (fun _ _ => DHashMap.Const.get_eq_getD) h
 
 @[simp, grind norm]
-theorem get_eq_getV [EquivBEq α] [LawfulHashable α] [Nonempty β] {a : α} {h} :
+theorem get_eq_getV [EquivBEq α] [LawfulHashable α] {a : α} {h} :
+    haveI : Nonempty β := ⟨get m a h⟩
     get m a h = getV m a := by
   simpa [Const.getV] using get_eq_getD
 
@@ -938,7 +940,8 @@ theorem getKey?_eq_some_getKeyV [EquivBEq α] [LawfulHashable α] [Nonempty α] 
   simpa [← contains_iff_mem] using getKey?_eq_some_getKeyV_of_contains
 
 @[simp, grind norm]
-theorem getKey_eq_getKeyV [EquivBEq α] [LawfulHashable α] [Nonempty α] {a : α} {h} :
+theorem getKey_eq_getKeyV [EquivBEq α] [LawfulHashable α] {a : α} {h} :
+    haveI : Nonempty α := ⟨m.getKey a h⟩
     m.getKey a h = m.getKeyV a := by
   simpa [ExtDHashMap.getKeyV] using getKey_eq_getKeyD
 

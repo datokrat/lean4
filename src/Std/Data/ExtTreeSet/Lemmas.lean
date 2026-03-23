@@ -453,9 +453,10 @@ theorem getV_eq_getD_get? [TransCmp cmp] [Nonempty α] {a : α} :
   by simpa [getV] using getD_eq_getD_get?
 
 @[simp, grind norm]
-theorem get_eq_getV [TransCmp cmp] [Nonempty α] {a : α} {h} :
-    t.get a h = t.getV a :=
-  by simpa [getV] using get_eq_getD
+theorem get_eq_getV [TransCmp cmp] {a : α} {h} :
+    t.get a h = t.getV a := by
+  haveI : Nonempty α := ⟨t.get a h⟩
+  simpa [getV] using get_eq_getD
 
 theorem getV_eq_getD_classicalOfNonempty [TransCmp cmp] [Nonempty α] {a : α} :
     t.getV a = t.getD a Classical.ofNonempty :=
@@ -1723,9 +1724,10 @@ theorem min?_eq_some_minV [TransCmp cmp] [Nonempty α] (he : t ≠ ∅) :
   simpa [ExtTreeSet.minV] using min?_eq_some_minD he
 
 @[simp, grind norm]
-theorem min_eq_minV [TransCmp cmp] [Nonempty α] {he : t ≠ ∅} :
-    t.min he = t.minV :=
-  ExtTreeMap.minKey_eq_minKeyV
+theorem min_eq_minV [TransCmp cmp] {he : t ≠ ∅} :
+    t.min he = t.minV := by
+  haveI : Nonempty α := ⟨t.min he⟩
+  exact ExtTreeMap.minKey_eq_minKeyV
 
 theorem minV_empty [TransCmp cmp] [Nonempty α] :
     (∅ : ExtTreeSet α cmp).minV = Classical.ofNonempty := by
@@ -2225,9 +2227,10 @@ theorem max?_eq_some_maxV [TransCmp cmp] [Nonempty α] (he : t ≠ ∅) :
   simpa [ExtTreeSet.maxV] using max?_eq_some_maxD he
 
 @[simp, grind norm]
-theorem max_eq_maxV [TransCmp cmp] [Nonempty α] {he : t ≠ ∅} :
-    t.max he = t.maxV :=
-  ExtTreeMap.maxKey_eq_maxKeyV
+theorem max_eq_maxV [TransCmp cmp] {he : t ≠ ∅} :
+    t.max he = t.maxV := by
+  haveI : Nonempty α := ⟨t.max he⟩
+  exact ExtTreeMap.maxKey_eq_maxKeyV
 
 theorem maxV_empty [TransCmp cmp] [Nonempty α] :
     (∅ : ExtTreeSet α cmp).maxV = Classical.ofNonempty := by
@@ -2381,5 +2384,35 @@ theorem getV_filter [TransCmp cmp] [Nonempty α]
   getD_filter
 
 end filter
+
+@[simp, grind norm]
+theorem atIdx_eq_atIdxV [TransCmp cmp] {n : Nat} {h : n < t.size} :
+    t.atIdx n h = t.atIdxV n := by
+  haveI : Nonempty α := ⟨t.atIdx n h⟩
+  exact ExtTreeMap.keyAtIdx_eq_keyAtIdxV
+
+@[simp, grind norm]
+theorem getGE_eq_getGEV [TransCmp cmp] {k : α} {h : ∃ a ∈ t, (cmp a k).isGE} :
+    t.getGE k h = t.getGEV k := by
+  haveI : Nonempty α := ⟨t.getGE k h⟩
+  exact ExtTreeMap.getKeyGE_eq_getKeyGEV
+
+@[simp, grind norm]
+theorem getGT_eq_getGTV [TransCmp cmp] {k : α} {h : ∃ a ∈ t, cmp a k = .gt} :
+    t.getGT k h = t.getGTV k := by
+  haveI : Nonempty α := ⟨t.getGT k h⟩
+  exact ExtTreeMap.getKeyGT_eq_getKeyGTV
+
+@[simp, grind norm]
+theorem getLE_eq_getLEV [TransCmp cmp] {k : α} {h : ∃ a ∈ t, (cmp a k).isLE} :
+    t.getLE k h = t.getLEV k := by
+  haveI : Nonempty α := ⟨t.getLE k h⟩
+  exact ExtTreeMap.getKeyLE_eq_getKeyLEV
+
+@[simp, grind norm]
+theorem getLT_eq_getLTV [TransCmp cmp] {k : α} {h : ∃ a ∈ t, cmp a k = .lt} :
+    t.getLT k h = t.getLTV k := by
+  haveI : Nonempty α := ⟨t.getLT k h⟩
+  exact ExtTreeMap.getKeyLT_eq_getKeyLTV
 
 end Std.ExtTreeSet
