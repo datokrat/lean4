@@ -424,7 +424,6 @@ theorem get?_eq_some_getV_of_contains [EquivBEq α] [LawfulHashable α] [Nonempt
     {a : α} : m.contains a = true → m.get? a = some (m.getV a) :=
   by simpa [getV] using get?_eq_some_getD_of_contains
 
-@[simp, grind norm]
 theorem get?_eq_some_getV [EquivBEq α] [LawfulHashable α] [Nonempty α] {a : α} :
     a ∈ m → m.get? a = some (m.getV a) :=
   by simpa [getV] using get?_eq_some_getD

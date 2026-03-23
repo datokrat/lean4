@@ -933,7 +933,6 @@ theorem getKey?_eq_some_getKeyV_of_contains [EquivBEq α] [LawfulHashable α] [N
     m.contains a = true → m.getKey? a = some (m.getKeyV a) := by
   simpa [ExtDHashMap.getKeyV] using getKey?_eq_some_getKeyD_of_contains
 
-@[simp, grind norm]
 theorem getKey?_eq_some_getKeyV [EquivBEq α] [LawfulHashable α] [Nonempty α] {a : α} :
     a ∈ m → m.getKey? a = some (m.getKeyV a) := by
   simpa [← contains_iff_mem] using getKey?_eq_some_getKeyV_of_contains

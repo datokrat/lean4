@@ -1718,7 +1718,6 @@ theorem minV_insert_of_isEmpty [TransCmp cmp] [Nonempty α] {k} (he : t.isEmpty)
     (t.insert k).minV = k := by
   simpa [ExtTreeSet.minV] using minD_insert_of_isEmpty he
 
-@[simp, grind norm]
 theorem min?_eq_some_minV [TransCmp cmp] [Nonempty α] (he : t ≠ ∅) :
     t.min? = some t.minV := by
   simpa [ExtTreeSet.minV] using min?_eq_some_minD he
@@ -2221,7 +2220,6 @@ theorem maxD_eq_getLastD_toList [TransCmp cmp] {fallback} :
     t.maxD fallback = t.toList.getLastD fallback :=
   ExtTreeMap.maxKeyD_eq_getLastD_keys
 
-@[simp, grind norm]
 theorem max?_eq_some_maxV [TransCmp cmp] [Nonempty α] (he : t ≠ ∅) :
     t.max? = some t.maxV := by
   simpa [ExtTreeSet.maxV] using max?_eq_some_maxD he

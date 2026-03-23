@@ -1879,7 +1879,6 @@ theorem minV_insert_of_isEmpty [TransCmp cmp] [Nonempty α] {k} (he : t.isEmpty)
     (t.insert k).minV = k := by
   simpa [TreeSet.minV] using minD_insert_of_isEmpty he
 
-@[simp, grind norm]
 theorem min?_eq_some_minV [TransCmp cmp] [Nonempty α] (he : t.isEmpty = false) :
     t.min? = some t.minV := by
   simpa [TreeSet.minV] using min?_eq_some_minD he
@@ -2412,7 +2411,6 @@ theorem maxD_eq_getD_back?_toArray [TransCmp cmp] {fallback} :
     t.maxD fallback = t.toArray.back?.getD fallback :=
   TreeMap.maxKeyD_eq_getD_back?_keysArray
 
-@[simp, grind norm]
 theorem max?_eq_some_maxV [TransCmp cmp] [Nonempty α] (he : t.isEmpty = false) :
     t.max? = some t.maxV := by
   simpa [TreeSet.maxV] using max?_eq_some_maxD he

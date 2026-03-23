@@ -3869,7 +3869,6 @@ theorem minKeyV_insertIfNew_of_isEmpty [TransCmp cmp] [Nonempty α] {k v} (he : 
     (t.insertIfNew k v).minKeyV = k := by
   simpa [TreeMap.minKeyV] using minKeyD_insertIfNew_of_isEmpty he
 
-@[simp, grind norm]
 theorem minKey?_eq_some_minKeyV [TransCmp cmp] [Nonempty α] (he : t.isEmpty = false) :
     t.minKey? = some t.minKeyV := by
   simpa [TreeMap.minKeyV] using minKey?_eq_some_minKeyD he
@@ -4609,7 +4608,6 @@ theorem maxKeyD_alter_eq_self [TransCmp cmp] {k f}
       (f t[k]?).isSome ∧ ∀ k', k' ∈ t → (cmp k' k).isLE :=
   DTreeMap.Const.maxKeyD_alter_eq_self he
 
-@[simp, grind norm]
 theorem maxKey?_eq_some_maxKeyV [TransCmp cmp] [Nonempty α] (he : t.isEmpty = false) :
     t.maxKey? = some t.maxKeyV := by
   simpa [TreeMap.maxKeyV] using maxKey?_eq_some_maxKeyD he
