@@ -456,7 +456,17 @@ theorem getElemV_mem {l : List α} {n} (h : n < l.length) : l｢n｣ ∈ l :=
   | _ :: _, 0 => .head ..
   | _ :: l, _+1 => .tail _ (getElemV_mem (l := l) (by simpa [Nat.add_one_lt_add_one_iff] using h) ..)
 
-grind_pattern getElem_mem => l[n]'h ∈ l
+grind_pattern getElemV_mem => l｢n｣ ∈ l
+
+@[simp] theorem getElemV_cons_zero {l : List α} :
+    haveI : Nonempty α := ⟨a⟩
+    (a::l)｢0｣ = a :=
+  rfl
+
+@[simp] theorem getElemV_cons_succ {l : List α} :
+    haveI : Nonempty α := ⟨a⟩
+    (a::l)｢i+1｣ = l｢i｣ :=
+  rfl
 
 end List
 
@@ -493,7 +503,7 @@ instance : LawfulGetElemV (Array α) Nat α fun xs i => i < xs.size where
 @[simp] theorem get!Internal_eq_getElem! [Inhabited α] (a : Array α) (i : Nat) :
     a.get!Internal i = a[i]! := by
   simp only [get!Internal, getD, getInternal_eq_getElem, getElem!_def]
-  split <;> simp_all [getElem?_pos, getElem?_neg]
+  split <;> simp_all [getElem?_neg]
 
 end Array
 

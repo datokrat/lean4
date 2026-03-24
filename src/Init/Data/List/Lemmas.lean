@@ -229,16 +229,6 @@ theorem getElem?_cons_zero {l : List α} : (a::l)[0]? = some a := rfl
 
 @[simp] theorem getElem?_cons_succ {l : List α} : (a::l)[i+1]? = l[i]? := rfl
 
-@[simp] theorem getElemV_cons_zero {l : List α} :
-    haveI : Nonempty α := ⟨a⟩
-    (a::l)｢0｣ = a :=
-  rfl
-
-@[simp] theorem getElemV_cons_succ {l : List α} :
-    haveI : Nonempty α := ⟨a⟩
-    (a::l)｢i+1｣ = l｢i｣ :=
-  rfl
-
 @[grind =]
 theorem getElemV_cons {l : List α} (w : i < (a :: l).length) :
     haveI : Nonempty α := ⟨(a :: l)[i]⟩
@@ -323,6 +313,12 @@ such a rewrite, with `rw [getElem_of_eq h]`.
 -/
 theorem getElem_of_eq {l l' : List α} (h : l = l') {i : Nat} (w : i < l.length) :
     l[i] = l'[i]'(h ▸ w) := by cases h; rfl
+
+/-
+=== CURRENT STATE: ===
+
+* Working on `OfFn.lean`, but now I need to add some lemmas in `List.Lemmas.lean`.
+-/
 
 theorem getElem_zero {l : List α} (h : 0 < l.length) : l[0] = l.head (length_pos_iff.mp h) :=
   match l, h with
