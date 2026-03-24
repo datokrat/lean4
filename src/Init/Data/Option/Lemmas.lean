@@ -635,8 +635,10 @@ theorem get_none_eq_iff_true {h} : (none : Option α).get h = a ↔ True := by
 
 theorem get_guard : (guard p a).get h = a := by
   simp only [guard]
-  split <;> simp
-  rw [Option.get_eq_getV]
+  split
+  · simp
+  · rename_i h'
+    exact h'.elim (by simpa using h)
 
 @[grind =] theorem getD_guard : (guard p a).getD b = if p a then a else b := by
   simp only [guard]
@@ -749,7 +751,9 @@ theorem isNone_merge {o o' : Option α} {f : α → α → α} :
 
 theorem get_merge {o o' : Option α} {f : α → α → α} {i : α} [Std.LawfulIdentity f i] {h} :
     (o.merge f o').get h = f (o.getD i) (o'.getD i) := by
-  cases o <;> cases o' <;> simp [Std.LawfulLeftIdentity.left_id, Std.LawfulRightIdentity.right_id]
+  cases o <;> cases o'
+  · simp at h
+  all_goals simp [Std.LawfulLeftIdentity.left_id, Std.LawfulRightIdentity.right_id]
 
 @[simp, grind =] theorem elim_none (x : β) (f : α → β) : Option.elim none x f = x := rfl
 
@@ -1096,7 +1100,7 @@ theorem get_dite {p : Prop} {_ : Decidable p} (b : p → β) (w) :
 
 theorem get_ite {p : Prop} {_ : Decidable p} (h) :
     (if p then some b else none).get h = b := by
-  simpa using get_dite (p := p) (fun _ => b) (by simpa using h)
+  simp only [ite_eq_dite, get_dite]
 
 theorem get_dite' {p : Prop} {_ : Decidable p} (b : ¬ p → β) (w) :
     (if h : p then none else some (b h)).get w = b (by simpa using w) := by
@@ -1108,7 +1112,7 @@ theorem get_dite' {p : Prop} {_ : Decidable p} (b : ¬ p → β) (w) :
 
 theorem get_ite' {p : Prop} {_ : Decidable p} (h) :
     (if p then none else some b).get h = b := by
-  simpa using get_dite' (p := p) (fun _ => b) (by simpa using h)
+  simp only [ite_eq_dite, get_dite']
 
 end ite
 
@@ -1171,14 +1175,16 @@ theorem isSome_of_isSome_pbind {o : Option α} {f : (a : α) → o = some a → 
   cases o <;> simp
 
 theorem isSome_get_of_isSome_pbind {o : Option α} {f : (a : α) → o = some a → Option β}
-    (h : (o.pbind f).isSome) : (f (o.get (isSome_of_isSome_pbind h)) (by simp)).isSome := by
+    (h : (o.pbind f).isSome) : (f (o.get (isSome_of_isSome_pbind h)) (some_get _ |>.symm)).isSome := by
   cases o with
   | none => simp at h
   | some a => simp [← h]
 
 theorem get_pbind {o : Option α} {f : (a : α) → o = some a → Option β} {h} :
-    (o.pbind f).get h = (f (o.get (isSome_of_isSome_pbind h)) (by simp)).get (isSome_get_of_isSome_pbind h) := by
-  cases o <;> simp
+    (o.pbind f).get h = (f (o.get (isSome_of_isSome_pbind h)) (some_get _ |>.symm)).get (isSome_get_of_isSome_pbind h) := by
+  cases o
+  · simp at h
+  · simp
 
 /-! ### pmap -/
 
@@ -1268,8 +1274,10 @@ theorem pmap_guard {q : α → Bool} {p : α → Prop} (f : (x : α) → p x →
 
 theorem get_pmap {p : α → Bool} {f : (x : α) → p x → β} {o : Option α}
     {h : ∀ a, o = some a → p a} {h'} :
-    (o.pmap f h).get h' = f (o.get (by simpa using h')) (h _ (by simp)) := by
-  cases o <;> simp
+    (o.pmap f h).get h' = f (o.get (by simpa using h')) (h _ (some_get _ |>.symm)) := by
+  cases o
+  · simp at h'
+  · simp
 
 /-! ### pelim -/
 
@@ -1361,7 +1369,10 @@ theorem isNone_pfilter_iff {o : Option α} {p : (a : α) → o = some a → Bool
 theorem get_pfilter {α : Type _} {o : Option α} {p : (a : α) → o = some a → Bool}
     (h : (o.pfilter p).isSome) :
     (o.pfilter p).get h = o.get (isSome_of_isSome_pfilter h) := by
-  cases o <;> simp
+  cases o
+  · simp
+  · simp at h
+    simp [h]
 
 theorem pfilter_eq_none_iff {α : Type _} {o : Option α} {p : (a : α) → o = some a → Bool} :
     o.pfilter p = none ↔ o = none ∨ ∃ (a : α) (ha : o = some a), p a ha = false := by
@@ -1861,7 +1872,11 @@ theorem isSome_right_of_isSome_min [Min α] {o o' : Option α} : (min o o').isSo
 
 theorem get_min [Min α] {o o' : Option α} {h} :
     (min o o').get h = min (o.get (isSome_left_of_isSome_min h)) (o'.get (isSome_right_of_isSome_min h)) := by
-  cases o <;> cases o' <;> simp
+  cases o <;> cases o'
+  · simp at h
+  · simp at h
+  · simp at h
+  · simp
 
 theorem map_max [Max α] [Max β] {o o' : Option α} {f : α → β} (hf : ∀ x y, f (max x y) = max (f x) (f y)) :
     (max o o').map f = max (o.map f) (o'.map f) := by
