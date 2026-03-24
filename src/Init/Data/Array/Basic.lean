@@ -134,15 +134,19 @@ theorem toList_toArray {as : List α} : as.toArray.toList = as := rfl
 
 @[simp, grind =] theorem size_toArray {as : List α} : as.toArray.size = as.length := by simp [Array.size]
 
-@[simp, grind =] theorem getElem_toArray {xs : List α} {i : Nat} (h : i < xs.toArray.size) :
+theorem getElem_toArray {xs : List α} {i : Nat} (h : i < xs.toArray.size) :
     xs.toArray[i] = xs[i]'(by simpa using h) := rfl
 
 @[simp, grind =] theorem getElem?_toArray {xs : List α} {i : Nat} : xs.toArray[i]? = xs[i]? := by
-  simp [getElem?_def]
+  simp only [getElem?_def, getElem_toArray, size_toArray]
 
 @[simp, grind =] theorem getElem!_toArray [Inhabited α] {xs : List α} {i : Nat} :
     xs.toArray[i]! = xs[i]! := by
   simp [getElem!_def]
+
+@[simp, grind =] theorem getElemV_toArray [Nonempty α] {xs : List α} {i : Nat} :
+    xs.toArray｢i｣ = xs｢i｣ := by
+  simp [getElemV_def, getElem?_toArray]
 
 end List
 

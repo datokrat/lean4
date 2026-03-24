@@ -88,6 +88,13 @@ theorem get!_eq_getD [Inhabited α] (o : Option α) : o.get! = o.getD default :=
 theorem getV_eq_getD [Nonempty α] (o : Option α) :
     o.getV = o.getD Classical.ofNonempty := (rfl)
 
+@[simp, grind =]
+theorem getV_getElem? [Nonempty elem] [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom] [GetElemV cont idx elem] [LawfulGetElemV cont idx elem dom]
+    {c : cont} {i : idx} :
+    c[i]?.getV = c｢i｣ := by
+  simp [getElemV_def]
+  split <;> simp [*]
+
 theorem get_congr {o o' : Option α} {ho : o.isSome} (h : o = o') :
     o.get ho = o'.get (h ▸ ho) := by
   cases h; rfl
