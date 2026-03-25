@@ -14,7 +14,7 @@ This plan addresses the cleanup.
 - **~125-130 new V lemmas** to create (Step 1: ~99-104, Step 2: ~26)
 - **~35 annotation additions** to existing V lemmas (Step 1: 3, Step 2: ~32)
 - **~60 annotation removals** from proof-taking lemmas still annotated (Step 3)
-- **~127 additional V lemmas** missed by Steps 1-2 (Step 3a: 121 Init, Step 3b: 6 Std)
+- **~131 additional V lemmas** missed by Steps 1-2 (Step 3a: 125 Init, Step 3b: 6 Std)
 - **~74 annotation removals** from proof-taking lemmas covered by Steps 3a/3b (Step 3c)
 - **~38+ build errors** to fix (Step 4, many will self-resolve)
 
@@ -55,22 +55,22 @@ A comprehensive audit revealed ~200 additional proof-taking lemmas in Init that 
 counterparts. Steps 1-2 focused on core value-describing lemmas but missed utility lemmas
 (sizeOf, attach, pmap, erase, insertIdx, etc.) and entire file areas (BitVec, ByteArray,
 String, Polymorphic Range). This step fills those gaps.
-- Array: ~30 remaining (Attach, Count, Erase, Extract, Find, InsertIdx, Mem, remaining Lemmas)
-- List: ~35 remaining (Attach, Count, Find, MapIdx, Nat/Pairwise, Nat/Sublist, Nat/TakeDrop, TakeDrop, remaining Lemmas)
-- Vector: ~35 remaining (Algebra, Attach, Count, Erase, Extract, Find, InsertIdx, remaining Lemmas)
-- BitVec: ~35 (Lemmas, Bitblast, Bootstrap)
-- ByteArray + String: ~10
-- Polymorphic Range: ~30 (Lemmas, IntLemmas, NatLemmas)
-- GetElem.lean: ~4
+- GetElem.lean: 1
+- Array: 20 (Attach, Erase, InsertIdx, Mem, Zip, remaining Lemmas)
+- List: 12 (Attach, Nat/Erase, Nat/InsertIdx, Nat/Basic, Nat/TakeDrop)
+- Vector: 23 (Algebra, Attach, Erase, Extract, Find, InsertIdx, Zip, remaining Lemmas, OfFn)
+- BitVec: 31 + GetElemV instance prerequisite (Lemmas, Bitblast, Bootstrap, Basic)
+- ByteArray + String: 0 (blocked on missing GetElemV instances)
+- Polymorphic Range: 38 (Lemmas, IntLemmas, NatLemmas)
 
 ### Step 3b: Std remaining V lemma parity (`plan-step-3b/PLAN.md`)
 The same audit revealed ~40 additional proof-taking lemmas in Std that lack V variant
 counterparts, primarily `getElem_insert`, `getElem_erase`, `getElem_eq_getD`, and
 `getElem_diff`/`inter`/`union` across all collection types.
-- TreeMap (bundled + Raw): ~12
-- HashMap (bundled + Raw): ~25
-- ExtHashMap + ExtTreeMap: ~10
-- DTreeMap + HashSet: ~5
+- TreeMap (bundled + Raw): 4
+- HashMap (bundled + Raw): 0 (all false positives)
+- ExtHashMap + ExtTreeMap: 0 (all false positives)
+- DTreeMap + HashSet: 2
 
 ### Step 3c: Annotation cleanup for Steps 3a/3b (`plan-step-3c/PLAN.md`)
 Remove `@[simp]`/`@[grind]` from proof-taking variant lemmas whose V counterparts are
@@ -80,11 +80,21 @@ removals needed for the additional ~127 V lemmas from Steps 3a/3b.
 - Array: 11, List: 6, Vector: 16, BitVec: 20, Range: 20
 - Must execute AFTER Steps 3a/3b complete
 
+### Step 3d: Std Nonempty instance style cleanup
+Convert existing Std V lemmas from `[Nonempty β]` (typeclass brackets) to `haveI`/`{_ : Nonempty β}`
+(implicit braces) for consistency with Init conventions and better `rw`/`simp` unification.
+- Use `haveI : Nonempty β := ⟨v⟩` where a witness like `{v : β}` is in scope (e.g., `getElemV_insert`)
+- Use `{_ : Nonempty β}` where no witness is available
+- Affects: HashMap, ExtHashMap, TreeMap, ExtTreeMap, TreeSet, DHashMap, DTreeMap, HashSet
+- New lemmas from Step 3b should use the corrected `haveI`/`{_:}` style from the start
+- This step cleans up only the *existing* Std V lemmas written in Steps 1-2
+
 ### Step 4: Fix build errors (`plan-step-04/PLAN.md`)
 Fix remaining build errors after steps 1-3.
 - Known: ~38 errors across 6 Init files
 - Many will self-resolve from Steps 1-3 (especially Scan, OfFn)
 - Expect cascading errors as fixes propagate
+- Also adds BitVec `GetElemV` instance prerequisite for Step 3a.5
 
 ### Step 5: Verification (`plan-step-05/PLAN.md`)
 - Clean build, full test suite, spot-checks, annotation audit
