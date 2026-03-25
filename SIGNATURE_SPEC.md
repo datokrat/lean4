@@ -9,3 +9,4 @@ The signature of a V lemma should be very consistent with the corresponding proo
 * You can test whether a statement even type-checks by using the lean-lsp-mcp to run Lean code.
 * When the LHS is, say, `xs.headV`, and there's a `[Nonempty \a]` instance parameter, use `{_ : Nonempty \a}` instead: These lemmas are used by `rw` and `simp`, which will infer the instance by unification with `headV` in this case.
 * `omega` does not work in all files, especially not in the more basif files.
+* Use proof non-simp-normal-form parameters such as `i < (l.map f).length` only if you expect them to be inferred by unification of the LHS. Otherwise, use the simp normal form `i < l.length`.
