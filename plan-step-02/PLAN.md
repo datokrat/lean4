@@ -33,6 +33,8 @@ Already complete:
 Other TreeMap operations (`minEntryV/maxEntryV`, `entryAtIdxV/keyAtIdxV`, range queries):
 at parity — non-V also has only bridge + congruence lemmas.
 
+**Detailed sub-plan**: [step-02/PLAN.md](step-02/PLAN.md)
+
 ## 2.3 `src/Std/Data/DTreeMap/Lemmas.lean` — `maxKeyV` (7 create)
 
 | V lemma | Proof-taking counterpart | Annotation | Action |
@@ -45,6 +47,8 @@ at parity — non-V also has only bridge + congruence lemmas.
 | `maxKeyV_eq_back_keysArray` | `maxKey_eq_back_keysArray` (line 5961) | none | create |
 | `maxKeyV_modify` | `maxKey_modify` (line 5978) | none | create |
 
+**Detailed sub-plan**: [step-03/PLAN.md](step-03/PLAN.md)
+
 ## 2.4 `src/Std/Data/DTreeMap/Raw/Lemmas.lean` (3 annotate)
 
 | V lemma | Proof-taking counterpart | Annotation | Action |
@@ -52,6 +56,8 @@ at parity — non-V also has only bridge + congruence lemmas.
 | `getKeyV_insert` | `getKeyD_insert` (has @[grind =]) | `@[grind =]` | annotate |
 | `getKeyV_erase` | `getKeyD_erase` (has @[grind =]) | `@[grind =]` | annotate |
 | `getKeyV_insertIfNew` | `getKeyD_insertIfNew` (has @[grind =]) | `@[grind =]` | annotate |
+
+**Detailed sub-plan**: [step-04/PLAN.md](step-04/PLAN.md)
 
 ## 2.5 `src/Std/Data/HashMap/Lemmas.lean` (2 create + 3 annotate)
 
@@ -63,6 +69,8 @@ at parity — non-V also has only bridge + congruence lemmas.
 | `getKeyV_inter` | `getKey_inter` | `@[simp]` | annotate |
 | `getKeyV_diff` | `getKey_diff` | `@[simp]` | annotate |
 
+**Detailed sub-plan**: [step-05/PLAN.md](step-05/PLAN.md)
+
 ## 2.6 `src/Std/Data/HashMap/RawLemmas.lean` (2 create + 2 annotate)
 
 | V lemma | Proof-taking counterpart | Annotation | Action |
@@ -72,7 +80,9 @@ at parity — non-V also has only bridge + congruence lemmas.
 | `getKeyV_inter` | `getKey_inter` | `@[simp]` | annotate |
 | `getKeyV_diff` | `getKey_diff` | `@[simp]` | annotate |
 
-## 2.7 `src/Std/Data/DHashMap/Lemmas.lean` (2 create + 3 annotate)
+**Detailed sub-plan**: [step-06/PLAN.md](step-06/PLAN.md)
+
+## 2.7 `src/Std/Data/DHashMap/Lemmas.lean` (4 create + 3 annotate)
 
 | V lemma | Proof-taking counterpart | Annotation | Action |
 |---------|-------------------------|------------|--------|
@@ -82,10 +92,14 @@ at parity — non-V also has only bridge + congruence lemmas.
 | `getKeyV_inter` | `getKey_inter` | `@[simp]` | annotate |
 | `getKeyV_diff` | `getKey_diff` | `@[simp]` | annotate |
 
-## 2.8 `src/Std/Data/DHashMap/RawLemmas.lean` — same pattern as 2.7
+**Detailed sub-plan**: [step-07/PLAN.md](step-07/PLAN.md)
+
+## 2.8 `src/Std/Data/DHashMap/RawLemmas.lean` (4 create + 3 annotate) — same pattern as 2.7
 
 `getEntryV`: defined but zero public `getEntry` lemmas exist in DHashMap, so parity
 holds trivially.
+
+**Detailed sub-plan**: [step-08/PLAN.md](step-08/PLAN.md)
 
 ## 2.9 Ext types — annotation additions only
 
@@ -129,6 +143,8 @@ holds trivially.
 
 ExtTreeSet, ExtHashSet: already complete — no changes needed.
 
+**Detailed sub-plan**: [step-09/PLAN.md](step-09/PLAN.md)
+
 ## Summary
 
 | File | Creates | Annotates | Total |
@@ -138,10 +154,10 @@ ExtTreeSet, ExtHashSet: already complete — no changes needed.
 | DTreeMap/Raw/Lemmas.lean | 0 | 3 | 3 |
 | HashMap/Lemmas.lean | 2 | 3 | 5 |
 | HashMap/RawLemmas.lean | 2 | 2 | 4 |
-| DHashMap/Lemmas.lean | 2 | 3 | 5 |
-| DHashMap/RawLemmas.lean | 2 | 3 | 5 |
+| DHashMap/Lemmas.lean | 4 (2 dep + 2 Const) | 3 | 7 |
+| DHashMap/RawLemmas.lean | 4 (2 dep + 2 Const) | 3 | 7 |
 | ExtTreeMap/Lemmas.lean | 0 | 3 | 3 |
 | ExtHashMap/Lemmas.lean | 0 | 9 | 9 |
 | ExtDHashMap/Lemmas.lean | 0 | 3 | 3 |
 | ExtDTreeMap/Lemmas.lean | 0 | 3 | 3 |
-| **Total** | **~22** | **~32** | **~54** |
+| **Total** | **~26** | **~32** | **~58** |

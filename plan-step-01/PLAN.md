@@ -13,6 +13,8 @@ All tables use a unified format:
 
 ## 1.1 `src/Init/Data/Array/Lemmas.lean`
 
+**Detailed sub-plan**: [step-01/PLAN.md](step-01/PLAN.md)
+
 ### `backV` (12 lemmas: 11 create + 1 in MapIdx)
 
 | V lemma | Proof-taking counterpart | Annotation | Action |
@@ -35,7 +37,7 @@ All tables use a unified format:
 |---------|-------------------------|------------|--------|
 | `backV_mapIdx` | `back_mapIdx` | `@[simp, grind =]` | create |
 
-### `getElemV` (20 lemmas)
+### `getElemV` (21 lemmas)
 
 | V lemma | Proof-taking counterpart | Annotation | Action |
 |---------|-------------------------|------------|--------|
@@ -53,6 +55,7 @@ All tables use a unified format:
 | `getElemV_append_left` | `getElem_append_left` (line 1825) | `@[simp]` | create |
 | `getElemV_append_right` | `getElem_append_right` (line 1833) | `@[simp]` | create |
 | `getElemV_modify` | `getElem_modify` (line 3987) | `@[grind =]` | create |
+| `getElemV_swap` | `getElem_swap` (line 4019) | `@[grind =]` | create |
 | `getElemV_swap_right` | `getElem_swap_right` (line 4024) | `@[simp]` | create |
 | `getElemV_swap_left` | `getElem_swap_left` (line 4028) | `@[simp]` | create |
 | `getElemV_swap_of_ne` | `getElem_swap_of_ne` (line 4032) | `@[simp]` | create |
@@ -110,9 +113,11 @@ separate `@[simp]` lemmas.
 | `getElemV_swap_of_ne` | `getElem_swap_of_ne` (line 3034) | `@[simp]` | create |
 | `getElemV_drop` | `getElem_drop` (line 3065) | `@[grind =]` | create |
 
+**Detailed sub-plan**: [step-02/PLAN.md](step-02/PLAN.md)
+
 ## 1.3 `src/Init/Data/List/Lemmas.lean`
 
-### `headV` (4 create + 5 annotate)
+### `headV` (4 create + 1 annotate)
 
 | V lemma | Proof-taking counterpart | Annotation | Action |
 |---------|-------------------------|------------|--------|
@@ -121,24 +126,19 @@ separate `@[simp]` lemmas.
 | `headV_tail` | `head_tail` | `@[simp]` | create |
 | `cons_headV_tail` | `cons_head_tail` | `@[simp, grind =]` | create |
 | `headV_mem` | `head_mem` | `@[simp]` | annotate |
-| `headV_append_of_ne_nil` | `head_append_of_ne_nil` | `@[simp, grind =]` | annotate |
-| `headV_append` | `head_append` | `@[grind =]` | annotate |
-| `headV_replicate` | `head_replicate` | `@[simp]` | annotate |
-| `headV_reverse` | `head_reverse` | `@[simp, grind =]` | annotate |
 
-### `getLastV` (2 create + 7 annotate)
+Already annotated (verify only): `headV_append_of_ne_nil`, `headV_append`, `headV_replicate`, `headV_reverse`.
+
+### `getLastV` (2 create + 2 annotate)
 
 | V lemma | Proof-taking counterpart | Annotation | Action |
 |---------|-------------------------|------------|--------|
 | `getLastV_map` | `getLast_map` | `@[simp]` | create |
 | `getLastV_tail` | `getLast_tail` | `@[simp, grind =]` | create |
 | `getLastV_cons_cons` | `getLast_cons_cons` | `@[simp, grind =]` | annotate |
-| `getLastV_singleton` | `getLast_singleton` | `@[simp, grind =]` | annotate |
 | `getLastV_mem` | `getLast_mem` | `@[simp]` | annotate |
-| `getLastV_append_of_ne_nil` | `getLast_append_of_ne_nil` | `@[simp]` | annotate |
-| `getLastV_append` | `getLast_append` | `@[grind =]` | annotate |
-| `getLastV_replicate` | `getLast_replicate` | `@[simp]` | annotate |
-| `getLastV_reverse` | `getLast_reverse` | `@[simp, grind =]` | annotate |
+
+Already annotated (verify only): `getLastV_singleton`, `getLastV_append_of_ne_nil`, `getLastV_append`, `getLastV_replicate`, `getLastV_reverse`.
 
 ### `getElemV` (3 create)
 
@@ -147,6 +147,8 @@ separate `@[simp]` lemmas.
 | `getElemV_singleton` | `getElem_singleton` (line 300) | `@[simp]` | create |
 | `getElemV_map` | `getElem_map` (line 1344) | `@[simp, grind =]` | create |
 | `getElemV_append` | `getElem_append` (line 1866) | `@[grind =]` | create |
+
+**Detailed sub-plan**: [step-03/PLAN.md](step-03/PLAN.md)
 
 ## 1.4 `src/Init/Data/List/Nat/Modify.lean` — `getElemV` (5 create)
 
@@ -158,12 +160,16 @@ separate `@[simp]` lemmas.
 | `getElemV_modify_eq` | `getElem_modify_eq` (line 215) | `@[simp]` | create |
 | `getElemV_modify_ne` | `getElem_modify_ne` (line 218) | `@[simp]` | create |
 
+**Detailed sub-plan**: [step-04/PLAN.md](step-04/PLAN.md)
+
 ## 1.5 `src/Init/Data/List/Nat/Basic.lean` — `getElemV` (2 create)
 
 | V lemma | Proof-taking counterpart | Annotation | Action |
 |---------|-------------------------|------------|--------|
 | `getElemV_intersperse_two_mul` | `getElem_intersperse_two_mul` (line 160) | `@[simp]` | create |
 | `getElemV_intersperse_two_mul_add_one` | `getElem_intersperse_two_mul_add_one` (line 165) | `@[simp]` | create |
+
+**Detailed sub-plan**: [step-05/PLAN.md](step-05/PLAN.md)
 
 ## 1.6 `src/Init/Data/Option/Lemmas.lean` — `getV` (10-15 create)
 
@@ -191,6 +197,8 @@ whether V variants are appropriate (dependent types / special typeclasses):
 | `getV_pmap` | `get_pmap` | `@[simp, grind =]` | create (if applicable) |
 | `getV_min` | `get_min` | `@[simp, grind =]` | create (if applicable) |
 
+**Detailed sub-plan**: [step-06/PLAN.md](step-06/PLAN.md)
+
 ## 1.7 `src/Init/Data/List/Scan/Lemmas.lean` — Scan V lemmas (6 create)
 
 | V lemma | Proof-taking counterpart | Annotation | Action |
@@ -202,6 +210,8 @@ whether V variants are appropriate (dependent types / special typeclasses):
 | `getElemV_scanl` | `getElem_scanl` | `@[simp, grind =]` | create |
 | `getElemV_scanr` | `getElem_scanr` | `@[simp, grind =]` | create |
 
+**Detailed sub-plan**: [step-07/PLAN.md](step-07/PLAN.md)
+
 ## 1.8 `src/Init/Data/List/OfFn.lean`
 
 List's `getElemV_ofFn` already exists with `@[simp, grind =]`. No changes needed.
@@ -211,12 +221,12 @@ List's `getElemV_ofFn` already exists with `@[simp, grind =]`. No changes needed
 
 | File | Creates | Annotates | Total |
 |------|---------|-----------|-------|
-| Array/Lemmas.lean | 31 (11 backV + 20 getElemV) | 0 | 31 |
+| Array/Lemmas.lean | 32 (11 backV + 21 getElemV) | 0 | 32 |
 | Array/MapIdx.lean | 1 | 0 | 1 |
 | Vector/Lemmas.lean | 34 (10 backV + 24 getElemV) | 0 | 34 |
-| List/Lemmas.lean | 9 (4 headV + 2 getLastV + 3 getElemV) | 12 (5 headV + 7 getLastV) | 21 |
+| List/Lemmas.lean | 9 (4 headV + 2 getLastV + 3 getElemV) | 3 (1 headV + 2 getLastV) | 12 |
 | List/Nat/Modify.lean | 5 | 0 | 5 |
 | List/Nat/Basic.lean | 2 | 0 | 2 |
 | Option/Lemmas.lean | 10-15 | 0 | 10-15 |
 | List/Scan/Lemmas.lean | 6 | 0 | 6 |
-| **Total** | **~98-103** | **12** | **~110-115** |
+| **Total** | **~99-104** | **3** | **~102-107** |
