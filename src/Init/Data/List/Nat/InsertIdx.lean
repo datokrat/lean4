@@ -157,6 +157,11 @@ theorem getElem_insertIdx_of_lt {l : List α} {x : α} {i j : Nat} (hn : j < i)
       · rw [Nat.succ_lt_succ_iff] at hn
         simpa using ih hn _
 
+theorem getElemV_insertIdx_of_lt {l : List α} {a : α} {i j : Nat} (h : j < i) :
+    haveI : Nonempty α := ⟨a⟩
+    (l.insertIdx i a)｢j｣ = l｢j｣ := by
+  simp [getElemV_def, getElem?_insertIdx_of_lt h]
+
 @[simp]
 theorem getElem_insertIdx_self {l : List α} {x : α} {i : Nat} (hi : i < (l.insertIdx i x).length) :
     (l.insertIdx i x)[i] = x := by
@@ -171,6 +176,12 @@ theorem getElem_insertIdx_self {l : List α} {x : α} {i : Nat} (hi : i < (l.ins
     · simp
     · simp only [insertIdx_succ_cons, length_cons, length_insertIdx, Nat.add_lt_add_iff_right] at hi ih
       simpa using ih hi
+
+@[simp]
+theorem getElemV_insertIdx_self {l : List α} {a : α} {i : Nat} (w : i ≤ l.length) :
+    haveI : Nonempty α := ⟨a⟩
+    (l.insertIdx i a)｢i｣ = a := by
+  simp [getElemV_pos (by simpa using Nat.lt_succ_of_le w)]
 
 theorem getElem_insertIdx_of_gt {l : List α} {x : α} {i j : Nat} (hn : i < j)
     (hk : j < (l.insertIdx i x).length) :
@@ -199,7 +210,11 @@ theorem getElem_insertIdx_of_gt {l : List α} {x : α} {i j : Nat} (hn : i < j)
         | zero => omega
         | succ j => simp
 
-@[grind =]
+theorem getElemV_insertIdx_of_gt {l : List α} {a : α} {i j : Nat} (h : i < j) :
+    haveI : Nonempty α := ⟨a⟩
+    (l.insertIdx i a)｢j｣ = l｢j - 1｣ := by
+  simp [getElemV_def, getElem?_insertIdx_of_gt h]
+
 theorem getElem_insertIdx {l : List α} {x : α} {i j : Nat} (h : j < (l.insertIdx i x).length) :
     (l.insertIdx i x)[j] =
       if h₁ : j < i then
@@ -215,6 +230,12 @@ theorem getElem_insertIdx {l : List α} {x : α} {i j : Nat} (h : j < (l.insertI
     · subst h₂
       rw [getElem_insertIdx_self h]
     · rw [getElem_insertIdx_of_gt (by omega)]
+
+@[grind =]
+theorem getElemV_insertIdx {l : List α} {a : α} {i j : Nat} (h : j < l.length + 1) :
+    haveI : Nonempty α := ⟨a⟩
+    (l.insertIdx i a)｢j｣ = if j < i then l｢j｣ else if j = i then a else l｢j - 1｣ := by
+  simp [getElemV_pos (by omega : j < (l.insertIdx i a).length)]
 
 @[grind =]
 theorem getElem?_insertIdx {l : List α} {x : α} {i j : Nat} :

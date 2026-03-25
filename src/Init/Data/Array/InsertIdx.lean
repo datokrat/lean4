@@ -98,7 +98,6 @@ theorem insertIdx_size_self {xs : Array α} {x : α} : xs.insertIdx xs.size x = 
   rcases xs with ⟨xs⟩
   simp
 
-@[grind =]
 theorem getElem_insertIdx {xs : Array α} {x : α} {i k : Nat} (w : i ≤ xs.size) (h : k < (xs.insertIdx i x).size) :
     (xs.insertIdx i x)[k] =
       if h₁ : k < i then
@@ -111,18 +110,42 @@ theorem getElem_insertIdx {xs : Array α} {x : α} {i k : Nat} (w : i ≤ xs.siz
   cases xs
   simp [List.getElem_insertIdx]
 
+@[grind =]
+theorem getElemV_insertIdx {xs : Array α} {x : α} {i k : Nat} (w : i ≤ xs.size)
+    (h : k < xs.size + 1) :
+    haveI : Nonempty α := ⟨x⟩
+    (xs.insertIdx i x)｢k｣ = if k < i then xs｢k｣ else if k = i then x else xs｢k - 1｣ := by
+  simp [getElemV_pos (by omega : k < (xs.insertIdx i x).size)]
+
 theorem getElem_insertIdx_of_lt {xs : Array α} {x : α} {i k : Nat} (w : i ≤ xs.size) (h : k < i) :
     (xs.insertIdx i x)[k]'(by simp; omega) = xs[k] := by
   simp [getElem_insertIdx, h]
+
+theorem getElemV_insertIdx_of_lt {xs : Array α} {x : α} {i k : Nat} (w : i ≤ xs.size)
+    (h : k < i) :
+    haveI : Nonempty α := ⟨x⟩
+    (xs.insertIdx i x)｢k｣ = xs｢k｣ := by
+  simp [getElemV_pos (by omega : k < (xs.insertIdx i x).size), h]
 
 theorem getElem_insertIdx_self {xs : Array α} {x : α} {i : Nat} (w : i ≤ xs.size) :
     (xs.insertIdx i x)[i]'(by simp; omega) = x := by
   simp [getElem_insertIdx]
 
+theorem getElemV_insertIdx_self {xs : Array α} {x : α} {i : Nat} (w : i ≤ xs.size) :
+    haveI : Nonempty α := ⟨x⟩
+    (xs.insertIdx i x)｢i｣ = x := by
+  simp [getElemV_pos (by omega : i < (xs.insertIdx i x).size)]
+
 theorem getElem_insertIdx_of_gt {xs : Array α} {x : α} {i k : Nat} (w : k ≤ xs.size) (h : k > i) :
     (xs.insertIdx i x)[k]'(by simp; omega) = xs[k - 1]'(by omega) := by
   simp [getElem_insertIdx]
   rw [dif_neg (by omega), dif_neg (by omega)]
+
+theorem getElemV_insertIdx_of_gt {xs : Array α} {x : α} {i k : Nat} (w : k ≤ xs.size)
+    (h : k > i) :
+    haveI : Nonempty α := ⟨x⟩
+    (xs.insertIdx i x)｢k｣ = xs｢k - 1｣ := by
+  simp [getElemV_pos (by omega : k < (xs.insertIdx i x).size), Nat.not_lt.mpr (Nat.le_of_lt h), Nat.ne_of_gt h]
 
 @[grind =]
 theorem getElem?_insertIdx {xs : Array α} {x : α} {i k : Nat} (h : i ≤ xs.size) :

@@ -354,12 +354,16 @@ theorem getElem_mem : ∀ {l : List α} {n} (h : n < l.length), l[n]'h ∈ l
   | _ :: _, 0, _ => .head ..
   | _ :: l, _+1, _ => .tail _ (getElem_mem (l := l) ..)
 
-@[simp]
 theorem getElem_cons_drop {as : List α} {i : Nat} (h : i < as.length) :
     as[i] :: as.drop (i+1) = as.drop i :=
   match as, i with
   | _::_, 0   => rfl
   | _::_, i+1 => getElem_cons_drop (i := i) (Nat.add_one_lt_add_one_iff.mp h)
+
+@[simp]
+theorem getElemV_cons_drop {as : List α} {i : Nat} {_ : Nonempty α} (h : i < as.length) :
+    as｢i｣ :: as.drop (i+1) = as.drop i := by
+  simp [getElemV_pos h, getElem_cons_drop]
 
 @[deprecated getElem_cons_drop (since := "2025-10-26")]
 theorem getElem_cons_drop_succ_eq_drop {as : List α} {i : Nat} (h : i < as.length) :

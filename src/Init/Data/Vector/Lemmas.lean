@@ -938,11 +938,16 @@ set_option linter.indexVariables false in
   rw [show (xs.push x)｢n｣ = (xs.push x)[n] from getElem_eq_getElemV ..]
   exact getElem_push_eq
 
-@[grind =]
 theorem getElem_push {xs : Vector α n} {x : α} {i : Nat} (h : i < n + 1) :
     (xs.push x)[i] = if h : i < n then xs[i] else x := by
   rcases xs with ⟨xs, rfl⟩
   simp [Array.getElem_push]
+
+@[grind =]
+theorem getElemV_push {xs : Vector α n} {x : α} {i : Nat} (h : i < n + 1) :
+    haveI : Nonempty α := ⟨x⟩
+    (xs.push x)｢i｣ = if i < n then xs｢i｣ else x := by
+  simp [getElemV_pos (by simpa using h)]
 
 @[grind =]
 theorem getElem?_push {xs : Vector α n} {x : α} {i : Nat} : (xs.push x)[i]? = if i = n then some x else xs[i]? := by
@@ -955,6 +960,12 @@ theorem getElem?_push_size {xs : Vector α n} {x : α} : (xs.push x)[n]? = some 
 
 theorem getElem_singleton {a : α} (h : i < 1) : #v[a][i] = a := by
   simp
+
+@[simp]
+theorem getElemV_singleton {a : α} (h : i < 1) :
+    haveI : Nonempty α := ⟨a⟩
+    #v[a]｢i｣ = a := by
+  simp [getElemV_pos h]
 
 @[grind =]
 theorem getElem?_singleton {a : α} {i : Nat} : #v[a][i]? = if i = 0 then some a else none := by
@@ -2322,6 +2333,10 @@ theorem getElem_eq_getElem_reverse {xs : Vector α n} {i : Nat} (h : i < n) :
   rw [getElem_reverse]
   congr
   omega
+
+theorem getElemV_eq_getElemV_reverse {_ : Nonempty α} {xs : Vector α n} {i : Nat} (h : i < n) :
+    xs｢i｣ = xs.reverse｢n - 1 - i｣ := by
+  simp [getElemV_pos h, getElemV_pos (by omega : n - 1 - i < n)]
 
 /-- Variant of `getElem?_reverse` with a hypothesis giving the linear relation between the indices. -/
 theorem getElem?_reverse' {xs : Vector α n} {i j : Nat} (h : i + j + 1 = n) : xs.reverse[i]? = xs[j]? := by

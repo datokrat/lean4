@@ -67,11 +67,15 @@ theorem extract_append_extract {xs : Vector α n} {i j k : Nat} :
   rcases xs with ⟨xs, rfl⟩
   simp
 
-@[simp]
 theorem push_extract_getElem {xs : Vector α n} {i j : Nat} (h : j < n) :
     (xs.extract i j).push xs[j] = (xs.extract (min i j) (j + 1)).cast (by omega) := by
   rcases xs with ⟨xs, rfl⟩
   simp
+
+@[simp]
+theorem push_extract_getElemV {_ : Nonempty α} {xs : Vector α n} {i j : Nat} (h : j < n) :
+    (xs.extract i j).push xs｢j｣ = (xs.extract (min i j) (j + 1)).cast (by omega) := by
+  simp [getElemV_pos h]
 
 theorem extract_succ_right {xs : Vector α n} {i j : Nat} (w : i < j + 1) (h : j < n) :
     xs.extract i (j + 1) = ((xs.extract i j).push xs[j]).cast (by omega) := by

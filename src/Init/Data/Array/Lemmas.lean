@@ -180,6 +180,11 @@ theorem getElem_push_lt {xs : Array α} {x : α} {i : Nat} (h : i < xs.size) :
   rw [Array.size] at h
   simp only [push, ← getElem_toList, List.concat_eq_append, List.getElem_append_left, h]
 
+theorem getElemV_push_lt {xs : Array α} {x : α} {i : Nat} (h : i < xs.size) :
+    haveI : Nonempty α := ⟨x⟩
+    (xs.push x)｢i｣ = xs｢i｣ := by
+  simp [getElemV_pos (by omega : i < (xs.push x).size), getElemV_pos h]
+
 theorem getElem_push_eq {xs : Array α} {x : α} : (xs.push x)[xs.size] = x := by
   simp only [push, ← getElem_toList, List.concat_eq_append]
   rw [List.getElem_append_right] <;> simp
@@ -211,6 +216,11 @@ theorem getElem?_push_size {xs : Array α} {x} : (xs.push x)[xs.size]? = some x 
 
 theorem getElem_singleton {a : α} {i : Nat} (h : i < 1) : #[a][i] = a := by
   simp
+
+theorem getElemV_singleton {a : α} {i : Nat} (h : i < 1) :
+    haveI : Nonempty α := ⟨a⟩
+    #[a]｢i｣ = a := by
+  simp [getElemV_pos (by simpa using h)]
 
 @[grind =]
 theorem getElem?_singleton {a : α} {i : Nat} : #[a][i]? = if i = 0 then some a else none := by
@@ -2703,6 +2713,10 @@ theorem getElem_eq_getElem_reverse {xs : Array α} {i} (h : i < xs.size) :
   congr
   omega
 
+theorem getElemV_eq_getElemV_reverse {_ : Nonempty α} {xs : Array α} {i : Nat} (h : i < xs.size) :
+    xs｢i｣ = xs.reverse｢xs.size - 1 - i｣ := by
+  simp [getElemV_pos h, getElemV_pos (by omega : xs.size - 1 - i < xs.reverse.size)]
+
 @[simp] theorem reverse_eq_empty_iff {xs : Array α} : xs.reverse = #[] ↔ xs = #[] := by
   cases xs
   simp
@@ -3001,6 +3015,11 @@ theorem size_shrink {xs : Array α} {i : Nat} : (xs.shrink i).size = min i xs.si
 theorem getElem_shrink {xs : Array α} {i j : Nat} (h : j < (xs.shrink i).size) :
     (xs.shrink i)[j] = xs[j]'(by simp [size_shrink] at h; omega) := by
   simp [shrink]
+
+theorem getElemV_shrink {_ : Nonempty α} {xs : Array α} {i j : Nat}
+    (h : j < (xs.shrink i).size) :
+    (xs.shrink i)｢j｣ = xs｢j｣ := by
+  simp [getElemV_pos h, getElemV_pos (by omega)]
 
 @[simp] theorem shrink_eq_take {xs : Array α} {i : Nat} : xs.shrink i = xs.take i := by
   ext <;> simp [size_shrink, getElem_shrink]
@@ -4133,10 +4152,19 @@ theorem getElem_modify_self {xs : Array α} {i : Nat} (f : α → α) (h : i < (
     (xs.modify i f)[i] = f (xs[i]'(by simpa using h)) := by
   simp [getElem_modify h]
 
+theorem getElemV_modify_self {xs : Array α} {i : Nat} (f : α → α) (h : i < xs.size) :
+    haveI : Nonempty α := ⟨f xs[i]⟩
+    (xs.modify i f)｢i｣ = f xs｢i｣ := by
+  simp [getElemV_pos (by simpa using h)]
+
 theorem getElem_modify_of_ne {xs : Array α} {i : Nat} (h : i ≠ j)
     (f : α → α) (hj : j < (xs.modify i f).size) :
     (xs.modify i f)[j] = xs[j]'(by simpa using hj) := by
   simp [getElem_modify hj, h]
+
+theorem getElemV_modify_of_ne {_ : Nonempty α} {xs : Array α} {i j : Nat} (h : i ≠ j) (f : α → α) :
+    (xs.modify i f)｢j｣ = xs｢j｣ := by
+  simp [getElemV_def, getElem?_modify, h]
 
 @[grind =] theorem getElem?_modify {xs : Array α} {i : Nat} {f : α → α} {j : Nat} :
     (xs.modify i f)[j]? = if i = j then xs[j]?.map f else xs[j]? := by
@@ -4279,22 +4307,37 @@ theorem getElem_swapIfInBounds_of_size_le_right {xs : Array α} {i j k : Nat} (h
     Nat.le_trans (Nat.le_of_eq (size_swapIfInBounds)) hj
   simp [getElem_swapIfInBounds, h₁, h₂]
 
-@[simp]
 theorem getElem_swapIfInBounds_left {xs : Array α} {i j : Nat} (hj : j < xs.size)
     (hi : i < (xs.swapIfInBounds i j).size) : (xs.swapIfInBounds i j)[i] = xs[j] := by
   simp [getElem_swapIfInBounds, hj]
 
 @[simp]
+theorem getElemV_swapIfInBounds_left {xs : Array α} {i j : Nat} (hj : j < xs.size) :
+    haveI : Nonempty α := ⟨xs[j]⟩
+    (xs.swapIfInBounds i j)｢i｣ = xs｢j｣ := by
+  simp [getElemV_swapIfInBounds, hj]
+
 theorem getElem_swapIfInBounds_right {xs : Array α} {i j : Nat} (hi : i < xs.size)
     (hj : j < (xs.swapIfInBounds i j).size) :
     (xs.swapIfInBounds i j)[j] = xs[i] := by
   simp +contextual [getElem_swapIfInBounds, hi]
 
 @[simp]
+theorem getElemV_swapIfInBounds_right {xs : Array α} {i j : Nat} (hi : i < xs.size) :
+    haveI : Nonempty α := ⟨xs[i]⟩
+    (xs.swapIfInBounds i j)｢j｣ = xs｢i｣ := by
+  simp [getElemV_swapIfInBounds, hi]
+
 theorem getElem_swapIfInBounds_of_ne_of_ne {xs : Array α} {i j k : Nat} (hi : k ≠ i) (hj : k ≠ j)
     (hk : k < (xs.swapIfInBounds i j).size) :
     (xs.swapIfInBounds i j)[k] = xs[k]'(Nat.lt_of_lt_of_eq hk size_swapIfInBounds) := by
   simp [getElem_swapIfInBounds, hi, hj]
+
+@[simp]
+theorem getElemV_swapIfInBounds_of_ne_of_ne {_ : Nonempty α} {xs : Array α} {i j k : Nat}
+    (hi : k ≠ i) (hj : k ≠ j) :
+    (xs.swapIfInBounds i j)｢k｣ = xs｢k｣ := by
+  simp [getElemV_swapIfInBounds, hi, hj]
 
 /-! ### swapAt -/
 
@@ -4505,9 +4548,13 @@ theorem getElem?_range' {start size step : Nat} {i : Nat} :
 @[simp, grind =] theorem toList_range {n : Nat} : (range n).toList = List.range n := by
   apply List.ext_getElem <;> simp [range]
 
-@[simp, grind =]
 theorem getElem_range {n : Nat} {i : Nat} (h : i < (Array.range n).size) : (Array.range n)[i] = i := by
   simp [← getElem_toList]
+
+@[simp, grind =]
+theorem getElemV_range {n : Nat} {i : Nat} (h : i < n) :
+    (Array.range n)｢i｣ = i := by
+  simp [getElemV_pos (by simpa using h)]
 
 @[grind =]
 theorem getElem?_range {n : Nat} {i : Nat} : (Array.range n)[i]? = if i < n then some i else none := by

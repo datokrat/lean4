@@ -652,6 +652,12 @@ theorem getElem_zip {l : List α} {l' : List β} {i : Nat} {h : i < (zip l l').l
       (l[i]'(lt_length_left_of_zip h), l'[i]'(lt_length_right_of_zip h)) :=
   getElem_zipWith (h := h)
 
+@[simp, grind =]
+theorem getElemV_zip {_ : Nonempty (α × β)} {l : List α} {l' : List β}
+    {i : Nat} (h : i < (zip l l').length) :
+    (zip l l')｢i｣ = (l｢i｣, l'｢i｣) := by
+  simp [getElemV_pos h]
+
 theorem zip_eq_zip_take_min : ∀ {l₁ : List α} {l₂ : List β},
     zip l₁ l₂ = zip (l₁.take (min l₁.length l₂.length)) (l₂.take (min l₁.length l₂.length))
   | [], _ => by simp

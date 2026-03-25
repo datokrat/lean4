@@ -352,7 +352,6 @@ theorem getElem?_eraseIdx_of_ge {xs : Array α} {i : Nat} (h : i < xs.size) {j :
   intro h'
   omega
 
-@[grind =]
 theorem getElem_eraseIdx {xs : Array α} {i : Nat} (h : i < xs.size) {j : Nat} (h' : j < (xs.eraseIdx i).size) :
     (xs.eraseIdx i)[j] = if h'' : j < i then
         xs[j]
@@ -361,6 +360,12 @@ theorem getElem_eraseIdx {xs : Array α} {i : Nat} (h : i < xs.size) {j : Nat} (
   apply Option.some.inj
   rw [← getElem?_eq_getElem, getElem?_eraseIdx]
   split <;> simp
+
+@[grind =]
+theorem getElemV_eraseIdx {_ : Nonempty α} {xs : Array α} {i : Nat} (h : i < xs.size) {j : Nat} :
+    (xs.eraseIdx i)｢j｣ = if j < i then xs｢j｣ else xs｢j + 1｣ := by
+  simp [getElemV_def, getElem?_eraseIdx]
+  split <;> simp_all
 
 @[simp] theorem eraseIdx_eq_empty_iff {xs : Array α} {i : Nat} {h} : xs.eraseIdx i = #[] ↔ xs.size = 1 ∧ i = 0 := by
   rcases xs with ⟨xs⟩

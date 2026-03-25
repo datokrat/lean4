@@ -221,12 +221,18 @@ theorem getElem?_pmap {p : α → Prop} {f : ∀ a, p a → β} {xs : Vector α 
   simp
 
 -- The argument `f` is explicit to allow rewriting from right to left.
-@[simp, grind =]
 theorem getElem_pmap {p : α → Prop} (f : ∀ a, p a → β) {xs : Vector α n} (h : ∀ a ∈ xs, p a) {i : Nat}
     (hn : i < n) :
     (pmap f xs h)[i] = f (xs[i]) (h _ (by simp)) := by
   rcases xs with ⟨xs, rfl⟩
   simp
+
+@[simp, grind =]
+theorem getElemV_pmap {p : α → Prop} (f : ∀ a, p a → β) {xs : Vector α n} (h : ∀ a ∈ xs, p a)
+    {i : Nat} (hn : i < n) :
+    haveI : Nonempty β := ⟨f (xs[i]) (h _ (by simp))⟩
+    (pmap f xs h)｢i｣ = f xs｢i｣ (h _ (by simp)) := by
+  simp [getElemV_pos hn]
 
 @[simp, grind =]
 theorem getElem?_attachWith {xs : Vector α n} {i : Nat} {P : α → Prop} {H : ∀ a ∈ xs, P a} :
@@ -238,16 +244,27 @@ theorem getElem?_attach {xs : Vector α n} {i : Nat} :
     xs.attach[i]? = xs[i]?.pmap Subtype.mk (fun _ a => mem_of_getElem? a) :=
   getElem?_attachWith
 
-@[simp, grind =]
 theorem getElem_attachWith {xs : Vector α n} {P : α → Prop} {H : ∀ a ∈ xs, P a}
     {i : Nat} (h : i < n) :
     (xs.attachWith P H)[i] = ⟨xs[i]'(by simpa using h), H _ (getElem_mem (by simpa using h))⟩ :=
   getElem_pmap _ _ h
 
 @[simp, grind =]
+theorem getElemV_attachWith {xs : Vector α n} {P : α → Prop} {H : ∀ a ∈ xs, P a}
+    {i : Nat} (h : i < n) :
+    haveI : Nonempty { x // P x } := ⟨⟨xs[i], H _ (by simp)⟩⟩
+    (xs.attachWith P H)｢i｣ = ⟨xs｢i｣, H _ (by simp)⟩ := by
+  simp [getElemV_pos (by simpa using h)]
+
 theorem getElem_attach {xs : Vector α n} {i : Nat} (h : i < n) :
     xs.attach[i] = ⟨xs[i]'(by simpa using h), getElem_mem (by simpa using h)⟩ :=
   getElem_attachWith h
+
+@[simp, grind =]
+theorem getElemV_attach {xs : Vector α n} {i : Nat} (h : i < n) :
+    haveI : Nonempty { x // x ∈ xs } := ⟨⟨xs[i], by simp⟩⟩
+    xs.attach｢i｣ = ⟨xs｢i｣, by simp⟩ := by
+  simp [getElemV_pos (by simpa using h)]
 
 @[simp] theorem pmap_attach {xs : Vector α n} {p : {x // x ∈ xs} → Prop} {f : ∀ a, p a → β} (H) :
     pmap f xs.attach H =

@@ -68,10 +68,15 @@ theorem ofFn_succ' {f : Fin (n+1) → α} :
   apply Vector.toArray_inj.mp
   simp [Array.ofFn_succ']
 
-@[simp]
 theorem ofFn_getElem {xs : Vector α n} :
     Vector.ofFn (fun i : Fin n => xs[i.val]) = xs := by
   ext; simp
+
+@[simp]
+theorem ofFn_getElemV {_ : Nonempty α} {xs : Vector α n} :
+    Vector.ofFn (fun i : Fin n => xs｢i.val｣) = xs := by
+  ext i hi
+  simp [getElemV_pos hi]
 
 /-! ### ofFnM -/
 

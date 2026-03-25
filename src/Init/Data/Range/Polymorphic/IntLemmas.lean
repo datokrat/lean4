@@ -206,10 +206,12 @@ theorem toList_rco_append_toList_rco {l m n : Int} (h : l ≤ m) (h' : m ≤ n) 
   · simp; omega
   · simp [Rco.getElem_toList_eq, List.getElem_append]; omega
 
-@[simp]
 theorem getElem_toList_rco {m n : Int} {i : Nat} (_h : i < (m...n).toList.length) :
     (m...n).toList[i]'_h = m + i := by
   simp [Rco.getElem_toList_eq]
+
+@[simp] theorem getElemV_toList_rco {m n : Int} {i : Nat} :
+    (m...n).toList｢i｣ = m + i := by simp [getElemV_def, getElem?_toList_rco]
 
 theorem getElem?_toList_rco {m n : Int} {i : Nat} :
     (m...n).toList[i]? = if i < (n - m).toNat then some (m + i) else none := by
@@ -373,10 +375,12 @@ theorem toArray_rco_append_toArray_rco {l m n : Int} (h : l ≤ m) (h' : m ≤ n
   simp only [← toArray_toList_rco, List.eq_toArray_iff]
   simp [toList_rco_append_toList_rco h h']
 
-@[simp]
 theorem getElem_toArray_rco {m n : Int} {i : Nat} (_h : i < (m...n).toArray.size) :
     (m...n).toArray[i]'_h = m + i := by
   simp [Rco.getElem_toArray_eq]
+
+@[simp] theorem getElemV_toArray_rco {m n : Int} {i : Nat} :
+    (m...n).toArray｢i｣ = m + i := by simp [getElemV_def, getElem?_toArray_rco]
 
 theorem getElem?_toArray_rco {m n : Int} {i : Nat} :
     (m...n).toArray[i]? = if i < (n - m).toNat then some (m + i) else none := by
@@ -602,10 +606,12 @@ theorem toList_rcc_succ_right_eq_append {m n : Int} (h : m ≤ n + 1) :
   rw [toList_rcc_eq_append (by omega)]
   simp [toList_rcc_eq_toList_rco]
 
-@[simp]
 theorem getElem_toList_rcc {m n : Int} {i : Nat} (_h : i < (m...=n).toList.length) :
     (m...=n).toList[i]'_h = m + i := by
   simp [toList_rcc_eq_toList_rco]
+
+@[simp] theorem getElemV_toList_rcc {m n : Int} {i : Nat} :
+    (m...=n).toList｢i｣ = m + i := by simp [getElemV_def, getElem?_toList_rcc]
 
 theorem getElem?_toList_rcc {m n : Int} {i : Nat} :
     (m...=n).toList[i]? = if i < (n + 1 - m).toNat then some (m + i) else none := by
@@ -752,10 +758,12 @@ theorem toArray_rcc_succ_right_eq_push {m n : Int} (h : m ≤ n + 1) :
   rw [toArray_rcc_eq_push (by omega)]
   simp [toArray_rcc_eq_toArray_rco]
 
-@[simp]
 theorem getElem_toArray_rcc {m n : Int} {i : Nat} (_h : i < (m...=n).toArray.size) :
     (m...=n).toArray[i]'_h = m + i := by
   simp [toArray_rcc_eq_toArray_rco]
+
+@[simp] theorem getElemV_toArray_rcc {m n : Int} {i : Nat} :
+    (m...=n).toArray｢i｣ = m + i := by simp [getElemV_def, getElem?_toArray_rcc]
 
 theorem getElem?_toArray_rcc {m n : Int} {i : Nat} :
     (m...=n).toArray[i]? = if i < (n + 1 - m).toNat then some (m + i) else none := by
@@ -981,10 +989,12 @@ theorem toList_roo_eq_append {m n : Int} (h : m + 1 < n) :
     (m<...n).toList = (m<...(n - 1)).toList ++ [n - 1] := by
   simp [toList_roo_eq_toList_rco, toList_rco_eq_append h]
 
-@[simp]
 theorem getElem_toList_roo {m n : Int} {i : Nat} (_h : i < (m<...n).toList.length) :
     (m<...n).toList[i]'_h = m + 1 + i := by
   simp [toList_roo_eq_toList_rco]
+
+@[simp] theorem getElemV_toList_roo {m n : Int} {i : Nat} :
+    (m<...n).toList｢i｣ = m + 1 + i := by simp [getElemV_def, getElem?_toList_roo]
 
 theorem getElem?_toList_roo {m n : Int} {i : Nat} :
     (m<...n).toList[i]? = if i < (n - (m + 1)).toNat then some (m + 1 + i) else none := by
@@ -1131,10 +1141,12 @@ theorem toArray_roo_eq_push {m n : Int} (h : m + 1 < n) :
     (m<...n).toArray = (m<...(n - 1)).toArray.push (n - 1) := by
   simp [toArray_roo_eq_toArray_rco, toArray_rco_eq_push h]
 
-@[simp]
 theorem getElem_toArray_roo {m n : Int} {i : Nat} (_h : i < (m<...n).toArray.size) :
     (m<...n).toArray[i]'_h = m + 1 + i := by
   simp [toArray_roo_eq_toArray_rco]
+
+@[simp] theorem getElemV_toArray_roo {m n : Int} {i : Nat} :
+    (m<...n).toArray｢i｣ = m + 1 + i := by simp [getElemV_def, getElem?_toArray_roo]
 
 theorem getElem?_toArray_roo {m n : Int} {i : Nat} :
     (m<...n).toArray[i]? = if i < (n - (m + 1)).toNat then some (m + 1 + i) else none := by
@@ -1374,10 +1386,12 @@ theorem toList_roc_append_toList_roc {l m n : Int} (h : l ≤ m) (h' : m ≤ n) 
     (l<...=m).toList ++ (m<...=n).toList = (l<...=n).toList := by
   simp [toList_roc_eq_toList_rco, toList_rco_append_toList_rco (Int.add_le_add_right h 1) (Int.add_le_add_right h' 1)]
 
-@[simp]
 theorem getElem_toList_roc {m n : Int} {i : Nat} (_h : i < (m<...=n).toList.length) :
     (m<...=n).toList[i]'_h = m + 1 + i := by
   simp [toList_roc_eq_toList_rco]
+
+@[simp] theorem getElemV_toList_roc {m n : Int} {i : Nat} :
+    (m<...=n).toList｢i｣ = m + 1 + i := by simp [getElemV_def, getElem?_toList_roc]
 
 theorem getElem?_toList_roc {m n : Int} {i : Nat} :
     (m<...=n).toList[i]? = if i < (n - m).toNat then some (m + 1 + i) else none := by
@@ -1537,10 +1551,12 @@ theorem toArray_roc_append_toArray_roc {l m n : Int} (h : l ≤ m) (h' : m ≤ n
     (l<...=m).toArray ++ (m<...=n).toArray = (l<...=n).toArray := by
   simp [toArray_roc_eq_toArray_rco, toArray_rco_append_toArray_rco (Int.add_le_add_right h 1) (Int.add_le_add_right h' 1)]
 
-@[simp]
 theorem getElem_toArray_roc {m n : Int} {i : Nat} (_h : i < (m<...=n).toArray.size) :
     (m<...=n).toArray[i]'_h = m + 1 + i := by
   simp [toArray_roc_eq_toArray_rco]
+
+@[simp] theorem getElemV_toArray_roc {m n : Int} {i : Nat} :
+    (m<...=n).toArray｢i｣ = m + 1 + i := by simp [getElemV_def, getElem?_toArray_roc]
 
 theorem getElem?_toArray_roc {m n : Int} {i : Nat} :
     (m<...=n).toArray[i]? = if i < (n - m).toNat then some (m + 1 + i) else none := by

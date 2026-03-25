@@ -215,11 +215,16 @@ theorem lt_size_right_of_zip {i : Nat} {as : Array α} {bs : Array β} (h : i < 
     i < bs.size :=
   lt_size_right_of_zipWith h
 
-@[simp, grind =]
 theorem getElem_zip {as : Array α} {bs : Array β} {i : Nat} {h : i < (zip as bs).size} :
     (zip as bs)[i] =
       (as[i]'(lt_size_left_of_zip h), bs[i]'(lt_size_right_of_zip h)) :=
   getElem_zipWith (hi := by simpa using h)
+
+@[simp, grind =]
+theorem getElemV_zip {_ : Nonempty (α × β)} {as : Array α} {bs : Array β} {i : Nat}
+    (h : i < (zip as bs).size) :
+    (zip as bs)｢i｣ = (as｢i｣, bs｢i｣) := by
+  simp [getElemV_pos h]
 
 theorem zip_eq_zipWith {as : Array α} {bs : Array β} : zip as bs = zipWith Prod.mk as bs := by
   cases as

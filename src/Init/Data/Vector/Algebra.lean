@@ -23,9 +23,13 @@ def zero [Zero α] : Vector α n := Vector.replicate n 0
 
 instance instZero [Zero α] : Zero (Vector α n) := ⟨zero⟩
 
-@[simp, grind =]
 theorem getElem_zero [Zero α] (i : Nat) (h : i < n) : (0 : Vector α n)[i] = 0 := by
   erw [getElem_replicate]
+
+@[simp, grind =]
+theorem getElemV_zero [Zero α] {_ : Nonempty α} (i : Nat) :
+    (0 : Vector α n)｢i｣ = 0 := by
+  simp [getElemV_def]
 
 /-- Componentwise addition of vectors. -/
 def add [Add α] (xs ys : Vector α n) : Vector α n :=
@@ -33,9 +37,13 @@ def add [Add α] (xs ys : Vector α n) : Vector α n :=
 
 instance [Add α] : Add (Vector α n) := ⟨add⟩
 
-@[simp, grind =]
 theorem getElem_add [Add α] (xs ys : Vector α n) (i : Nat) (h : i < n) : (xs + ys)[i] = xs[i] + ys[i] := by
   erw [getElem_zipWith]
+
+@[simp, grind =]
+theorem getElemV_add [Add α] {_ : Nonempty α} (xs ys : Vector α n) (i : Nat) :
+    (xs + ys)｢i｣ = xs｢i｣ + ys｢i｣ := by
+  simp [getElemV_def]
 
 theorem add_zero [Zero α] [Add α] (add_zero : ∀ x : α, x + 0 = x) (xs : Vector α n) : xs + 0 = xs := by grind
 theorem zero_add [Zero α] [Add α] (zero_add : ∀ x : α, 0 + x = x) (xs : Vector α n) : 0 + xs = xs := by grind
@@ -61,9 +69,13 @@ def sub [Sub α] (xs ys : Vector α n) : Vector α n :=
 
 instance [Sub α] : Sub (Vector α n) := ⟨sub⟩
 
-@[simp, grind =]
 theorem getElem_sub [Sub α] (xs ys : Vector α n) (i : Nat) (h : i < n) : (xs - ys)[i] = xs[i] - ys[i] := by
   erw [getElem_zipWith]
+
+@[simp, grind =]
+theorem getElemV_sub [Sub α] {_ : Nonempty α} (xs ys : Vector α n) (i : Nat) :
+    (xs - ys)｢i｣ = xs｢i｣ - ys｢i｣ := by
+  simp [getElemV_def]
 
 theorem sub_eq_add_neg [Sub α] [Add α] [Neg α] (sub_eq_add_neg : ∀ x y : α, x - y = x + -y) (xs ys : Vector α n) : xs - ys = xs + -ys := by grind
 
@@ -82,9 +94,13 @@ section mul
 
 attribute [local instance] instMul
 
-@[simp, grind =]
 theorem getElem_mul [Mul α] (xs ys : Vector α n) (i : Nat) (h : i < n) : (xs * ys)[i] = xs[i] * ys[i] := by
   erw [getElem_zipWith]
+
+@[simp, grind =]
+theorem getElemV_mul [Mul α] {_ : Nonempty α} (xs ys : Vector α n) (i : Nat) :
+    (xs * ys)｢i｣ = xs｢i｣ * ys｢i｣ := by
+  simp [getElemV_def]
 
 theorem mul_zero [Zero α] [Mul α] (mul_zero : ∀ x : α, x * 0 = 0) (xs : Vector α n) : xs * 0 = 0 := by grind
 theorem zero_mul [Zero α] [Mul α] (zero_mul : ∀ x : α, 0 * x = 0) (xs : Vector α n) : 0 * xs = 0 := by grind
@@ -101,9 +117,13 @@ def hmul [HMul α β γ] (c : α) (xs : Vector β n) : Vector γ n :=
 
 instance [HMul α β γ] : HMul α (Vector β n) (Vector γ n) := ⟨hmul⟩
 
-@[simp, grind =]
 theorem getElem_hmul [HMul α β γ] (c : α) (xs : Vector β n) (i : Nat) (h : i < n) : (c * xs)[i] = c * xs[i] := by
   erw [getElem_map]
+
+@[simp, grind =]
+theorem getElemV_hmul [HMul α β γ] {_ : Nonempty γ} (c : α) (xs : Vector β n) (i : Nat) :
+    (c * xs)｢i｣ = c * xs｢i｣ := by
+  simp [getElemV_def]
 
 theorem hmul_zero [Zero β] [Zero γ] [HMul α β γ] (hmul_zero : ∀ c : α, c * (0 : β) = 0) (c : α) : c * (0 : Vector β n) = 0 := by grind
 theorem zero_hmul [Zero α] [Zero β] [Zero γ] [HMul α β γ] (zero_hmul : ∀ c : β, (0 : α) * c = 0) (c : Vector β n) : (0 : α) * c = 0 := by grind
@@ -116,9 +136,13 @@ def smul [SMul α β] (c : α) (xs : Vector β n) : Vector β n :=
 
 instance [SMul α β] : SMul α (Vector β n) := ⟨smul⟩
 
-@[simp, grind =]
 theorem getElem_smul [SMul α β] (c : α) (xs : Vector β n) (i : Nat) (h : i < n) : (c • xs)[i] = c • xs[i] := by
   erw [getElem_map]
+
+@[simp, grind =]
+theorem getElemV_smul [SMul α β] {_ : Nonempty β} (c : α) (xs : Vector β n) (i : Nat) :
+    (c • xs)｢i｣ = c • xs｢i｣ := by
+  simp [getElemV_def]
 
 theorem smul_zero [Zero β] [SMul α β] (smul_zero : ∀ c : α, c • (0 : β) = 0) (c : α) : c • (0 : Vector β n) = 0 := by grind
 theorem zero_smul [Zero α] [Zero β] [SMul α β] (zero_smul : ∀ c : β, (0 : α) • c = 0) (c : Vector β n) : (0 : α) • c = 0 := by grind

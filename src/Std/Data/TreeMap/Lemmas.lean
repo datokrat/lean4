@@ -869,6 +869,12 @@ theorem getElem_insertIfNew [TransCmp cmp] {k a : α} {v : β} {h₁} :
       if h₂ : cmp k a = .eq ∧ ¬ k ∈ t then v else t[a]'(mem_of_mem_insertIfNew' h₁ h₂) :=
   DTreeMap.Const.get_insertIfNew
 
+@[grind =]
+theorem getElemV_insertIfNew [TransCmp cmp] [Nonempty β] {k a : α} {v : β} :
+    (t.insertIfNew k v)｢a｣ =
+      if cmp k a = .eq ∧ ¬ k ∈ t then v else t｢a｣ :=
+  DTreeMap.Const.getV_insertIfNew
+
 @[grind =] theorem getElem!_insertIfNew [TransCmp cmp] [Inhabited β] {k a : α} {v : β} :
     (t.insertIfNew k v)[a]! = if cmp k a = .eq ∧ ¬ k ∈ t then v else t[a]! :=
   DTreeMap.Const.get!_insertIfNew
@@ -2031,6 +2037,11 @@ theorem getElemV_union_of_not_mem_right [TransCmp cmp] [Nonempty β]
     {k : α} (not_mem : ¬k ∈ t₂) :
     (t₁ ∪ t₂)｢k｣ = t₁｢k｣ :=
   DTreeMap.Const.getV_union_of_not_mem_right not_mem
+
+theorem getElemV_union_of_mem_right [TransCmp cmp] [Nonempty β]
+    {k : α} (mem : k ∈ t₂) :
+    (t₁ ∪ t₂)｢k｣ = t₂｢k｣ := by
+  rw [getElemV_union, ← getElem_eq_getD (h := mem), getElem_eq_getElemV]
 
 /- getElem! -/
 theorem getElem!_union [TransCmp cmp]
@@ -3884,6 +3895,11 @@ theorem minKey_eq_minKeyV [TransCmp cmp] {he : t.isEmpty = false} :
 theorem minKeyV_eq_classicalOfNonempty [TransCmp cmp] [Nonempty α] (he : t.isEmpty) :
     t.minKeyV = Classical.ofNonempty := by
   simpa [TreeMap.minKeyV] using minKeyD_eq_fallback he
+
+theorem minKeyV_eq_getElemV_keysArray [TransCmp cmp] [Nonempty α] :
+    t.minKeyV = t.keysArray｢0｣ := by
+  rw [Array.getElemV_eq_getD]
+  simpa [TreeMap.minKeyV] using minKeyD_eq_getD_keysArray
 
 theorem minKeyV_eq_iff_getKey?_eq_self_and_forall [TransCmp cmp] [Nonempty α]
     (he : t.isEmpty = false) {km} :

@@ -428,9 +428,12 @@ theorem getElem?_zero_ofBool (b : Bool) : (ofBool b)[0]? = some b := by
   simp only [ofBool, ofNat_eq_ofNat, cond_eq_ite]
   split <;> simp_all
 
-@[simp, grind =]
 theorem getElem_ofBool_zero {b : Bool} : (ofBool b)[0] = b := by
   rw [getElem_eq_iff, getElem?_zero_ofBool]
+
+@[simp, grind =]
+theorem getElemV_ofBool_zero {b : Bool} : (ofBool b)｢0｣ = b := by
+  simp [getElemV_pos (by omega : 0 < 1)]
 
 
 @[deprecated getElem_ofBool_zero (since := "2025-10-29")]
@@ -447,10 +450,13 @@ theorem getLsbD_ofBool (b : Bool) (i : Nat) : (ofBool b).getLsbD i = ((i = 0) &&
   · simp only [ofBool, ofNat_eq_ofNat, cond_true, getLsbD_ofNat, Bool.and_true]
     by_cases hi : i = 0 <;> simp [hi] <;> omega
 
-@[simp]
 theorem getElem_ofBool {b : Bool} {h : i < 1}: (ofBool b)[i] = b := by
   simp [← getLsbD_eq_getElem]
   omega
+
+@[simp]
+theorem getElemV_ofBool {b : Bool} {h : i < 1} : (ofBool b)｢i｣ = b := by
+  simp [getElemV_pos h]
 
 @[simp] theorem getMsbD_ofBool (b : Bool) : (ofBool b).getMsbD i = (decide (i = 0) && b) := by
   cases b <;> simp [getMsbD]
@@ -1871,13 +1877,18 @@ theorem zero_shiftLeft (n : Nat) : 0#w <<< n = 0#w := by
   cases h₁ : decide (i < m) <;> cases h₂ : decide (n ≤ i) <;> cases h₃ : decide (i < n)
   all_goals { simp_all <;> omega }
 
-@[simp, grind =] theorem getElem_shiftLeft {x : BitVec m} {n : Nat} (h : i < m) :
+theorem getElem_shiftLeft {x : BitVec m} {n : Nat} (h : i < m) :
     (x <<< n)[i] = (!decide (i < n) && x[i - n]) := by
   rw [getElem_eq_testBit_toNat, getElem_eq_testBit_toNat]
   simp only [toNat_shiftLeft, Nat.testBit_mod_two_pow, Nat.testBit_shiftLeft, ge_iff_le]
   -- This step could be a case bashing tactic.
   cases h₁ : decide (i < m) <;> cases h₂ : decide (n ≤ i) <;> cases h₃ : decide (i < n)
   all_goals { simp_all <;> omega }
+
+@[simp, grind =]
+theorem getElemV_shiftLeft {x : BitVec m} {n : Nat} (h : i < m) :
+    (x <<< n)｢i｣ = (!decide (i < n) && x｢i - n｣) := by
+  simp [getElemV_pos h, getElemV_pos (by omega : i - n < m)]
 
 theorem shiftLeft_xor_distrib (x y : BitVec w) (n : Nat) :
     (x ^^^ y) <<< n = (x <<< n) ^^^ (y <<< n) := by
@@ -2052,6 +2063,10 @@ theorem getLsbD_shiftLeft' {x : BitVec w₁} {y : BitVec w₂} {i : Nat} :
 theorem getElem_shiftLeft' {x : BitVec w₁} {y : BitVec w₂} {i : Nat} (h : i < w₁) :
     (x <<< y)[i] = (!decide (i < y.toNat) && x[i - y.toNat]) := by
   simp
+
+theorem getElemV_shiftLeft' {x : BitVec w₁} {y : BitVec w₂} {i : Nat} (h : i < w₁) :
+    (x <<< y)｢i｣ = (!decide (i < y.toNat) && x｢i - y.toNat｣) := by
+  simp [getElemV_pos h, getElemV_pos (by omega : i - y.toNat < w₁)]
 
 @[simp] theorem shiftLeft_eq_zero {x : BitVec w} {n : Nat} (hn : w ≤ n) : x <<< n = 0#w := by
   ext i hi
@@ -2275,12 +2290,17 @@ theorem getLsbD_sshiftRight (x : BitVec w) (s i : Nat) :
         Nat.not_lt, decide_eq_true_eq]
       omega
 
-@[grind =]
 theorem getElem_sshiftRight {x : BitVec w} {s i : Nat} (h : i < w) :
     (x.sshiftRight s)[i] = (if h : s + i < w then x[s + i] else x.msb) := by
   rw [← getLsbD_eq_getElem, getLsbD_sshiftRight]
   simp only [show ¬(w ≤ i) by omega, decide_false, Bool.not_false, Bool.true_and]
   by_cases h' : s + i < w <;> simp [h']
+
+@[grind =]
+theorem getElemV_sshiftRight {x : BitVec w} {s i : Nat} (h : i < w) :
+    (x.sshiftRight s)｢i｣ = (if s + i < w then x｢s + i｣ else x.msb) := by
+  simp [getElemV_pos h]
+  split <;> simp_all [getElemV_pos (by omega)]
 
 theorem sshiftRight_xor_distrib (x y : BitVec w) (n : Nat) :
     (x ^^^ y).sshiftRight n = (x.sshiftRight n) ^^^ (y.sshiftRight n) := by
@@ -2499,6 +2519,11 @@ theorem getElem_sshiftRight' {x y : BitVec w} {i : Nat} (h : i < w) :
     (x.sshiftRight' y)[i] = (if h : y.toNat + i < w then x[y.toNat + i] else x.msb) := by
   simp [getElem_sshiftRight]
 
+theorem getElemV_sshiftRight' {x y : BitVec w} {i : Nat} (h : i < w) :
+    (x.sshiftRight' y)｢i｣ = (if y.toNat + i < w then x｢y.toNat + i｣ else x.msb) := by
+  simp [getElemV_pos h]
+  split <;> simp_all [getElemV_pos (by omega)]
+
 theorem getMsbD_sshiftRight' {x y: BitVec w} {i : Nat} :
     (x.sshiftRight y.toNat).getMsbD i =
       (decide (i < w) && if i < y.toNat then x.msb else x.getMsbD (i - y.toNat)) := by
@@ -2569,10 +2594,15 @@ theorem getMsbD_signExtend {x : BitVec w} {v i : Nat} :
   · simp only [signExtend_eq_not_setWidth_not_of_msb_true hmsb, getMsbD_not, getMsbD_setWidth]
     by_cases h : i < v <;> by_cases h' : v - w ≤ i <;> simp [h, h'] <;> omega
 
-@[grind =]
 theorem getElem_signExtend {x  : BitVec w} {v i : Nat} (h : i < v) :
     (x.signExtend v)[i] = if h : i < w then x[i] else x.msb := by
   simp [←getLsbD_eq_getElem, getLsbD_signExtend, h]
+
+@[grind =]
+theorem getElemV_signExtend {x : BitVec w} {v i : Nat} (h : i < v) :
+    (x.signExtend v)｢i｣ = if i < w then x｢i｣ else x.msb := by
+  simp [getElemV_pos h]
+  split <;> simp_all [getElemV_pos (by omega)]
 
 @[grind =]
 theorem msb_signExtend {x : BitVec w} :
@@ -2753,13 +2783,18 @@ theorem getLsbD_append {x : BitVec n} {y : BitVec m} :
   · simp [h]
   · simp_all
 
-@[grind =]
 theorem getElem_append {x : BitVec n} {y : BitVec m} (h : i < n + m) :
     (x ++ y)[i] = if h : i < m then y[i] else x[i - m] := by
   simp only [append_def]
   by_cases h' : i < m
   · simp [h']
   · simp [h', show m ≤ i by omega]
+
+@[grind =]
+theorem getElemV_append {x : BitVec n} {y : BitVec m} (h : i < n + m) :
+    (x ++ y)｢i｣ = if i < m then y｢i｣ else x｢i - m｣ := by
+  simp [getElemV_pos h]
+  split <;> simp_all [getElemV_pos (by omega)]
 
 @[simp, grind =] theorem getMsbD_append {x : BitVec n} {y : BitVec m} :
     getMsbD (x ++ y) i = if n ≤ i then getMsbD y (i - n) else getMsbD x i := by
@@ -3332,7 +3367,6 @@ theorem getLsbD_concat (x : BitVec w) (b : Bool) (i : Nat) :
   · simp [Nat.mod_eq_of_lt b.toNat_lt]
   · simp [Nat.div_eq_of_lt b.toNat_lt, Nat.testBit_add_one]
 
-@[grind =]
 theorem getElem_concat (x : BitVec w) (b : Bool) (i : Nat) (h : i < w + 1) :
     (concat x b)[i] = if h : i = 0 then b else x[i - 1] := by
   simp only [concat, getElem_eq_testBit_toNat, toNat_append,
@@ -3340,6 +3374,12 @@ theorem getElem_concat (x : BitVec w) (b : Bool) (i : Nat) (h : i < w + 1) :
   cases i
   · simp [Nat.mod_eq_of_lt b.toNat_lt]
   · simp [Nat.div_eq_of_lt b.toNat_lt, Nat.testBit_add_one]
+
+@[grind =]
+theorem getElemV_concat (x : BitVec w) (b : Bool) (i : Nat) (h : i < w + 1) :
+    (concat x b)｢i｣ = if i = 0 then b else x｢i - 1｣ := by
+  simp [getElemV_pos h]
+  split <;> simp_all [getElemV_pos (by omega)]
 
 @[simp] theorem getElem_concat_zero {x : BitVec w} : (concat x b)[0] = b := by
   simp [getElem_concat]
@@ -3448,20 +3488,33 @@ theorem getLsbD_shiftConcat (x : BitVec w) (b : Bool) (i : Nat) :
     = (decide (i < w) && (if (i = 0) then b else x.getLsbD (i - 1))) := by
   simp only [shiftConcat, getLsbD_setWidth, getLsbD_concat]
 
-@[grind =]
 theorem getElem_shiftConcat {x : BitVec w} {b : Bool} (h : i < w) :
     (x.shiftConcat b)[i] = if i = 0 then b else x[i-1] := by
   rw [← getLsbD_eq_getElem, getLsbD_shiftConcat, getLsbD_eq_getElem, decide_eq_true h, Bool.true_and]
 
-@[simp]
+@[grind =]
+theorem getElemV_shiftConcat {x : BitVec w} {b : Bool} (h : i < w) :
+    (x.shiftConcat b)｢i｣ = if i = 0 then b else x｢i - 1｣ := by
+  simp [getElemV_pos h]
+  split <;> simp_all [getElemV_pos (by omega)]
+
 theorem getElem_shiftConcat_zero {x : BitVec w} (b : Bool) (h : 0 < w) :
     (x.shiftConcat b)[0] = b := by
   simp [getElem_shiftConcat]
 
 @[simp]
+theorem getElemV_shiftConcat_zero {x : BitVec w} (b : Bool) (h : 0 < w) :
+    (x.shiftConcat b)｢0｣ = b := by
+  simp [getElemV_pos h]
+
 theorem getElem_shiftConcat_succ {x : BitVec w} {b : Bool} (h : i + 1 < w) :
     (x.shiftConcat b)[i+1] = x[i] := by
   simp [getElem_shiftConcat]
+
+@[simp]
+theorem getElemV_shiftConcat_succ {x : BitVec w} {b : Bool} (h : i + 1 < w) :
+    (x.shiftConcat b)｢i + 1｣ = x｢i｣ := by
+  simp [getElemV_pos (by omega : i + 1 < w), getElemV_pos (by omega : i < w)]
 
 theorem getLsbD_shiftConcat_eq_decide (x : BitVec w) (b : Bool) (i : Nat) :
     (shiftConcat x b).getLsbD i
@@ -3910,11 +3963,15 @@ theorem getMsbD_fill {w i : Nat} {v : Bool} :
   by_cases h : v
   <;> simp [h, BitVec.fill, BitVec.neg_one_eq_allOnes]
 
-@[simp, grind =]
 theorem getElem_fill {w i : Nat} {v : Bool} (h : i < w) :
     (fill w v)[i] = v := by
   by_cases h : v
   <;> simp [h, BitVec.fill, BitVec.neg_one_eq_allOnes]
+
+@[simp, grind =]
+theorem getElemV_fill {w i : Nat} {v : Bool} (h : i < w) :
+    (fill w v)｢i｣ = v := by
+  simp [getElemV_pos h]
 
 @[simp]
 theorem msb_fill {w : Nat} {v : Bool} :
@@ -4870,11 +4927,17 @@ theorem getLsbD_rotateLeft {x : BitVec w} {r i : Nat}  :
   · simp
   · rw [← rotateLeft_mod_eq_rotateLeft, getLsbD_rotateLeft_of_le (Nat.mod_lt _ (by omega))]
 
-@[simp, grind =]
 theorem getElem_rotateLeft {x : BitVec w} {r i : Nat} (h : i < w) :
     (x.rotateLeft r)[i] =
       if h' : i < r % w then x[(w - (r % w) + i)] else x[i - (r % w)] := by
   simp [← BitVec.getLsbD_eq_getElem, h]
+
+@[simp, grind =]
+theorem getElemV_rotateLeft {x : BitVec w} {r i : Nat} (h : i < w) :
+    (x.rotateLeft r)｢i｣ =
+      if i < r % w then x｢w - (r % w) + i｣ else x｢i - (r % w)｣ := by
+  simp [getElemV_pos h]
+  split <;> simp_all [getElemV_pos (by omega)]
 
 theorem getMsbD_rotateLeftAux_of_lt {x : BitVec w} {r : Nat} {i : Nat} (hi : i < w - r) :
     (x.rotateLeftAux r).getMsbD i = x.getMsbD (r + i) := by
@@ -5038,10 +5101,16 @@ theorem getLsbD_rotateRight {x : BitVec w} {r i : Nat} :
   · simp
   · rw [← rotateRight_mod_eq_rotateRight, getLsbD_rotateRight_of_lt (Nat.mod_lt _ (by omega))]
 
-@[simp, grind =]
 theorem getElem_rotateRight {x : BitVec w} {r i : Nat} (h : i < w) :
     (x.rotateRight r)[i] = if h' : i < w - (r % w) then x[(r % w) + i] else x[(i - (w - (r % w)))] := by
   simp [← BitVec.getLsbD_eq_getElem, getLsbD_rotateRight, h]
+
+@[simp, grind =]
+theorem getElemV_rotateRight {x : BitVec w} {r i : Nat} (h : i < w) :
+    (x.rotateRight r)｢i｣ =
+      if i < w - (r % w) then x｢(r % w) + i｣ else x｢i - (w - (r % w))｣ := by
+  simp [getElemV_pos h]
+  split <;> simp_all [getElemV_pos (by omega)]
 
 theorem getMsbD_rotateRightAux_of_lt {x : BitVec w} {r : Nat} {i : Nat} (hi : i < r) :
     (x.rotateRightAux r).getMsbD i = x.getMsbD (i + (w - r)) := by
@@ -5184,11 +5253,15 @@ theorem toFin_twoPow {w i : Nat} :
   · simp [BitVec.twoPow, Fin.fin_one_eq_zero]
   · simp [BitVec.twoPow, toFin_shiftLeft, Nat.shiftLeft_eq]
 
-@[simp, grind =]
 theorem getElem_twoPow {i j : Nat} (h : j < w) : (twoPow w i)[j] = decide (j = i) := by
   rw [←getLsbD_eq_getElem, getLsbD_twoPow]
   simp [eq_comm]
   omega
+
+@[simp, grind =]
+theorem getElemV_twoPow {i j : Nat} (h : j < w) :
+    (twoPow w i)｢j｣ = decide (j = i) := by
+  simp [getElemV_pos h]
 
 @[simp]
 theorem getMsbD_twoPow {i j w: Nat} :
@@ -5357,11 +5430,16 @@ theorem getLsbD_replicate {n w : Nat} {x : BitVec w} :
       simp only [show ¬i < w * n by omega, decide_false, hi, Bool.false_and]
       apply BitVec.getLsbD_of_ge (x := x) (i := i - w * n) (ge := by omega)
 
-@[simp, grind =]
 theorem getElem_replicate {n w : Nat} {x : BitVec w} (h : i < w * n) :
     (x.replicate n)[i] = if h' : w = 0 then false else x[i % w]'(@Nat.mod_lt i w (by omega)) := by
   simp only [← getLsbD_eq_getElem, getLsbD_replicate]
   cases w <;> simp; omega
+
+@[simp, grind =]
+theorem getElemV_replicate {n w : Nat} {x : BitVec w} (h : i < w * n) :
+    (x.replicate n)｢i｣ = if w = 0 then false else x｢i % w｣ := by
+  simp [getElemV_pos h]
+  split <;> simp_all [getElemV_pos (by omega)]
 
 @[grind =]
 theorem append_assoc {x₁ : BitVec w₁} {x₂ : BitVec w₂} {x₃ : BitVec w₃} :
@@ -5775,10 +5853,15 @@ theorem getLsbD_abs {i : Nat} {x : BitVec w} :
     getLsbD x.abs i = if x.msb then getLsbD (-x) i else getLsbD x i := by
   by_cases h : x.msb <;> simp [BitVec.abs, h]
 
-@[grind =]
 theorem getElem_abs {i : Nat} {x : BitVec w} (h : i < w) :
     x.abs[i] = if x.msb then (-x)[i] else x[i] := by
   by_cases h : x.msb <;> simp [BitVec.abs, h]
+
+@[grind =]
+theorem getElemV_abs {i : Nat} {x : BitVec w} (h : i < w) :
+    x.abs｢i｣ = if x.msb then (-x)｢i｣ else x｢i｣ := by
+  simp [getElemV_pos h]
+  split <;> simp_all [getElemV_pos h]
 
 theorem getMsbD_abs {i : Nat} {x : BitVec w} :
     getMsbD (x.abs) i = if x.msb then getMsbD (-x) i else getMsbD x i := by

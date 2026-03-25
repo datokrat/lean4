@@ -2085,6 +2085,11 @@ theorem getElemV_union_of_not_mem_right [TransCmp cmp] [Nonempty β] (h₁ : t�
     (t₁ ∪ t₂)｢k｣ = t₁｢k｣ :=
   DTreeMap.Raw.Const.getV_union_of_not_mem_right h₁ h₂ not_mem
 
+theorem getElemV_union_of_mem_right [TransCmp cmp] [Nonempty β] (h₁ : t₁.WF) (h₂ : t₂.WF)
+    {k : α} (mem : k ∈ t₂) :
+    (t₁ ∪ t₂)｢k｣ = t₂｢k｣ := by
+  rw [getElemV_union h₁ h₂, ← getElem_eq_getD h₂ (h' := mem), getElem_eq_getElemV h₂]
+
 /- getElem! -/
 theorem getElem!_union [TransCmp cmp] (h₁ : t₁.WF) (h₂ : t₂.WF)
     {k : α} [Inhabited β] :

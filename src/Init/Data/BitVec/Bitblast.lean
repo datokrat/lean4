@@ -295,6 +295,14 @@ theorem getElem_add {i : Nat} (i_lt : i < w) (x y : BitVec w) :
     (x + y)[i] = (x[i] ^^ (y[i] ^^ carry i x y false)) := by
   simpa using getElem_add_add_bool i_lt x y false
 
+theorem getElemV_add_add_bool {i : Nat} (i_lt : i < w) (x y : BitVec w) (c : Bool) :
+    (x + y + setWidth w (ofBool c))｢i｣ = (x｢i｣ ^^ (y｢i｣ ^^ carry i x y c)) := by
+  simp only [getElemV_pos i_lt, getElem_add_add_bool]
+
+theorem getElemV_add {i : Nat} (i_lt : i < w) (x y : BitVec w) :
+    (x + y)｢i｣ = (x｢i｣ ^^ (y｢i｣ ^^ carry i x y false)) := by
+  simp only [getElemV_pos i_lt, getElem_add]
+
 theorem adc_spec (x y : BitVec w) (c : Bool) :
     adc x y c = (carry w x y c, x + y + setWidth w (ofBool c)) := by
   simp only [adc]
@@ -371,6 +379,10 @@ theorem getMsbD_sub {i : Nat} {i_lt : i < w} {x y : BitVec w} :
 theorem getElem_sub {i : Nat} {x y : BitVec w} (h : i < w) :
     (x - y)[i] = (x[i] ^^ ((~~~y + 1#w)[i] ^^ carry i x (~~~y + 1#w) false)) := by
   simp [← getLsbD_eq_getElem, getLsbD_sub, h]
+
+theorem getElemV_sub {i : Nat} {x y : BitVec w} (h : i < w) :
+    (x - y)｢i｣ = (x｢i｣ ^^ ((~~~y + 1#w)｢i｣ ^^ carry i x (~~~y + 1#w) false)) := by
+  simp only [getElemV_pos h, getElem_sub]
 
 theorem msb_sub {x y: BitVec w} :
     (x - y).msb
@@ -680,6 +692,10 @@ theorem getMsbD_mul (x y : BitVec w) (i : Nat) :
 theorem getElem_mul {x y : BitVec w} {i : Nat} (h : i < w) :
     (x * y)[i] = (mulRec x y w)[i] := by
   simp [mulRec_eq_mul_signExtend_setWidth]
+
+theorem getElemV_mul {x y : BitVec w} {i : Nat} (h : i < w) :
+    (x * y)｢i｣ = (mulRec x y w)｢i｣ := by
+  simp only [getElemV_pos h, getElem_mul]
 
 /-! ## shiftLeft recurrence for bit blasting -/
 
@@ -1134,6 +1150,10 @@ theorem getElem_udiv (n d : BitVec w) (hy : 0#w < d) (i : Nat) (hi : i < w) :
     (n / d)[i] = (divRec w {n, d} (DivModState.init w)).q[i] := by
   rw [udiv_eq_divRec (by assumption)]
 
+theorem getElemV_udiv (n d : BitVec w) (hy : 0#w < d) (i : Nat) (hi : i < w) :
+    (n / d)｢i｣ = (divRec w {n, d} (DivModState.init w)).q｢i｣ := by
+  simp only [getElemV_pos hi, getElem_udiv _ _ hy _ hi]
+
 theorem getLsbD_udiv (n d : BitVec w) (hy : 0#w < d)  (i : Nat) :
     (n / d).getLsbD i = (decide (i < w) && (divRec w {n, d} (DivModState.init w)).q.getLsbD i) := by
   by_cases hi : i < w
@@ -1383,6 +1403,10 @@ theorem getElem_umod {n d : BitVec w} (hi : i < w) :
   · have := (BitVec.not_le (x := d) (y := 0#w)).mp
     rw [← BitVec.umod_eq_divRec (by simp [hd, this])]
     simp [hd]
+
+theorem getElemV_umod {n d : BitVec w} (hi : i < w) :
+    (n % d)｢i｣ = if d = 0#w then n｢i｣ else (divRec w { n := n, d := d } (DivModState.init w)).r｢i｣ := by
+  simp only [getElemV_pos hi, getElem_umod]
 
 theorem getLsbD_umod {n d : BitVec w}:
     (n % d).getLsbD i
@@ -1697,6 +1721,15 @@ theorem getElem_sdiv {x y : BitVec w} (h : i < w) :
   by_cases hx : x.msb <;> by_cases hy : y.msb
   <;> simp [hx, hy]
 
+theorem getElemV_sdiv {x y : BitVec w} (h : i < w) :
+    (x.sdiv y)｢i｣ =
+      match x.msb, y.msb with
+      | false, false => (x / y)｢i｣
+      | false, true => (-(x / -y))｢i｣
+      | true, false => (-(-x / y))｢i｣
+      | true, true => (-x / -y)｢i｣ := by
+  simp only [getElemV_pos h, getElem_sdiv]
+
 theorem getLsbD_sdiv {x y : BitVec w} :
     (x.sdiv y).getLsbD i =
       match x.msb, y.msb with
@@ -1807,6 +1840,15 @@ theorem getElem_srem {x y : BitVec w} (h : i < w) :
   simp only [srem, umod_eq, neg_eq]
   by_cases hx : x.msb <;> by_cases hy : y.msb
   <;> simp [hx, hy]
+
+theorem getElemV_srem {x y : BitVec w} (h : i < w) :
+    (x.srem y)｢i｣ =
+      match x.msb, y.msb with
+      | false, false => (x % y)｢i｣
+      | false, true => (x % -y)｢i｣
+      | true, false => (-(-x % y))｢i｣
+      | true, true => (-(-x % -y))｢i｣ := by
+  simp only [getElemV_pos h, getElem_srem]
 
 theorem getLsbD_srem {x y : BitVec w} :
     (x.srem y).getLsbD i =
@@ -2016,6 +2058,15 @@ theorem getElem_smod {x y : BitVec w} (h : i < w) :
   simp only [smod, umod_eq, neg_eq, zero_eq, add_eq, sub_eq]
   by_cases hx : x.msb <;> by_cases hy : y.msb
   <;> simp [hx, hy]
+
+theorem getElemV_smod {x y : BitVec w} (h : i < w) :
+    (x.smod y)｢i｣ =
+      match x.msb, y.msb with
+      | false, false => (x % y)｢i｣
+      | false, true => (if x % -y = 0#w then (x % -y) else (x % -y + y))｢i｣
+      | true, false => (if -x % y = 0#w then (-x % y) else (y - -x % y))｢i｣
+      | true, true => (-(-x % -y))｢i｣ := by
+  simp only [getElemV_pos h, getElem_smod]
 
 theorem getLsbD_smod {x y : BitVec w} :
     (x.smod y).getLsbD i =

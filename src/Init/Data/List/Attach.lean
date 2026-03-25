@@ -246,7 +246,6 @@ theorem getElem?_pmap {p : α → Prop} {f : ∀ a, p a → β} {l : List α} (h
     · simp only [pmap, getElem?_cons_succ, hl]
 
 -- The argument `f` is explicit to allow rewriting from right to left.
-@[simp, grind =]
 theorem getElem_pmap {p : α → Prop} (f : ∀ a, p a → β) {l : List α} (h : ∀ a ∈ l, p a) {i : Nat}
     (hn : i < (pmap f l h).length) :
     (pmap f l h)[i] =
@@ -262,6 +261,13 @@ theorem getElem_pmap {p : α → Prop} (f : ∀ a, p a → β) {l : List α} (h 
     · simp [hl]
 
 @[simp, grind =]
+theorem getElemV_pmap {p : α → Prop} (f : ∀ a, p a → β) {l : List α} (h : ∀ a ∈ l, p a)
+    {i : Nat} (hn : i < l.length) :
+    haveI : Nonempty β := ⟨f (l[i]'hn) (h _ (getElem_mem hn))⟩
+    (pmap f l h)｢i｣ = f l｢i｣ (h _ (getElem_mem hn)) := by
+  simp [getElemV_pos (by simpa using hn)]
+
+@[simp, grind =]
 theorem getElem?_attachWith {xs : List α} {i : Nat} {P : α → Prop} {H : ∀ a ∈ xs, P a} :
     (xs.attachWith P H)[i]? = xs[i]?.pmap Subtype.mk (fun _ a => H _ (mem_of_getElem? a)) :=
   getElem?_pmap ..
@@ -271,16 +277,27 @@ theorem getElem?_attach {xs : List α} {i : Nat} :
     xs.attach[i]? = xs[i]?.pmap Subtype.mk (fun _ a => mem_of_getElem? a) :=
   getElem?_attachWith
 
-@[simp, grind =]
 theorem getElem_attachWith {xs : List α} {P : α → Prop} {H : ∀ a ∈ xs, P a}
     {i : Nat} (h : i < (xs.attachWith P H).length) :
     (xs.attachWith P H)[i] = ⟨xs[i]'(by simpa using h), H _ (getElem_mem (by simpa using h))⟩ :=
   getElem_pmap ..
 
 @[simp, grind =]
+theorem getElemV_attachWith {xs : List α} {P : α → Prop} {H : ∀ a ∈ xs, P a}
+    {i : Nat} (h : i < xs.length) :
+    haveI : Nonempty { x // P x } := ⟨⟨xs[i]'h, H _ (getElem_mem h)⟩⟩
+    (xs.attachWith P H)｢i｣ = ⟨xs｢i｣, H _ (getElem_mem h)⟩ := by
+  simp [getElemV_pos (by simpa using h)]
+
 theorem getElem_attach {xs : List α} {i : Nat} (h : i < xs.attach.length) :
     xs.attach[i] = ⟨xs[i]'(by simpa using h), getElem_mem (by simpa using h)⟩ :=
   getElem_attachWith h
+
+@[simp, grind =]
+theorem getElemV_attach {xs : List α} {i : Nat} (h : i < xs.length) :
+    haveI : Nonempty { x // x ∈ xs } := ⟨⟨xs[i]'h, getElem_mem h⟩⟩
+    xs.attach｢i｣ = ⟨xs｢i｣, getElem_mem h⟩ := by
+  simp [getElemV_pos (by simpa using h)]
 
 @[simp] theorem pmap_attach {l : List α} {p : {x // x ∈ l} → Prop} {f : ∀ a, p a → β} (H) :
     pmap f l.attach H =

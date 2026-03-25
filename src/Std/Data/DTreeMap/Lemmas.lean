@@ -5608,6 +5608,18 @@ theorem minKeyV_eq_minKeyD_classicalOfNonempty [TransCmp cmp] [Nonempty α] :
     t.minKeyV = t.minKeyD Classical.ofNonempty :=
   rfl
 
+@[grind =_]
+theorem minKeyV_eq_headV_keys [TransCmp cmp] [Nonempty α] :
+    t.minKeyV = t.keys.headV := by
+  rw [List.headV_eq_getElemV, List.getElemV_eq_getElem?_getD, ← List.head?_eq_getElem?,
+      ← List.headD_eq_head?_getD]
+  simpa [DTreeMap.minKeyV] using minKeyD_eq_headD_keys
+
+theorem minKeyV_eq_getElemV_keysArray [TransCmp cmp] [Nonempty α] :
+    t.minKeyV = t.keysArray｢0｣ := by
+  rw [Array.getElemV_eq_getD]
+  simpa [DTreeMap.minKeyV] using minKeyD_eq_getD_keysArray
+
 namespace Const
 
 variable {β : Type v} {t : DTreeMap α β cmp}

@@ -27,8 +27,14 @@ theorem sizeOf_get [SizeOf α] (as : Array α) (i : Nat) (h : i < as.size) : siz
   cases as with | _ as
   simpa using Nat.lt_trans (List.sizeOf_get _ ⟨i, h⟩) (by simp +arith)
 
-@[simp] theorem sizeOf_getElem [SizeOf α] (as : Array α) (i : Nat) (h : i < as.size) :
+theorem sizeOf_getElem [SizeOf α] (as : Array α) (i : Nat) (h : i < as.size) :
   sizeOf (as[i]'h) < sizeOf as := sizeOf_get _ _ h
+
+@[simp]
+theorem sizeOf_getElemV [SizeOf α] (as : Array α) (i : Nat) (h : i < as.size) :
+    haveI : Nonempty α := ⟨as[i]⟩
+    sizeOf as｢i｣ < sizeOf as := by
+  simp [getElemV_pos h]
 
 /-- This tactic, added to the `decreasing_trivial` toolbox, proves that
 `sizeOf arr[i] < sizeOf arr`, which is useful for well founded recursions

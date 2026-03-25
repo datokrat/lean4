@@ -55,7 +55,6 @@ theorem getElem?_eraseIdx_of_ge {l : List α} {i : Nat} {j : Nat} (h : i ≤ j) 
   intro h'
   omega
 
-@[grind =]
 theorem getElem_eraseIdx {l : List α} {i : Nat} {j : Nat} (h : j < (l.eraseIdx i).length) :
     (l.eraseIdx i)[j] = if h' : j < i then
         l[j]'(by have := length_eraseIdx_le l i; omega)
@@ -65,6 +64,12 @@ theorem getElem_eraseIdx {l : List α} {i : Nat} {j : Nat} (h : j < (l.eraseIdx 
   rw [← getElem?_eq_getElem, getElem?_eraseIdx]
   split <;> simp
 
+@[grind =]
+theorem getElemV_eraseIdx {_ : Nonempty α} {l : List α} {i j : Nat} :
+    (l.eraseIdx i)｢j｣ = if j < i then l｢j｣ else l｢j + 1｣ := by
+  simp [getElemV_def, getElem?_eraseIdx]
+  split <;> simp_all
+
 theorem getElem_eraseIdx_of_lt {l : List α} {i : Nat} {j : Nat} (h : j < (l.eraseIdx i).length) (h' : j < i) :
     (l.eraseIdx i)[j] = l[j]'(by have := length_eraseIdx_le l i; omega) := by
   rw [getElem_eraseIdx]
@@ -72,10 +77,18 @@ theorem getElem_eraseIdx_of_lt {l : List α} {i : Nat} {j : Nat} (h : j < (l.era
   intro h'
   omega
 
+theorem getElemV_eraseIdx_of_lt {_ : Nonempty α} {l : List α} {i j : Nat} (h' : j < i) :
+    (l.eraseIdx i)｢j｣ = l｢j｣ := by
+  simp [getElemV_eraseIdx, h']
+
 theorem getElem_eraseIdx_of_ge {l : List α} {i : Nat} {j : Nat} (h : j < (l.eraseIdx i).length) (h' : i ≤ j) :
     (l.eraseIdx i)[j] = l[j + 1]'(by rw [length_eraseIdx] at h; split at h <;> omega) := by
   rw [getElem_eraseIdx, dif_neg]
   omega
+
+theorem getElemV_eraseIdx_of_ge {_ : Nonempty α} {l : List α} {i j : Nat} (h' : i ≤ j) :
+    (l.eraseIdx i)｢j｣ = l｢j + 1｣ := by
+  simp [getElemV_eraseIdx, Nat.not_lt.mpr h']
 
 theorem eraseIdx_eq_dropLast {l : List α} {i : Nat} (h : i + 1 = l.length) :
     l.eraseIdx i = l.dropLast := by

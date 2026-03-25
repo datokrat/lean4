@@ -180,7 +180,6 @@ theorem getElem_intersperse_two_mul_add_one (h : 2 * i + 1 < (l.intersperse sep)
     (l.intersperse sep)｢2 * i + 1｣ = sep := by
   simp [getElem_eq_getElemV, getElem_intersperse_two_mul_add_one h]
 
-@[grind =]
 theorem getElem_intersperse (h) :
     (l.intersperse sep)[i] =
       if i % 2 = 0 then l[i / 2]'(by simp at h; omega) else sep := by
@@ -191,6 +190,13 @@ theorem getElem_intersperse (h) :
   · have p : i = 2 * (i / 2) + 1 := by omega
     conv => lhs; simp +singlePass only [p]
     rw [getElem_intersperse_two_mul_add_one]
+
+@[grind =]
+theorem getElemV_intersperse {l : List α} {sep : α} {i : Nat}
+    (h : i < (l.intersperse sep).length) :
+    haveI : Nonempty α := ⟨sep⟩
+    (l.intersperse sep)｢i｣ = if i % 2 = 0 then l｢i / 2｣ else sep := by
+  simp [getElemV_pos h]
 
 theorem getElem_eq_getElem_intersperse_two_mul (h : i < l.length) :
     l[i] = (l.intersperse sep)[2 * i]'(by rw [length_intersperse]; omega) := by

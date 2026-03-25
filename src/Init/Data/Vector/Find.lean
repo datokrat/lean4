@@ -129,12 +129,16 @@ theorem getElem_zero_flatten.proof {xss : Vector (Vector α m) n} (h : 0 < n * m
       Option.isSome_some, and_true]
     exact ⟨⟨xss[0], h₂ _ (by simp)⟩, by simp⟩
 
-@[grind =]
 theorem getElem_zero_flatten {xss : Vector (Vector α m) n} (h : 0 < n * m) :
     (flatten xss)[0] = (xss.findSome? fun xs => xs[0]?).get (getElem_zero_flatten.proof h) := by
   have t := getElem?_zero_flatten (xss := xss)
   simp [h] at t
   simp [← t]
+
+@[grind =]
+theorem getElemV_zero_flatten {_ : Nonempty α} {xss : Vector (Vector α m) n} (h : 0 < n * m) :
+    (flatten xss)｢0｣ = (xss.findSome? fun xs => xs[0]?).get (getElem_zero_flatten.proof h) := by
+  simp [getElemV_pos h]
 
 @[grind =]
 theorem findSome?_replicate : findSome? f (replicate n a) = if n = 0 then none else f a := by
