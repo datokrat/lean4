@@ -157,16 +157,28 @@ theorem getElem?_intersperse :
       simp
       omega
 
-@[simp] theorem getElem_intersperse_two_mul (h : 2 * i < (l.intersperse sep).length) :
+theorem getElem_intersperse_two_mul (h : 2 * i < (l.intersperse sep).length) :
     (l.intersperse sep)[2 * i] = l[i]'(by rw [length_intersperse] at h; omega) := by
   rw [← Option.some_inj, ← getElem?_eq_getElem h]
   simp
 
-@[simp] theorem getElem_intersperse_two_mul_add_one (h : 2 * i + 1 < (l.intersperse sep).length) :
+@[simp] theorem getElemV_intersperse_two_mul {l : List α} {sep : α} {i : Nat}
+    (h : 2 * i < (l.intersperse sep).length) :
+    haveI : Nonempty α := ⟨sep⟩
+    (l.intersperse sep)｢2 * i｣ = l｢i｣ := by
+  simp [getElem_eq_getElemV, getElem_intersperse_two_mul h]
+
+theorem getElem_intersperse_two_mul_add_one (h : 2 * i + 1 < (l.intersperse sep).length) :
     (l.intersperse sep)[2 * i + 1] = sep := by
   rw [← Option.some_inj, ← getElem?_eq_getElem h, getElem?_intersperse_two_mul_add_one]
   rw [length_intersperse] at h
   omega
+
+@[simp] theorem getElemV_intersperse_two_mul_add_one {l : List α} {sep : α} {i : Nat}
+    (h : 2 * i + 1 < (l.intersperse sep).length) :
+    haveI : Nonempty α := ⟨sep⟩
+    (l.intersperse sep)｢2 * i + 1｣ = sep := by
+  simp [getElem_eq_getElemV, getElem_intersperse_two_mul_add_one h]
 
 @[grind =]
 theorem getElem_intersperse (h) :

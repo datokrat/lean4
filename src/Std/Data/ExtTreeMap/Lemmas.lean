@@ -641,7 +641,7 @@ theorem getKeyV_empty [TransCmp cmp] {a : α} [Nonempty α] :
     (t.insert k v).getKeyD a fallback = if cmp k a = .eq then k else t.getKeyD a fallback :=
   ExtDTreeMap.getKeyD_insert
 
-theorem getKeyV_insert [TransCmp cmp] [Nonempty α] {k a : α}
+@[grind =] theorem getKeyV_insert [TransCmp cmp] [Nonempty α] {k a : α}
     {v : β} : (t.insert k v).getKeyV a = if cmp k a = .eq then k else t.getKeyV a  :=
   ExtDTreeMap.getKeyV_insert
 
@@ -675,7 +675,7 @@ theorem getKeyV_eq_classicalOfNonempty [TransCmp cmp] [Nonempty α] {a : α} :
       if cmp k a = .eq then fallback else t.getKeyD a fallback :=
   ExtDTreeMap.getKeyD_erase
 
-theorem getKeyV_erase [TransCmp cmp] [Nonempty α] {k a : α} :
+@[grind =] theorem getKeyV_erase [TransCmp cmp] [Nonempty α] {k a : α} :
     (t.erase k).getKeyV a = if cmp k a = .eq then Classical.ofNonempty else t.getKeyV a  :=
   ExtDTreeMap.getKeyV_erase
 
@@ -846,7 +846,7 @@ theorem getKey_insertIfNew [TransCmp cmp] {k a : α} {v : β} {h₁} :
       if cmp k a = .eq ∧ ¬ k ∈ t then k else t.getKeyD a fallback :=
   ExtDTreeMap.getKeyD_insertIfNew
 
-theorem getKeyV_insertIfNew [TransCmp cmp] [Nonempty α] {k a : α}
+@[grind =] theorem getKeyV_insertIfNew [TransCmp cmp] [Nonempty α] {k a : α}
     {v : β} :
     (t.insertIfNew k v).getKeyV a =
       if cmp k a = .eq ∧ ¬ k ∈ t then k else t.getKeyV a  :=

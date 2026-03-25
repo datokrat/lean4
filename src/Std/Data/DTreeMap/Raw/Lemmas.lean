@@ -1039,7 +1039,7 @@ theorem getKeyV_of_isEmpty [TransCmp cmp] [Nonempty α] (h : t.WF) {a : α} :
     (t.insert k v).getKeyD a fallback = if cmp k a = .eq then k else t.getKeyD a fallback :=
   Impl.getKeyD_insert! h
 
-theorem getKeyV_insert [TransCmp cmp] [Nonempty α] (h : t.WF) {k a : α} {v : β k} :
+@[grind =] theorem getKeyV_insert [TransCmp cmp] [Nonempty α] (h : t.WF) {k a : α} {v : β k} :
     (t.insert k v).getKeyV a = if cmp k a = .eq then k else t.getKeyV a := by
   simpa [Raw.getKeyV] using getKeyD_insert h
 
@@ -1073,7 +1073,7 @@ theorem getKeyV_eq_default [TransCmp cmp] [Nonempty α] (h : t.WF) {a : α} :
       if cmp k a = .eq then fallback else t.getKeyD a fallback :=
   Impl.getKeyD_erase! h
 
-theorem getKeyV_erase [TransCmp cmp] [Nonempty α] (h : t.WF) {k a : α} :
+@[grind =] theorem getKeyV_erase [TransCmp cmp] [Nonempty α] (h : t.WF) {k a : α} :
     (t.erase k).getKeyV a = if cmp k a = .eq then Classical.ofNonempty else t.getKeyV a := by
   simpa [Raw.getKeyV] using getKeyD_erase h
 
@@ -1294,7 +1294,7 @@ theorem getKey_insertIfNew [TransCmp cmp] (h : t.WF) {k a : α} {v : β k} {h₁
       if cmp k a = .eq ∧ ¬ k ∈ t then k else t.getKeyD a fallback :=
   Impl.getKeyD_insertIfNew! h
 
-theorem getKeyV_insertIfNew [TransCmp cmp] [Nonempty α] (h : t.WF) {k a : α}
+@[grind =] theorem getKeyV_insertIfNew [TransCmp cmp] [Nonempty α] (h : t.WF) {k a : α}
     {v : β k} :
     (t.insertIfNew k v).getKeyV a =
       if cmp k a = .eq ∧ ¬ k ∈ t then k else t.getKeyV a := by

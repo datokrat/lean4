@@ -538,6 +538,18 @@ theorem getElemV_congr [EquivBEq α] [LawfulHashable α] [Nonempty β] (h : m.WF
   DHashMap.Raw.Const.getV_congr h.out hab
 
 @[simp, grind =]
+theorem getV_eq_getElem [EquivBEq α] [LawfulHashable α] {_ : Nonempty β} (h : m.WF) {a : α}
+    (h' : a ∈ m) :
+    m｢a｣ = m[a]'h' :=
+  (getElem_eq_getElemV h).symm
+
+@[grind =]
+theorem getV_getElem? [EquivBEq α] [LawfulHashable α] {_ : Nonempty β} (h : m.WF) {a : α}
+    {h' : (m[a]?).isSome} :
+    m[a]?.get h' = m｢a｣ := by
+  rw [get_getElem? h, getElem_eq_getElemV h]
+
+@[simp, grind =]
 theorem getKey?_emptyWithCapacity {a : α} {c} : (emptyWithCapacity c : Raw α β).getKey? a = none :=
   DHashMap.Raw.getKey?_emptyWithCapacity
 
@@ -2090,6 +2102,7 @@ theorem getKey!_inter_of_not_mem_left [EquivBEq α] [LawfulHashable α] [Inhabit
   @DHashMap.Raw.getKey!_inter_of_not_mem_left _ _ _ _ m₁.inner m₂.inner _ _ _ h₁.out h₂.out k not_mem
 
 /- getKeyV -/
+@[simp]
 theorem getKeyV_inter [EquivBEq α] [LawfulHashable α] [Nonempty α] (h₁ : m₁.WF)
     (h₂ : m₂.WF) {k : α} :
     (m₁ ∩ m₂).getKeyV k =
@@ -2426,6 +2439,7 @@ theorem getKey!_diff_of_not_mem_left [EquivBEq α] [LawfulHashable α] [Inhabite
   @DHashMap.Raw.getKey!_diff_of_not_mem_left _ _ _ _ m₁.inner m₂.inner _ _ _ h₁.out h₂.out k not_mem
 
 /- getKeyV -/
+@[simp]
 theorem getKeyV_diff [EquivBEq α] [LawfulHashable α] [Nonempty α] (h₁ : m₁.WF)
     (h₂ : m₂.WF) {k : α} :
     (m₁ \ m₂).getKeyV k =

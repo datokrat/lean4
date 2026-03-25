@@ -861,7 +861,7 @@ theorem getKeyV_empty [EquivBEq α] [LawfulHashable α] [Nonempty α] {a : α} :
       if k == a then k else m.getKeyD a fallback :=
   m.inductionOn fun _ => DHashMap.getKeyD_insert
 
-theorem getKeyV_insert [EquivBEq α] [LawfulHashable α] [Nonempty α] {k a : α} {v : β k} :
+@[grind =] theorem getKeyV_insert [EquivBEq α] [LawfulHashable α] [Nonempty α] {k a : α} {v : β k} :
     (m.insert k v).getKeyV a =
       if k == a then k else m.getKeyV a  := by
   simpa [ExtDHashMap.getKeyV] using getKeyD_insert
@@ -897,7 +897,7 @@ theorem getKeyV_eq_classicalOfNonempty [EquivBEq α] [LawfulHashable α] [Nonemp
     (m.erase k).getKeyD a fallback = if k == a then fallback else m.getKeyD a fallback :=
   m.inductionOn fun _ => DHashMap.getKeyD_erase
 
-theorem getKeyV_erase [EquivBEq α] [LawfulHashable α] [Nonempty α] {k a : α} :
+@[grind =] theorem getKeyV_erase [EquivBEq α] [LawfulHashable α] [Nonempty α] {k a : α} :
     (m.erase k).getKeyV a = if k == a then Classical.ofNonempty else m.getKeyV a  := by
   simpa [ExtDHashMap.getKeyV] using getKeyD_erase
 
@@ -1104,7 +1104,7 @@ theorem getKey_insertIfNew [EquivBEq α] [LawfulHashable α] {k a : α} {v : β 
       if k == a ∧ ¬k ∈ m then k else getKeyD m a fallback :=
   m.inductionOn fun _ => DHashMap.getKeyD_insertIfNew
 
-theorem getKeyV_insertIfNew [EquivBEq α] [LawfulHashable α] [Nonempty α] {k a : α} {v : β k} :
+@[grind =] theorem getKeyV_insertIfNew [EquivBEq α] [LawfulHashable α] [Nonempty α] {k a : α} {v : β k} :
     getKeyV (m.insertIfNew k v) a = if k == a ∧ ¬k ∈ m then k else getKeyV m a  := by
   simpa [ExtDHashMap.getKeyV] using getKeyD_insertIfNew
 

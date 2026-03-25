@@ -6428,6 +6428,25 @@ theorem maxKeyV_alter_eq_self [TransCmp cmp] [LawfulEqCmp cmp] [Nonempty α] {k 
     (t.alter k f).maxKeyV = k ↔ (f (t.get? k)).isSome ∧ ∀ k', k' ∈ t → (cmp k' k).isLE := by
   simpa [DTreeMap.maxKeyV] using maxKeyD_alter_eq_self he
 
+theorem maxKeyV_eq_get_maxKey? [TransCmp cmp] [Nonempty α] (he : t.isEmpty = false) :
+    t.maxKeyV = t.maxKey?.get (isSome_maxKey?_iff_isEmpty_eq_false.mpr he) := by
+  rw [← maxKey_eq_maxKeyV, maxKey_eq_get_maxKey?]
+
+theorem maxKeyV_erase_eq_iff_not_compare_eq_maxKeyV [TransCmp cmp] [Nonempty α] {k}
+    (he : (t.erase k).isEmpty = false) :
+    (t.erase k).maxKeyV = t.maxKeyV ↔ ¬ cmp k t.maxKeyV = .eq := by
+  haveI : Nonempty α := ‹_›
+  rw [← maxKey_eq_maxKeyV (he := he), ← maxKey_eq_maxKeyV (he := isEmpty_eq_false_of_isEmpty_erase_eq_false he)]
+  exact maxKey_erase_eq_iff_not_compare_eq_maxKey
+
+theorem maxKeyV_eq_getLast_keys [TransCmp cmp] [Nonempty α] (he : t.isEmpty = false) :
+    t.maxKeyV = t.keys.getLast (List.isEmpty_eq_false_iff.mp <| isEmpty_keys ▸ he) := by
+  rw [← maxKey_eq_maxKeyV, maxKey_eq_getLast_keys]
+
+theorem maxKeyV_eq_back_keysArray [TransCmp cmp] [Nonempty α] (he : t.isEmpty = false) :
+    t.maxKeyV = t.keysArray.back (Nat.zero_lt_of_ne_zero (by simpa [size_keysArray, isEmpty_eq_size_eq_zero, - Array.size_eq_zero_iff] using he)) := by
+  rw [← maxKey_eq_maxKeyV, maxKey_eq_back_keysArray]
+
 theorem maxKeyV_eq_maxKeyD_classicalOfNonempty [TransCmp cmp] [Nonempty α] :
     t.maxKeyV = t.maxKeyD Classical.ofNonempty :=
   rfl

@@ -297,7 +297,13 @@ theorem getD_getElem?_eq_getElemV {l : List α} {i : Nat} {d : α} :
     l[i]?.getD d = if i < l.length then l｢i｣ else d := by
   split <;> simp [*]
 
-@[simp] theorem getElem_singleton {a : α} {i : Nat} (h : i < 1) : [a][i] = a := by
+theorem getElem_singleton {a : α} {i : Nat} (h : i < 1) : [a][i] = a := by
+  match i, h with
+  | 0, _ => rfl
+
+@[simp] theorem getElemV_singleton {a : α} {i : Nat} (h : i < 1) :
+    haveI : Nonempty α := ⟨a⟩
+    [a]｢i｣ = a := by
   match i, h with
   | 0, _ => rfl
 
@@ -1036,7 +1042,7 @@ theorem getElemV_length_sub_one_eq_getLastV {l : List α} (h : l.length - 1 < l.
     l｢l.length - 1｣ = getLastV l := by
   rw [getLastV_eq_getElemV]
 
-theorem getLastV_cons_cons {a : α} {l : List α} :
+@[simp, grind =] theorem getLastV_cons_cons {a : α} {l : List α} :
     haveI : Nonempty α := ⟨a⟩
     getLastV (a :: b :: l) = getLastV (b :: l) :=
   (rfl)
@@ -1059,7 +1065,7 @@ theorem getLastV_singleton {a} :
     [a].getLastV = a :=
   (rfl)
 
-theorem getLastV_mem {l : List α} (h : l ≠ []) :
+@[simp] theorem getLastV_mem {l : List α} (h : l ≠ []) :
     haveI : Nonempty α := ⟨l.head h⟩
     l.getLastV ∈ l :=
   match l with
@@ -1211,7 +1217,7 @@ theorem headV_eq_iff_head?_eq_some {xs : List α} (h : xs ≠ []) :
     xs.headV = a ↔ xs.head? = some a := by
   simp only [← head_eq_headV h, head_eq_iff_head?_eq_some]
 
-theorem headV_mem {l : List α} (h : l ≠ []) :
+@[simp] theorem headV_mem {l : List α} (h : l ≠ []) :
     haveI : Nonempty α := ⟨l.head h⟩
     l.headV ∈ l := by
   simp only [← head_eq_headV h, head_mem]
@@ -1299,6 +1305,9 @@ theorem head_tail {l : List α} (h : l.tail ≠ []) :
   | nil => simp at h
   | cons _ l => simp [headV_eq_getElemV]
 
+@[simp] theorem headV_tail {_ : Nonempty α} {l : List α} : (tail l).headV = l｢1｣ := by
+  cases l <;> simp [headV_eq_getElemV]
+
 @[simp] theorem head?_tail {l : List α} : (tail l).head? = l[1]? := by
   simp [head?_eq_getElem?]
 
@@ -1308,6 +1317,11 @@ theorem getLast_tail {l : List α} (h : l.tail ≠ []) :
   congr
   match l with
   | _ :: _ :: l => simp
+
+@[simp, grind =] theorem getLastV_tail {l : List α} (h : l.tail ≠ []) :
+    haveI : Nonempty α := ⟨(tail l).head h⟩
+    (tail l).getLastV = l.getLastV := by
+  simp only [← getLast_eq_getLastV h, ← getLast_eq_getLastV (ne_nil_of_tail_ne_nil h), getLast_tail]
 
 theorem getLast?_tail {l : List α} : (tail l).getLast? = if l.length = 1 then none else l.getLast? := by
   match l with
@@ -1322,6 +1336,11 @@ theorem cons_head_tail (h : l ≠ []) : l.head h :: l.tail = l := by
   induction l with
   | nil => contradiction
   | cons ih => simp_all
+
+@[simp, grind =] theorem cons_headV_tail {l : List α} (h : l ≠ []) :
+    haveI : Nonempty α := ⟨l.head h⟩
+    l.headV :: l.tail = l := by
+  simp only [← head_eq_headV h, cons_head_tail]
 
 /-! ## Basic operations -/
 
@@ -1341,9 +1360,14 @@ theorem cons_head_tail (h : l ≠ []) : l.head h :: l.tail = l := by
   | _ :: l, i+1 => by simp [getElem?_map]
 
 -- The argument `f : α → β` is explicit, to facilitate rewriting from right to left.
-@[simp, grind =] theorem getElem_map (f : α → β) {l} {i : Nat} {h : i < (map f l).length} :
+theorem getElem_map (f : α → β) {l} {i : Nat} {h : i < (map f l).length} :
     (map f l)[i] = f (l[i]'(length_map f ▸ h)) :=
   Option.some.inj <| by rw [← getElem?_eq_getElem, getElem?_map, getElem?_eq_getElem]; rfl
+
+@[simp, grind =] theorem getElemV_map (f : α → β) {l : List α} {i : Nat} (h : i < l.length) :
+    haveI : Nonempty β := ⟨f l[i]⟩
+    (map f l)｢i｣ = f l｢i｣ := by
+  simp [getElemV_eq_getElem?_getD, getElem?_map, h]
 
 @[simp] theorem map_id_fun : map (id : α → α) = id := by
   funext l
@@ -1464,6 +1488,11 @@ theorem head_map {f : α → β} {l : List α} (w) :
   · simp at w
   · simp_all
 
+@[simp] theorem headV_map {f : α → β} {l : List α} (h : l ≠ []) :
+    haveI : Nonempty β := ⟨f (l.head h)⟩
+    (map f l).headV = f l.headV := by
+  simp only [← head_eq_headV (by simpa using h), ← head_eq_headV h, head_map]
+
 @[simp] theorem head?_map {f : α → β} {l : List α} : (map f l).head? = l.head?.map f := by
   cases l <;> rfl
 
@@ -1489,6 +1518,11 @@ theorem getLast_map {f : α → β} {l : List α} (h) :
     simp only [← getElem_cons_length rfl]
     simp only [← map_cons, getElem_map]
     simp
+
+@[simp] theorem getLastV_map {f : α → β} {l : List α} (h : l ≠ []) :
+    haveI : Nonempty β := ⟨f (l.head h)⟩
+    (map f l).getLastV = f l.getLastV := by
+  simp only [← getLast_eq_getLastV (by simpa using h), ← getLast_eq_getLastV h, getLast_map]
 
 @[simp, grind _=_] theorem getLast?_map {f : α → β} {l : List α} : (map f l).getLast? = l.getLast?.map f := by
   cases l
@@ -1785,6 +1819,13 @@ theorem head_filterMap_of_eq_some {f : α → Option β} {l : List α} (w : l �
     simp only [head_cons] at h
     simp [h]
 
+theorem headV_filterMap_of_eq_some {f : α → Option β} {l : List α} (w : l ≠ []) {b : β}
+    (h : f (l.head w) = some b) :
+    haveI : Nonempty β := ⟨b⟩
+    (filterMap f l).headV = b := by
+  have hw := ne_nil_of_mem (mem_filterMap.2 ⟨_, head_mem w, h⟩)
+  simp only [← head_eq_headV hw, head_filterMap_of_eq_some w h]
+
 @[grind →]
 theorem forall_none_of_filterMap_eq_nil (h : filterMap f xs = []) : ∀ x ∈ xs, f x = none := by
   intro x hx
@@ -1863,11 +1904,17 @@ theorem forall_mem_append {p : α → Prop} {l₁ l₂ : List α} :
     (∀ (x) (_ : x ∈ l₁ ++ l₂), p x) ↔ (∀ (x) (_ : x ∈ l₁), p x) ∧ (∀ (x) (_ : x ∈ l₂), p x) := by
   simp only [mem_append, or_imp, forall_and]
 
-@[grind =] theorem getElem_append {l₁ l₂ : List α} {i : Nat} (h : i < (l₁ ++ l₂).length) :
+theorem getElem_append {l₁ l₂ : List α} {i : Nat} (h : i < (l₁ ++ l₂).length) :
     (l₁ ++ l₂)[i] = if h' : i < l₁.length then l₁[i] else l₂[i - l₁.length]'(by simp at h h'; exact Nat.sub_lt_left_of_lt_add h' h) := by
   split <;> rename_i h'
   · rw [getElem_append_left h']
   · rw [getElem_append_right (by simpa using h')]
+
+@[grind =] theorem getElemV_append {_ : Nonempty α} {l₁ l₂ : List α} {i : Nat} :
+    (l₁ ++ l₂)｢i｣ = if i < l₁.length then l₁｢i｣ else l₂｢i - l₁.length｣ := by
+  split <;> rename_i h
+  · exact getElemV_append_left h
+  · exact getElemV_append_right (by simpa using h)
 
 theorem getElem?_append_left {l₁ l₂ : List α} {i : Nat} (hn : i < l₁.length) :
     (l₁ ++ l₂)[i]? = l₁[i]? := by
