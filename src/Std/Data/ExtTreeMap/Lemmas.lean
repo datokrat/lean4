@@ -211,6 +211,9 @@ theorem containsThenInsertIfNew_snd [TransCmp cmp] {k : α} {v : β} :
 @[simp, grind =] theorem get?_eq_getElem? [TransCmp cmp] {a : α} : get? t a = t[a]? := rfl
 @[simp, grind =] theorem get!_eq_getElem! [TransCmp cmp] [Inhabited β] {a : α} : get! t a = t[a]! := rfl
 
+theorem getV_eq_getElemV [TransCmp cmp] {_ : Nonempty β} {a : α} :
+    getV t a = t｢a｣ := rfl
+
 @[simp, grind =]
 theorem getElem?_empty [TransCmp cmp] {a : α} :
     (∅ : ExtTreeMap α β cmp)[a]? = none :=
@@ -555,6 +558,11 @@ theorem getKey_eq_get_getKey? [TransCmp cmp] {a : α} {h} :
 theorem get_getKey? [TransCmp cmp] {a : α} {h} :
     (t.getKey? a).get h = t.getKey a (mem_iff_isSome_getKey?.mpr h) :=
   ExtDTreeMap.get_getKey?
+
+theorem getV_getKey? [TransCmp cmp] {_ : Nonempty α}
+    {a : α} {h : (t.getKey? a).isSome} :
+    (t.getKey? a).getV = t.getKeyV a := by
+  simp [Option.getV, getKeyV_eq_getD_getKey?]
 
 theorem compare_getKey_self [TransCmp cmp] {k : α} (h' : k ∈ t) :
     cmp (t.getKey k h') k = .eq :=
@@ -1821,6 +1829,11 @@ theorem getElem_union_of_mem_right [TransCmp cmp]
     {k : α} (mem : k ∈ t₂) :
     (t₁ ∪ t₂)[k]'(mem_union_of_right mem) = t₂[k]'mem :=
   ExtDTreeMap.Const.get_union_of_mem_right mem
+
+theorem getElemV_union_of_mem_right [TransCmp cmp] {_ : Nonempty β}
+    {k : α} (mem : k ∈ t₂) :
+    (t₁ ∪ t₂)｢k｣ = t₂｢k｣ := by
+  rw [getElemV_union, ← getElem_eq_getD _ (h := mem), getElem_eq_getElemV]
 
 theorem getElem_union_of_not_mem_left [TransCmp cmp]
     {k : α} (not_mem : ¬k ∈ t₁) {h'} :

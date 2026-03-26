@@ -102,6 +102,10 @@ theorem boole_getElem_le_countP {p : α → Bool} {xs : Vector α n} (h : i < n)
   rcases xs with ⟨xs, rfl⟩
   simp [Array.boole_getElem_le_countP]
 
+theorem boole_getElemV_le_countP {p : α → Bool} {xs : Vector α n} (h : i < n) :
+    (if p xs｢i｣ then 1 else 0) ≤ xs.countP p := by
+  simp [getElemV_pos h, boole_getElem_le_countP h]
+
 set_option backward.isDefEq.respectTransparency false in
 @[grind =]
 theorem countP_set {p : α → Bool} {xs : Vector α n} {a : α} (h : i < n) :
@@ -195,6 +199,12 @@ theorem boole_getElem_le_count {a : α} {xs : Vector α n} (h : i < n) :
     (if xs[i] == a then 1 else 0) ≤ xs.count a := by
   rcases xs with ⟨xs, rfl⟩
   simp [Array.boole_getElem_le_count]
+
+theorem boole_getElemV_le_count {a : α} {xs : Vector α n} (h : i < n) :
+    haveI : Nonempty α := ⟨a⟩
+    (if xs｢i｣ == a then 1 else 0) ≤ xs.count a := by
+  haveI : Nonempty α := ⟨a⟩
+  simp [getElemV_pos h, boole_getElem_le_count h]
 
 theorem count_set {a b : α} {xs : Vector α n} (h : i < n) :
     (xs.set i a).count b = xs.count b - (if xs[i] == b then 1 else 0) + (if a == b then 1 else 0) := by

@@ -310,6 +310,11 @@ theorem get_get? [TransCmp cmp] (h : t.WF) {a : α} {h'} :
     (t.get? a).get h' = t.get a ((mem_iff_isSome_get? h).mpr h') :=
   TreeMap.Raw.get_getKey? h.out
 
+theorem getV_get? [TransCmp cmp] {_ : Nonempty α} (h : t.WF)
+    {k : α} {h' : (t.get? k).isSome} :
+    (t.get? k).getV = t.getV k := by
+  simp [Option.getV, getV_eq_getD_get? h]
+
 theorem compare_get_self [TransCmp cmp] (h : t.WF) {k : α} (h' : k ∈ t) :
     cmp (t.get k h') k = .eq :=
   TreeMap.Raw.compare_getKey_self h h'

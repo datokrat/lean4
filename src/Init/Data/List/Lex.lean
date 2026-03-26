@@ -409,6 +409,14 @@ theorem lex_eq_true_iff_exists [BEq α] (lt : α → α → Bool) :
               simpa using w₁ (j + 1) (by simpa)
             · simpa using w₂
 
+theorem lex_eq_true_iff_existsV [Nonempty α] [BEq α] {lt : α → α → Bool}
+    {l₁ l₂ : List α} :
+    lex l₁ l₂ lt = true ↔
+      (l₁.isEqv (l₂.take l₁.length) (· == ·) ∧ l₁.length < l₂.length) ∨
+        (∃ (i : Nat) (_ : i < l₁.length) (_ : i < l₂.length),
+          (∀ j, j < i → l₁｢j｣ == l₂｢j｣) ∧ lt l₁｢i｣ l₂｢i｣) := by
+  simp [lex_eq_true_iff_exists, getElem_eq_getElemV]
+
 attribute [local simp] Nat.add_one_lt_add_one_iff in
 /--
 `l₁` is *not* lexicographically less than `l₂`
@@ -480,6 +488,17 @@ theorem lex_eq_false_iff_exists [BEq α] [PartialEquivBEq α] (lt : α → α �
             · intro j hj
               simpa using w₁ (j + 1) (by simpa)
             · simpa using w₂
+
+theorem lex_eq_false_iff_existsV [Nonempty α] [BEq α] [PartialEquivBEq α] {lt : α → α → Bool}
+    (lt_irrefl : ∀ x y, x == y → lt x y = false)
+    (lt_asymm : ∀ x y, lt x y = true → lt y x = false)
+    (lt_antisymm : ∀ x y, lt x y = false → lt y x = false → x == y)
+    {l₁ l₂ : List α} :
+    lex l₁ l₂ lt = false ↔
+      (l₂.isEqv (l₁.take l₂.length) (· == ·)) ∨
+        (∃ (i : Nat) (_ : i < l₁.length) (_ : i < l₂.length),
+          (∀ j, j < i → l₁｢j｣ == l₂｢j｣) ∧ lt l₂｢i｣ l₁｢i｣) := by
+  simp [lex_eq_false_iff_exists lt_irrefl lt_asymm lt_antisymm, getElem_eq_getElemV]
 
 protected theorem lt_iff_exists [LT α] {l₁ l₂ : List α} :
     l₁ < l₂ ↔

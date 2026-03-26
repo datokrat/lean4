@@ -616,10 +616,15 @@ theorem getLast?_attach {xs : List α} :
   rw [getLast?_eq_head?_reverse, reverse_attach, head?_map, head?_attach]
   simp
 
-@[simp, grind =]
 theorem getLast_attach {xs : List α} (h : xs.attach ≠ []) :
     xs.attach.getLast h = ⟨xs.getLast (by simpa using h), getLast_mem (by simpa using h)⟩ := by
   simp only [getLast_eq_head_reverse, reverse_attach, head_map, head_attach]
+
+@[simp, grind =]
+theorem getLastV_attach {xs : List α} (h : xs.attach ≠ []) :
+    haveI : Nonempty { x // x ∈ xs } := ⟨⟨xs.head (by simpa using h), head_mem _⟩⟩
+    xs.attach.getLastV = ⟨xs.getLastV, getLastV_mem (by simpa using h)⟩ := by
+  simp [← getLast_eq_getLastV h, getLast_attach h, getLast_eq_getLastV]
 
 @[simp]
 theorem countP_attach {l : List α} {p : α → Bool} :

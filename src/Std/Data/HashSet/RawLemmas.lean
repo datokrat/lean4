@@ -320,6 +320,11 @@ theorem get_get? [EquivBEq α] [LawfulHashable α] (h : m.WF) {k : α} {h'} :
     (m.get? k).get h' = m.get k ((mem_iff_isSome_get? h).mpr h') :=
   HashMap.Raw.get_getKey? h.out
 
+theorem getV_get? [EquivBEq α] [LawfulHashable α] {_ : Nonempty α}
+    (h : m.WF) {k : α} {h' : (m.get? k).isSome} :
+    (m.get? k).getV = m.getV k := by
+  simp [Option.getV, getV_eq_getD_get? h]
+
 @[simp]
 theorem get?_erase_self [EquivBEq α] [LawfulHashable α] (h : m.WF) {k : α} :
     (m.erase k).get? k = none :=
@@ -715,6 +720,12 @@ theorem all_eq_false_iff_exists_mem_get [EquivBEq α] [LawfulHashable α]
     {p : α → Bool} (h : m.WF) :
     m.all p = false ↔ ∃ (a : α) (h : a ∈ m), p (m.get a h) = false :=
   HashMap.Raw.all_eq_false_iff_exists_mem_getKey_getElem h.out
+
+theorem all_eq_false_iff_exists_mem_getV [EquivBEq α] [LawfulHashable α]
+    [Nonempty α] {p : α → Bool} (h : m.WF) :
+    m.all p = false ↔ ∃ (a : α), a ∈ m ∧ p (m.getV a) = false := by
+  simp only [all_eq_false_iff_exists_mem_get h, get_eq_getV h]
+  exact ⟨fun ⟨a, h, hp⟩ => ⟨a, h, hp⟩, fun ⟨a, h, hp⟩ => ⟨a, h, hp⟩⟩
 
 theorem all_eq_false_iff_exists_mem_getElem [LawfulBEq α] {p : α → Bool} (h : m.WF) :
     m.all p = false ↔ ∃ (a : α), a ∈ m ∧ p a = false := by

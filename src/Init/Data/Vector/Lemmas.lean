@@ -1113,6 +1113,13 @@ theorem getElem_of_mem {a} {xs : Vector α n} (h : a ∈ xs) : ∃ (i : Nat) (h 
   rcases xs with ⟨xs, rfl⟩
   simpa using Array.getElem_of_mem (by simpa using h)
 
+theorem getElemV_of_mem {a} {xs : Vector α n} (h : a ∈ xs) :
+    haveI : Nonempty α := ⟨a⟩
+    ∃ i : Nat, xs｢i｣ = a := by
+  haveI : Nonempty α := ⟨a⟩
+  obtain ⟨i, hi, rfl⟩ := getElem_of_mem h
+  exact ⟨i, by rw [show xs｢i｣ = xs[i] from getElem_eq_getElemV ..]⟩
+
 theorem getElem?_of_mem {a} {xs : Vector α n} (h : a ∈ xs) : ∃ i : Nat, xs[i]? = some a :=
   let ⟨n, _, e⟩ := getElem_of_mem h; ⟨n, e ▸ getElem?_eq_getElem _⟩
 
@@ -1812,14 +1819,24 @@ theorem getElem_append {xs : Vector α n} {ys : Vector α m} (hi : i < n + m) :
   rcases ys with ⟨ys, rfl⟩
   simp [Array.getElem_append]
 
-@[simp]
 theorem getElem_append_left {xs : Vector α n} {ys : Vector α m} (hi : i < n) :
     (xs ++ ys)[i] = xs[i] := by simp [getElem_append, hi]
 
 @[simp]
+theorem getElemV_append_left {_ : Nonempty α} {xs : Vector α n} {ys : Vector α m} (hi : i < n) :
+    (xs ++ ys)｢i｣ = xs｢i｣ := by
+  simp [getElemV_pos hi, getElemV_pos (by omega : i < n + m)]
+
 theorem getElem_append_right {xs : Vector α n} {ys : Vector α m} (h : i < n + m) (hi : n ≤ i) :
     (xs ++ ys)[i] = ys[i - n] := by
   rw [getElem_append, dif_neg (by omega)]
+
+@[simp]
+theorem getElemV_append_right {_ : Nonempty α} {xs : Vector α n} {ys : Vector α m} (hi : n ≤ i) :
+    (xs ++ ys)｢i｣ = ys｢i - n｣ := by
+  by_cases h : i < n + m
+  · simp [getElemV_pos h, getElemV_pos (show i - n < m by omega)]
+  · simp [getElemV_neg (show ¬i < n + m from h), getElemV_neg (show ¬i - n < m by omega)]
 
 theorem getElem?_append_left {xs : Vector α n} {ys : Vector α m} (hn : i < n) :
     (xs ++ ys)[i]? = xs[i]? := by

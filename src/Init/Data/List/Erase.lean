@@ -302,13 +302,23 @@ theorem eraseP_comm {l : List α} (h : ∀ a ∈ l, ¬ p a ∨ ¬ q a) :
       · simp [h₁, h₂]
       · simp [h₁, h₂, ih (fun b m => h b (mem_cons_of_mem _ m))]
 
-@[grind ←]
 theorem head_eraseP_mem {xs : List α} {p : α → Bool} (h) : (xs.eraseP p).head h ∈ xs :=
   eraseP_sublist.head_mem h
 
 @[grind ←]
+theorem headV_eraseP_mem {xs : List α} {p : α → Bool} (h : xs.eraseP p ≠ []) :
+    haveI : Nonempty α := ⟨(xs.eraseP p).head h⟩
+    (xs.eraseP p).headV ∈ xs := by
+  simp [← head_eq_headV h, head_eraseP_mem h]
+
 theorem getLast_eraseP_mem {xs : List α} {p : α → Bool} (h) : (xs.eraseP p).getLast h ∈ xs :=
   eraseP_sublist.getLast_mem h
+
+@[grind ←]
+theorem getLastV_eraseP_mem {xs : List α} {p : α → Bool} (h : xs.eraseP p ≠ []) :
+    haveI : Nonempty α := ⟨(xs.eraseP p).head h⟩
+    (xs.eraseP p).getLastV ∈ xs := by
+  simp [← getLast_eq_getLastV h, getLast_eraseP_mem h]
 
 theorem eraseP_eq_eraseIdx {xs : List α} {p : α → Bool} :
     xs.eraseP p = match xs.findIdx? p with
@@ -533,8 +543,18 @@ grind_pattern Nodup.erase => Nodup l, l.erase a
 theorem head_erase_mem (xs : List α) (a : α) (h) : (xs.erase a).head h ∈ xs :=
   erase_sublist.head_mem h
 
+theorem headV_erase_mem [BEq α] (xs : List α) (a : α) (h : xs.erase a ≠ []) :
+    haveI : Nonempty α := ⟨(xs.erase a).head h⟩
+    (xs.erase a).headV ∈ xs := by
+  simp [← head_eq_headV h, head_erase_mem xs a h]
+
 theorem getLast_erase_mem (xs : List α) (a : α) (h) : (xs.erase a).getLast h ∈ xs :=
   erase_sublist.getLast_mem h
+
+theorem getLastV_erase_mem [BEq α] (xs : List α) (a : α) (h : xs.erase a ≠ []) :
+    haveI : Nonempty α := ⟨(xs.erase a).head h⟩
+    (xs.erase a).getLastV ∈ xs := by
+  simp [← getLast_eq_getLastV h, getLast_erase_mem xs a h]
 
 theorem erase_eq_eraseIdx (l : List α) (a : α) :
     l.erase a = match l.idxOf? a with

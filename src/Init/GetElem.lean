@@ -144,13 +144,32 @@ theorem getElem_congr [GetElem coll idx elem valid] {c d : coll} (h : c = d)
     {i j : idx} (h' : i = j) (w : valid c i) : c[i] = d[j]'(h' ▸ h ▸ w) := by
   cases h; cases h'; rfl
 
+@[simp, grind]
+theorem getElemV_congr [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
+    [GetElemV cont idx elem] [LawfulGetElemV cont idx elem dom]
+    {_ : Nonempty elem} {c d : cont} {i j : idx} (h₁ : c = d) (h₂ : i = j) :
+    c｢i｣ = d｢j｣ := by
+  cases h₁; cases h₂; rfl
+
 theorem getElem_congr_coll [GetElem coll idx elem valid] {c d : coll} {i : idx} {w : valid c i}
     (h : c = d) : c[i] = d[i]'(h ▸ w) := by
+  cases h; rfl
+
+theorem getElemV_congr_coll [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
+    [GetElemV cont idx elem] [LawfulGetElemV cont idx elem dom]
+    {_ : Nonempty elem} {c d : cont} {i : idx} (h : c = d) :
+    c｢i｣ = d｢i｣ := by
   cases h; rfl
 
 theorem getElem_congr_idx [GetElem coll idx elem valid] {c : coll} {i j : idx} {w : valid c i}
     (h' : i = j) : c[i] = c[j]'(h' ▸ w) := by
   cases h'; rfl
+
+theorem getElemV_congr_idx [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
+    [GetElemV cont idx elem] [LawfulGetElemV cont idx elem dom]
+    {_ : Nonempty elem} {c : cont} {i j : idx} (h : i = j) :
+    c｢i｣ = c｢j｣ := by
+  cases h; rfl
 
 /--
 Lawful `GetElem?` instances (which extend `GetElem`) are those for which the potentially-failing
@@ -198,6 +217,13 @@ theorem getElem_eq_getElemV [GetElem? cont idx elem dom]
     c[i] = c｢i｣ := by
   simp [getElemV_def, getElem?_pos, h]
 
+theorem getElem?_pos_getElemV [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
+    [GetElemV cont idx elem] [LawfulGetElemV cont idx elem dom]
+    (c : cont) (i : idx) (h : dom c i) :
+    haveI : Nonempty elem := ⟨c[i]⟩
+    c[i]? = some c｢i｣ := by
+  simp [getElem?_pos, getElem_eq_getElemV]
+
 @[grind =, simp]
 theorem getElem?_eq_some_getElemV [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
     [GetElemV cont idx elem] [LawfulGetElemV cont idx elem dom]
@@ -224,6 +250,12 @@ theorem getElem!_pos [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem d
   have : Decidable (dom c i) := .isTrue h
   simp [getElem!_def, getElem?_pos, h]
 
+theorem getElem!_pos_getElemV [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
+    [GetElemV cont idx elem] [LawfulGetElemV cont idx elem dom]
+    [Inhabited elem] (c : cont) (i : idx) (h : dom c i) :
+    c[i]! = c｢i｣ := by
+  simp [getElem!_pos, getElem_eq_getElemV]
+
 theorem getElem!_neg [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
     [Inhabited elem] (c : cont) (i : idx) (h : ¬dom c i) : c[i]! = default := by
   have : Decidable (dom c i) := .isFalse h
@@ -242,11 +274,20 @@ theorem getElemV_neg [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem d
   rw [getElemV_def, getElem?_neg _ _ h]
 
 -- TODO
-@[simp, grind =] theorem get_getElem? [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
+theorem get_getElem? [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
     (c : cont) (i : idx) [Decidable (dom c i)] (h) :
     c[i]?.get h = c[i]'(by simp only [getElem?_def] at h; split at h <;> simp_all) := by
   simp only [getElem?_def] at h ⊢
   split <;> simp_all
+
+@[simp, grind =]
+theorem get_getElem?_getElemV [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
+    [GetElemV cont idx elem] [LawfulGetElemV cont idx elem dom]
+    (c : cont) (i : idx) [Decidable (dom c i)] (h : (c[i]?).isSome) :
+    haveI : Nonempty elem := ⟨(c[i]?).get h⟩
+    (c[i]?).get h = c｢i｣ := by
+  simp only [getElem?_def] at h ⊢
+  split <;> simp_all [getElem_eq_getElemV]
 
 @[simp] theorem getElem?_eq_none_iff [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
     (c : cont) (i : idx) [Decidable (dom c i)] : c[i]? = none ↔ ¬dom c i := by
@@ -285,26 +326,71 @@ theorem getElem?_eq_some_iff [GetElem? cont idx elem dom] [LawfulGetElem cont id
     intro ⟨w, w'⟩
     exact h w
 
+theorem getElem?_eq_some_iff_getElemV [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
+    [GetElemV cont idx elem] [LawfulGetElemV cont idx elem dom]
+    {c : cont} {i : idx} [Decidable (dom c i)] {a : elem} :
+    c[i]? = some a ↔ ∃ h : dom c i, c｢i｣ = a := by
+  rw [getElem?_eq_some_iff]
+  constructor
+  · rintro ⟨h, w⟩; exact ⟨h, by rw [← getElem_eq_getElemV _ _ h]; exact w⟩
+  · rintro ⟨h, w⟩; exact ⟨h, by rw [getElem_eq_getElemV _ _ h]; exact w⟩
+
 theorem some_eq_getElem?_iff [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
     {c : cont} {i : idx} [Decidable (dom c i)] : some e = c[i]? ↔ Exists fun h : dom c i => c[i] = e := by
   rw [eq_comm, getElem?_eq_some_iff]
+
+theorem some_eq_getElem?_iff_getElemV [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
+    [GetElemV cont idx elem] [LawfulGetElemV cont idx elem dom]
+    {c : cont} {i : idx} [Decidable (dom c i)] {a : elem} :
+    some a = c[i]? ↔ ∃ h : dom c i, c｢i｣ = a := by
+  rw [eq_comm, getElem?_eq_some_iff_getElemV]
 
 theorem getElem_of_getElem? [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
     {c : cont} {i : idx} [Decidable (dom c i)] (h : c[i]? = some e) : Exists fun h : dom c i => c[i] = e :=
   getElem?_eq_some_iff.mp h
 
+theorem getElemV_of_getElem? [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
+    [GetElemV cont idx elem] [LawfulGetElemV cont idx elem dom]
+    {c : cont} {i : idx} [Decidable (dom c i)] {a : elem}
+    (h : c[i]? = some a) :
+    haveI : Nonempty elem := ⟨a⟩
+    c｢i｣ = a := by
+  have hdom := of_getElem?_eq_some h
+  rw [← getElem_eq_getElemV _ _ hdom]
+  exact (getElem?_eq_some_iff.mp h).2
+
 theorem of_getElem_eq [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
     {c : cont} {i : idx} [Decidable (dom c i)] {h} (_ : c[i] = e) : dom c i := h
 
-@[simp] theorem some_getElem_eq_getElem?_iff [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
+theorem of_getElemV_eq [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
+    [GetElemV cont idx elem] [LawfulGetElemV cont idx elem dom]
+    {c : cont} {i : idx} [Decidable (dom c i)] {_ : Nonempty elem}
+    (h₁ : dom c i) (h₂ : c｢i｣ = a) : c[i]? = some a := by
+  rw [getElem?_pos _ _ h₁, ← getElem_eq_getElemV _ _ h₁, h₂]
+
+theorem some_getElem_eq_getElem?_iff [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
     {c : cont} {i : idx} [Decidable (dom c i)] (h : dom c i):
     (some c[i] = c[i]?) ↔ True := by
   simp [getElem?_pos, h]
 
-@[simp] theorem getElem?_eq_some_getElem_iff [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
+@[simp] theorem some_getElemV_eq_getElem?_iff [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
+    [GetElemV cont idx elem] [LawfulGetElemV cont idx elem dom]
+    {c : cont} {i : idx} [Decidable (dom c i)] (h : dom c i) :
+    haveI : Nonempty elem := ⟨c[i]⟩
+    (some c｢i｣ = c[i]?) ↔ True := by
+  simp [getElem?_pos, getElem_eq_getElemV, h]
+
+theorem getElem?_eq_some_getElem_iff [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
     {c : cont} {i : idx} [Decidable (dom c i)] (h : dom c i):
     (c[i]? = some c[i]) ↔ True := by
   simp [getElem?_pos, h]
+
+@[simp] theorem getElem?_eq_some_getElemV_iff [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
+    [GetElemV cont idx elem] [LawfulGetElemV cont idx elem dom]
+    {c : cont} {i : idx} [Decidable (dom c i)] (h : dom c i) :
+    haveI : Nonempty elem := ⟨c[i]⟩
+    (c[i]? = some c｢i｣) ↔ True := by
+  simp [getElem?_pos, getElem_eq_getElemV, h]
 
 @[simp, grind =] theorem isSome_getElem? [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem dom]
     (c : cont) (i : idx) [Decidable (dom c i)] : c[i]?.isSome = dom c i := by
@@ -398,8 +484,18 @@ instance : GetElem? (List α) Nat α fun as i => i < as.length where
     l.get!Internal i = l[i]! := rfl
 
 -- This is only needed locally; after the `LawfulGetElem` instance the general `getElem?_pos` lemma applies.
-@[local simp] theorem getElem?_eq_getElem {l : List α} {i} (h : i < l.length) :
+theorem getElem?_eq_getElem {l : List α} {i} (h : i < l.length) :
     l[i]? = some l[i] := by
+  induction l generalizing i with
+  | nil => cases h
+  | cons a l ih =>
+    cases i with
+    | zero => rfl
+    | succ i => exact ih ..
+
+@[local simp] theorem getElem?_eq_getElemV {l : List α} {i} (h : i < l.length) :
+    haveI : Nonempty α := ⟨l[i]⟩
+    l[i]? = some l｢i｣ := by
   induction l generalizing i with
   | nil => cases h
   | cons a l ih =>
@@ -501,8 +597,13 @@ instance : LawfulGetElemV (Array α) Nat α fun xs i => i < xs.size where
     simp only [getElemV, getElem?, decidableGetElem?, getD, getElem]
     split <;> rfl
 
-@[simp] theorem getInternal_eq_getElem (a : Array α) (i : Nat) (h) :
+theorem getInternal_eq_getElem (a : Array α) (i : Nat) (h) :
     a.getInternal i h = a[i] := rfl
+
+@[simp] theorem getInternal_eq_getElemV (a : Array α) (i : Nat) (h) :
+    haveI : Nonempty α := ⟨a.getInternal i h⟩
+    a.getInternal i h = a｢i｣ := by
+  simp [getElemV_pos h, getInternal_eq_getElem]
 
 @[simp] theorem get!Internal_eq_getElem! [Inhabited α] (a : Array α) (i : Nat) :
     a.get!Internal i = a[i]! := by

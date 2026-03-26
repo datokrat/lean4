@@ -34,6 +34,10 @@ Examples:
     (finRange n)[i] = Fin.cast length_finRange ⟨i, h⟩ := by
   simp [List.finRange]
 
+theorem getElemV_finRange {i : Nat} (h : i < (List.finRange n).length) :
+    (finRange n)｢i｣ = Fin.cast length_finRange ⟨i, h⟩ := by
+  simp [getElem_eq_getElemV, getElem_finRange h]
+
 @[simp, grind =] theorem finRange_zero : finRange 0 = [] := by simp [finRange]
 
 theorem finRange_succ {n} : finRange (n+1) = 0 :: (finRange n).map Fin.succ := by

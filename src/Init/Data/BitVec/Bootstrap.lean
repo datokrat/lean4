@@ -88,6 +88,14 @@ theorem getElem_cons {b : Bool} {n} {x : BitVec n} {i : Nat} (h : i < n + 1) :
     have p2 : i - n ≠ 0 := by omega
     simp [p1, p2, Nat.testBit_bool_toNat]
 
+@[grind =]
+theorem getElemV_cons {b : Bool} {n} {x : BitVec n} {i : Nat} (h : i < n + 1) :
+    (cons b x)｢i｣ = if i = n then b else x｢i｣ := by
+  simp [getElemV_pos h]
+  split
+  · simp_all
+  · simp_all [getElemV_pos (by omega : i < n)]
+
 private theorem lt_two_pow_of_le {x m n : Nat} (lt : x < 2 ^ m) (le : m ≤ n) : x < 2 ^ n :=
   Nat.lt_of_lt_of_le lt (Nat.pow_le_pow_right (by trivial : 0 < 2) le)
 

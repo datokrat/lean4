@@ -197,6 +197,9 @@ theorem get_eq_getElem [EquivBEq α] [LawfulHashable α] {a : α} {h} : get m a 
 @[simp, grind =] theorem get?_eq_getElem? [EquivBEq α] [LawfulHashable α] {a : α} : get? m a = m[a]? := rfl
 @[simp, grind =] theorem get!_eq_getElem! [EquivBEq α] [LawfulHashable α] [Inhabited β] {a : α} : get! m a = m[a]! := rfl
 
+theorem getV_eq_getElemV [EquivBEq α] [LawfulHashable α] {_ : Nonempty β} {a : α} :
+    getV m a = m｢a｣ := rfl
+
 @[simp, grind =]
 theorem getElem?_empty [EquivBEq α] [LawfulHashable α] {a : α} : (∅ : ExtHashMap α β)[a]? = none :=
   ExtDHashMap.Const.get?_empty
@@ -529,6 +532,11 @@ theorem getKey_eq_get_getKey? [EquivBEq α] [LawfulHashable α] {a : α} {h} :
 theorem get_getKey? [EquivBEq α] [LawfulHashable α] {a : α} {h} :
     (m.getKey? a).get h = m.getKey a (mem_iff_isSome_getKey?.mpr h) :=
   ExtDHashMap.get_getKey?
+
+theorem getV_getKey? [EquivBEq α] [LawfulHashable α] {_ : Nonempty α}
+    {a : α} {h : (m.getKey? a).isSome} :
+    (m.getKey? a).getV = m.getKeyV a := by
+  simp [Option.getV, getKeyV_eq_getD_getKey?]
 
 theorem getKey_beq [EquivBEq α] [LawfulHashable α] {k : α} (h : k ∈ m) : m.getKey k h == k :=
   ExtDHashMap.getKey_beq h
@@ -1681,6 +1689,11 @@ theorem getElem_union_of_mem_right [EquivBEq α] [LawfulHashable α]
     {k : α} (mem : k ∈ m₂) :
     (m₁ ∪ m₂)[k]'(mem_union_of_right mem) = m₂[k]'mem :=
   ExtDHashMap.Const.get_union_of_mem_right mem
+
+theorem getElemV_union_of_mem_right [EquivBEq α] [LawfulHashable α] {_ : Nonempty β}
+    {k : α} (mem : k ∈ m₂) :
+    (m₁ ∪ m₂)｢k｣ = m₂｢k｣ := by
+  rw [getElemV_union, ← getElem_eq_getD (h' := mem), getElem_eq_getElemV]
 
 theorem getElem_union_of_not_mem_left [EquivBEq α] [LawfulHashable α]
     {k : α} (not_mem : ¬k ∈ m₁) {h'} :
@@ -2887,6 +2900,11 @@ theorem getElem_filterMap' [LawfulBEq α]
     (m.filterMap f)[k]'h =
       (f k (m[k]'(mem_of_mem_filterMap h))).get (by simpa using isSome_apply_of_mem_filterMap h) := by
   simp [getElem_filterMap]
+
+theorem getElemV_filterMap' [LawfulBEq α] {_ : Nonempty γ}
+    {f : α → β → Option γ} {k : α} :
+    (m.filterMap f)｢k｣ = (m[k]?.bind (f k)).getD Classical.ofNonempty :=
+  ExtDHashMap.Const.getV_filterMap'
 
 @[grind =] theorem getElem!_filterMap [EquivBEq α] [LawfulHashable α] [Inhabited γ]
     {f : α → β → Option γ} {k : α} :

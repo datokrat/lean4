@@ -308,6 +308,11 @@ theorem get_get? [EquivBEq α] [LawfulHashable α] {k : α} {h} :
     (m.get? k).get h = m.get k (mem_iff_isSome_get?.mpr h) :=
   HashMap.get_getKey?
 
+theorem getV_get? [EquivBEq α] [LawfulHashable α] {_ : Nonempty α}
+    {k : α} {h : (m.get? k).isSome} :
+    (m.get? k).getV = m.getV k := by
+  simp [Option.getV, getV_eq_getD_get?]
+
 theorem get_beq [EquivBEq α] [LawfulHashable α] {k : α} (h : k ∈ m) : m.get k h == k :=
   HashMap.getKey_beq h
 

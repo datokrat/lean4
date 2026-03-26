@@ -52,4 +52,14 @@ theorem beq_eq_decide [BEq α] {as bs : List α} :
       decide (∀ (i : Nat) (h' : i < as.length), as[i] == bs[i]'(h ▸ h')) else false := by
   simp [BEq.beq, beq_eq_isEqv, isEqv_eq_decide]
 
+theorem isEqv_eq_decideV {_ : Nonempty α} {as bs : List α} {r : α → α → Bool} :
+    isEqv as bs r = if as.length = bs.length then
+      decide (∀ (i : Nat), i < as.length → r as｢i｣ bs｢i｣) else false := by
+  simp [isEqv_eq_decide, getElem_eq_getElemV]
+
+theorem beq_eq_decideV {_ : Nonempty α} [BEq α] {as bs : List α} :
+    (as == bs) = if as.length = bs.length then
+      decide (∀ (i : Nat), i < as.length → as｢i｣ == bs｢i｣) else false := by
+  simp [beq_eq_decide, getElem_eq_getElemV]
+
 end List

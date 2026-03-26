@@ -107,17 +107,31 @@ theorem size_eq_zero_iff {a : ByteArray} : a.size = 0 ↔ a = ByteArray.empty :=
 theorem getElem_eq_getElem_data {a : ByteArray} {i : Nat} {h : i < a.size} :
     a[i] = a.data[i]'(by simpa [← size_data]) := rfl
 
-@[simp]
+theorem getElemV_eq_getElemV_data {a : ByteArray} {i : Nat} {_ : Nonempty UInt8} :
+    a｢i｣ = a.data｢i｣ := by
+  simp [getElemV_def, getElem?_def, getElem_eq_getElem_data, size_data]
+
 theorem getElem_append_left {i : Nat} {a b : ByteArray} {h : i < (a ++ b).size}
     (hlt : i < a.size) : (a ++ b)[i] = a[i] := by
   simp only [getElem_eq_getElem_data, data_append]
   rw [Array.getElem_append_left (by simpa)]; rfl
+
+@[simp]
+theorem getElemV_append_left {i : Nat} {a b : ByteArray} (hlt : i < a.size) :
+    haveI : Nonempty UInt8 := ⟨a[i]⟩; (a ++ b)｢i｣ = a｢i｣ := by
+  simp [getElem_eq_getElemV, getElem_append_left hlt]
 
 theorem getElem_append_right {i : Nat} {a b : ByteArray} {h : i < (a ++ b).size}
     (hle : a.size ≤ i) : (a ++ b)[i] = b[i - a.size]'(by simp_all; omega) := by
   simp only [getElem_eq_getElem_data, data_append]
   rw [Array.getElem_append_right (by simpa)]
   simp; rfl
+
+theorem getElemV_append_right {_ : Nonempty UInt8} {i : Nat} {a b : ByteArray} (hle : a.size ≤ i) :
+    (a ++ b)｢i｣ = b｢i - a.size｣ := by
+  by_cases h : i < (a ++ b).size
+  · simp [getElemV_pos _ _ h, getElemV_pos _ _ (by simp at h; omega), getElem_append_right hle]
+  · simp [getElemV_neg _ _ h, getElemV_neg _ _ (by simp at h ⊢; omega)]
 
 @[simp]
 theorem _root_.List.getElem_toByteArray {l : List UInt8} {i : Nat} {h : i < l.toByteArray.size} :
@@ -224,6 +238,14 @@ theorem getElem_extract_aux {xs : ByteArray} {start stop : Nat} (h : i < (xs.ext
 theorem getElem_extract {i : Nat} {b : ByteArray} {start stop : Nat}
     (h) : (b.extract start stop)[i]'h = b[start + i]'(getElem_extract_aux h) := by
   simp [getElem_eq_getElem_data]; rfl
+
+theorem getElemV_extract {i : Nat} {b : ByteArray} {start stop : Nat} {_ : Nonempty UInt8} :
+    (b.extract start stop)｢i｣ = b｢start + i｣ := by
+  by_cases h : i < (b.extract start stop).size
+  · simp [getElemV_pos _ _ h, getElemV_pos _ _ (getElem_extract_aux h), getElem_extract h]
+  · simp only [size_extract] at h
+    have hb : ¬(start + i < b.size) := by omega
+    simp [getElemV_neg _ _ (by simpa [size_extract]), getElemV_neg _ _ hb]
 
 theorem extract_eq_extract_left {a : ByteArray} {i i' j : Nat} :
     a.extract i j = a.extract i' j ↔ min j a.size - i = min j a.size - i' := by

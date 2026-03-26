@@ -127,11 +127,16 @@ namespace Array
 
 /-! ### zipIdx -/
 
-@[simp, grind =] theorem getElem_zipIdx {xs : Array α} {k : Nat} {i : Nat} (h : i < (xs.zipIdx k).size) :
+theorem getElem_zipIdx {xs : Array α} {k : Nat} {i : Nat} (h : i < (xs.zipIdx k).size) :
     (xs.zipIdx k)[i] = (xs[i]'(by simp_all), k + i) := by
   simp [zipIdx]
 
-
+@[simp, grind =]
+theorem getElemV_zipIdx {xs : Array α} {k : Nat} {i : Nat} (h : i < (xs.zipIdx k).size) :
+    haveI : Nonempty (α × Nat) := ⟨(xs[i]'(by simp_all), k + i)⟩
+    (xs.zipIdx k)｢i｣ = (xs｢i｣, k + i) := by
+  haveI : Nonempty (α × Nat) := ⟨(xs[i]'(by simp_all), k + i)⟩
+  simp [getElemV_pos _ _ h, getElem_zipIdx h, getElem_eq_getElemV]
 
 @[simp, grind =] theorem zipIdx_toArray {l : List α} {k : Nat} :
     l.toArray.zipIdx k = (l.zipIdx k).toArray := by

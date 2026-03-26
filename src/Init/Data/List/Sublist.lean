@@ -323,8 +323,18 @@ grind_pattern Sublist.filter => l₁ <+ l₂, l₂.filter p where
 theorem head_filter_mem (xs : List α) (p : α → Bool) (h) : (xs.filter p).head h ∈ xs :=
   filter_sublist.head_mem h
 
+theorem headV_filter_mem (xs : List α) (p : α → Bool) (h : xs.filter p ≠ []) :
+    haveI : Nonempty α := ⟨(xs.filter p).head h⟩
+    (xs.filter p).headV ∈ xs := by
+  simp [← head_eq_headV h, head_filter_mem xs p h]
+
 theorem getLast_filter_mem (xs : List α) (p : α → Bool) (h) : (xs.filter p).getLast h ∈ xs :=
   filter_sublist.getLast_mem h
+
+theorem getLastV_filter_mem (xs : List α) (p : α → Bool) (h : xs.filter p ≠ []) :
+    haveI : Nonempty α := ⟨(xs.filter p).head h⟩
+    (xs.filter p).getLastV ∈ xs := by
+  simp [← getLast_eq_getLastV h, getLast_filter_mem xs p h]
 
 @[grind =]
 theorem sublist_filterMap_iff {l₁ : List β} {f : α → Option β} :
@@ -1004,6 +1014,11 @@ theorem prefix_iff_getElem {l₁ l₂ : List α} :
         simp only [length_cons, Nat.add_le_add_iff_right] at hl h
         simp only [cons_prefix_cons]
         exact ⟨h 0 (zero_lt_succ _), tail_ih hl fun a ha ↦ h a.succ (succ_lt_succ ha)⟩
+
+theorem prefix_iff_getElemV [Nonempty α] {l₁ l₂ : List α} :
+    l₁ <+: l₂ ↔ ∃ (_ : l₁.length ≤ l₂.length),
+      ∀ i, i < l₁.length → l₁｢i｣ = l₂｢i｣ := by
+  simp [prefix_iff_getElem, getElem_eq_getElemV]
 
 theorem cons_prefix_iff {a : α} {l₁ l₂ : List α} :
     a :: l₁ <+: l₂ ↔ ∃ l', l₂ = a :: l' ∧ l₁ <+: l' := by

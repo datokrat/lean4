@@ -87,11 +87,16 @@ theorem extract_sub_one {xs : Vector α n} {i j : Nat} (h : j < n) :
   rcases xs with ⟨xs, rfl⟩
   simp [Array.extract_sub_one, h]
 
-@[simp]
 theorem getElem?_extract_of_lt {xs : Vector α n} {i j k : Nat} (h : k < min j n - i) :
     (xs.extract i j)[k]? = some (xs[i + k]'(by omega)) := by
   rcases xs with ⟨xs, rfl⟩
   simp [h]
+
+@[simp]
+theorem getElemV?_extract_of_lt {_ : Nonempty α} {xs : Vector α n} {i j k : Nat}
+    (h : k < min j n - i) :
+    (xs.extract i j)[k]? = some xs｢i + k｣ := by
+  rw [getElem?_extract_of_lt h, show xs[i + k] = xs｢i + k｣ from (getElem_eq_getElemV ..).symm]
 
 theorem getElem?_extract_of_succ {xs : Vector α n} {j : Nat} :
     (xs.extract 0 (j + 1))[j]? = xs[j]? := by

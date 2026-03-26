@@ -223,6 +223,12 @@ theorem containsThenInsertIfNew_snd [TransCmp cmp] (h : t.WF) {k : α} {v : β} 
 @[simp, grind =] theorem get?_eq_getElem? {a : α} : get? t a = t[a]? := rfl
 @[simp, grind =] theorem get!_eq_getElem! [Inhabited β] {a : α} : get! t a = t[a]! := rfl
 
+theorem getV_eq_getElemV [TransCmp cmp] {_ : Nonempty β} (h : t.WF) {a : α} :
+    getV t a = t｢a｣ := rfl
+
+theorem getElemV_eq_getV [TransCmp cmp] {_ : Nonempty β} (h : t.WF) {a : α} :
+    t｢a｣ = getV t a := rfl
+
 @[simp, grind =]
 theorem getElem?_emptyc [TransCmp cmp] {a : α} :
     (∅ : Raw α β cmp)[a]? = none :=
@@ -605,6 +611,11 @@ theorem getKey_eq_get_getKey? [TransCmp cmp] (h : t.WF) {a : α} {h' : a ∈ t} 
 theorem get_getKey? [TransCmp cmp] (h : t.WF) {a : α} {h'} :
     (t.getKey? a).get h' = t.getKey a ((mem_iff_isSome_getKey? h).mpr h') :=
   DTreeMap.Raw.get_getKey? h.out
+
+theorem getV_getKey? [TransCmp cmp] {_ : Nonempty α} (h : t.WF)
+    {a : α} {h' : (t.getKey? a).isSome} :
+    (t.getKey? a).getV = t.getKeyV a := by
+  simp [Option.getV, getKeyV_eq_getD_getKey? h]
 
 theorem compare_getKey_self [TransCmp cmp] (h : t.WF) {k : α} (h' : k ∈ t) :
     cmp (t.getKey k h') k = .eq :=

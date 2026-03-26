@@ -61,6 +61,12 @@ length `> i`. Version designed to rewrite from the small list to the big list. -
     xs[i]'(Nat.lt_of_lt_of_le h (length_take_le' _ _)) := by
   rw [length_take, Nat.lt_min] at h; rw [getElem_take' (xs := xs) _ h.1]
 
+@[simp, grind =]
+theorem getElemV_take {_ : Nonempty α} {xs : List α} {j i : Nat} :
+    (xs.take j)｢i｣ = xs｢i｣ := by
+  simp [getElemV_def, getElem?_take]
+  split <;> simp [*]
+
 theorem getElem?_take_eq_none {l : List α} {i j : Nat} (h : i ≤ j) :
     (l.take i)[j]? = none :=
   getElem?_eq_none <| Nat.le_trans (length_take_le _ _) h
@@ -83,6 +89,11 @@ theorem head_take {l : List α} {i : Nat} (h : l.take i ≠ []) :
   apply Option.some_inj.1
   rw [← head?_eq_some_head, ← head?_eq_some_head, head?_take, if_neg]
   simp_all
+
+theorem headV_take {l : List α} {i : Nat} (h : l.take i ≠ []) :
+    haveI : Nonempty α := ⟨(l.take i).head h⟩
+    (l.take i).headV = l.headV := by
+  simp [← head_eq_headV h, head_take h]
 
 theorem getLast?_take {l : List α} : (l.take i).getLast? = if i = 0 then none else l[i - 1]?.or l.getLast? := by
   rw [getLast?_eq_getElem?, getElem?_take, length_take]
@@ -107,6 +118,11 @@ theorem getLast_take {l : List α} (h : l.take i ≠ []) :
     simp
   · rw [getElem?_eq_none (by omega), getLast_eq_getElem]
     simp
+
+theorem getLastV_take {l : List α} {i : Nat} (h : l.take i ≠ []) :
+    haveI : Nonempty α := ⟨(l.take i).head h⟩
+    (l.take i).getLastV = l[i - 1]?.getD l.getLastV := by
+  simp [← getLast_eq_getLastV h, getLast_take h, getLast_eq_getLastV]
 
 @[grind =]
 theorem take_take : ∀ {i j} {l : List α}, take i (take j l) = take (min i j) l
@@ -248,6 +264,11 @@ dropping the first `i` elements. Version designed to rewrite from the small list
       rw [Nat.add_comm]
       exact Nat.add_lt_of_lt_sub (length_drop ▸ h)) := by
   rw [getElem_drop']
+
+@[simp, grind =]
+theorem getElemV_drop {_ : Nonempty α} {xs : List α} {i j : Nat} :
+    (xs.drop i)｢j｣ = xs｢i + j｣ := by
+  simp [getElemV_def, getElem?_drop]
 
 @[simp, grind =]
 theorem getElem?_drop {xs : List α} {i j : Nat} : (xs.drop i)[j]? = xs[i + j]? := by
@@ -596,7 +617,6 @@ theorem lt_length_left_of_zipWith {f : α → β → γ} {i : Nat} {l : List α}
 theorem lt_length_right_of_zipWith {f : α → β → γ} {i : Nat} {l : List α} {l' : List β}
     (h : i < (zipWith f l l').length) : i < l'.length := by rw [length_zipWith] at h; omega
 
-@[simp, grind =]
 theorem getElem_zipWith {f : α → β → γ} {l : List α} {l' : List β}
     {i : Nat} {h : i < (zipWith f l l').length} :
     (zipWith f l l')[i] =
@@ -607,6 +627,13 @@ theorem getElem_zipWith {f : α → β → γ} {l : List α} {l' : List β}
   exact
     ⟨l[i]'(lt_length_left_of_zipWith h), l'[i],
       by rw [getElem?_eq_getElem], by rw [getElem?_eq_getElem this]; exact ⟨rfl, rfl⟩⟩
+
+@[simp, grind =]
+theorem getElemV_zipWith {f : α → β → γ} {l : List α} {l' : List β}
+    {i : Nat} (h : i < (zipWith f l l').length) :
+    haveI : Nonempty γ := ⟨f (l[i]'(lt_length_left_of_zipWith h)) (l'[i]'(lt_length_right_of_zipWith h))⟩
+    (zipWith f l l')｢i｣ = f l｢i｣ l'｢i｣ := by
+  simp [getElem_eq_getElemV, getElem_zipWith (h := h)]
 
 theorem zipWith_eq_zipWith_take_min : ∀ {l₁ : List α} {l₂ : List β},
     zipWith f l₁ l₂ = zipWith f (l₁.take (min l₁.length l₂.length)) (l₂.take (min l₁.length l₂.length))

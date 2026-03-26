@@ -82,6 +82,11 @@ theorem suffix_iff_getElem {l₁ l₂ : List α} :
     rw [getElem?_eq_getElem]
     simpa using w
 
+theorem suffix_iff_getElemV [Nonempty α] {l₁ l₂ : List α} :
+    l₁ <:+ l₂ ↔ ∃ (_ : l₁.length ≤ l₂.length),
+      ∀ i, i < l₁.length → l₂｢i + l₂.length - l₁.length｣ = l₁｢i｣ := by
+  simp [suffix_iff_getElem, getElem_eq_getElemV]
+
 theorem infix_iff_getElem? {l₁ l₂ : List α} : l₁ <:+: l₂ ↔
     ∃ k, l₁.length + k ≤ l₂.length ∧ ∀ i (h : i < l₁.length), l₂[i + k]? = some l₁[i] := by
   constructor

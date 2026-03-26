@@ -222,6 +222,11 @@ theorem getElem_succ_scanl {f : β → α → β} (h : i + 1 < (scanl f b l).len
   simp only [length_scanl, Nat.add_lt_add_iff_right] at h
   simp [take_add_one, *, - take_append_getElem]
 
+theorem getElemV_succ_scanl {f : β → α → β} (h : i + 1 < (scanl f b l).length) :
+    haveI : Nonempty β := ⟨b⟩
+    (scanl f b l)｢i + 1｣ = f (l.scanl f b)｢i｣ l｢i｣ := by
+  simp [getElem_eq_getElemV, getElem_succ_scanl h]
+
 @[grind =]
 theorem scanl_append {f : β → α → β} {l₁ l₂ : List α} :
     scanl f b (l₁ ++ l₂) = scanl f b l₁ ++ (scanl f (foldl f b l₁) l₂).tail := by

@@ -297,6 +297,13 @@ theorem fst_eq_of_mem_zipIdx {x : α × Nat} {xs : Array α} {k : Nat} (h : x �
   cases xs
   exact List.fst_eq_of_mem_zipIdx (by simpa using h)
 
+theorem fst_eq_of_mem_zipIdxV {_ : Nonempty α} {x : α × Nat} {xs : Array α} {k : Nat}
+    (h : x ∈ zipIdx xs k) :
+    x.1 = xs｢x.2 - k｣ := by
+  have hlt : x.2 - k < xs.size := by
+    have := le_snd_of_mem_zipIdx h; have := snd_lt_add_of_mem_zipIdx h; omega
+  simp [getElemV_pos _ _ hlt, fst_eq_of_mem_zipIdx h]
+
 theorem mem_zipIdx {x : α} {i : Nat} {xs : Array α} {k : Nat} (h : (x, i) ∈ xs.zipIdx k) :
     k ≤ i ∧ i < k + xs.size ∧
       x = xs[i - k]'(by have := le_snd_of_mem_zipIdx h; have := snd_lt_add_of_mem_zipIdx h; omega) :=

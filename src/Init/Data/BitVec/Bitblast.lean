@@ -453,6 +453,10 @@ theorem getElem_neg {i : Nat} {x : BitVec w} (h : i < w) :
     (-x)[i] = (x[i] ^^ decide (∃ j < i, x.getLsbD j = true)) := by
   simp [← getLsbD_eq_getElem, getLsbD_neg, h]
 
+theorem getElemV_neg {i : Nat} {x : BitVec w} (h : i < w) :
+    (-x)｢i｣ = (x｢i｣ ^^ decide (∃ j < i, x.getLsbD j = true)) := by
+  simp [getElemV_pos h]
+
 theorem getMsbD_neg {i : Nat} {x : BitVec w} :
     getMsbD (-x) i =
       (getMsbD x i ^^ decide (∃ j < w, i < j ∧ getMsbD x j = true)) := by

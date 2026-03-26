@@ -56,9 +56,13 @@ def neg [Neg α] (xs : Vector α n) : Vector α n :=
 
 instance [Neg α] : Neg (Vector α n) := ⟨neg⟩
 
-@[simp, grind =]
 theorem getElem_neg [Neg α] (xs : Vector α n) (i : Nat) (h : i < n) : (-xs)[i] = -xs[i] := by
   erw [getElem_map]
+
+@[simp, grind =]
+theorem getElemV_neg [Neg α] {_ : Nonempty α} (xs : Vector α n) (i : Nat) :
+    (-xs)｢i｣ = -xs｢i｣ := by
+  simp [getElemV_def]
 
 theorem neg_zero [Zero α] [Neg α] (neg_zero : -(0 : α) = 0) : -(0 : Vector α n) = 0 := by grind
 theorem neg_add_cancel [Zero α] [Add α] [Neg α] (neg_add_cancel : ∀ x : α, -x + x = 0) (xs : Vector α n) : -xs + xs = 0 := by grind

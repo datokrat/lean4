@@ -229,13 +229,18 @@ theorem getElem?_zipIdx :
     simp only [zipIdx_cons, getElem?_cons_succ]
     exact getElem?_zipIdx.trans <| by rw [Nat.add_right_comm]; rfl
 
-@[simp, grind =]
 theorem getElem_zipIdx {l : List α} (h : i < (l.zipIdx j).length) :
     (l.zipIdx j)[i] = (l[i]'(by simpa [length_zipIdx] using h), j + i) := by
   simp only [length_zipIdx] at h
   rw [getElem_eq_getElem?_get]
   simp only [getElem?_zipIdx, getElem?_eq_getElem h]
   simp
+
+@[simp, grind =]
+theorem getElemV_zipIdx {l : List α} {i j : Nat} (h : i < (l.zipIdx j).length) :
+    haveI : Nonempty (α × Nat) := ⟨(l[i]'(by simpa [length_zipIdx] using h), j + i)⟩
+    (l.zipIdx j)｢i｣ = (l｢i｣, j + i) := by
+  simp [getElem_eq_getElemV, getElem_zipIdx h]
 
 @[simp, grind =]
 theorem tail_zipIdx {l : List α} {i : Nat} : (zipIdx l i).tail = zipIdx l.tail (i + 1) := by

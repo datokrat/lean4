@@ -39,12 +39,20 @@ theorem modifyHead_eq_set [Inhabited α] (f : α → α) (l : List α) :
 @[simp, grind =] theorem modifyHead_modifyHead {l : List α} {f g : α → α} :
     (l.modifyHead f).modifyHead g = l.modifyHead (g ∘ f) := by cases l <;> simp [modifyHead]
 
-@[grind =]
 theorem getElem_modifyHead {l : List α} {f : α → α} {i} (h : i < (l.modifyHead f).length) :
     (l.modifyHead f)[i] = if h' : i = 0 then f (l[0]'(by simp at h; omega)) else l[i]'(by simpa using h) := by
   cases l with
   | nil => simp at h
   | cons hd tl => cases i <;> simp
+
+@[grind =]
+theorem getElemV_modifyHead {_ : Nonempty α} {l : List α} {f : α → α} {i : Nat} :
+    (l.modifyHead f)｢i｣ = if i = 0 ∧ 0 < l.length then f l｢0｣ else l｢i｣ := by
+  simp only [getElemV_def, getElem?_modifyHead]
+  split
+  · simp_all [Option.map]
+    split <;> simp_all
+  · simp
 
 theorem getElem_modifyHead_zero {l : List α} {f : α → α} {h} :
     (l.modifyHead f)[0] = f (l[0]'(by simpa using h)) := by simp [getElem_modifyHead]

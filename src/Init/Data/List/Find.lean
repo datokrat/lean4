@@ -129,6 +129,11 @@ theorem find?_eq_findSome?_guard {l : List α} : find? p l = findSome? (Option.g
     (l.filterMap f).head h = (l.findSome? f).get (by simp_all [Option.isSome_iff_ne_none]) := by
   simp [head_eq_iff_head?_eq_some]
 
+theorem headV_filterMap {f : α → Option β} {l : List α} (h : (l.filterMap f) ≠ []) :
+    haveI : Nonempty β := ⟨(l.filterMap f).head h⟩
+    (l.filterMap f).headV = (l.findSome? f).get (by simp_all [Option.isSome_iff_ne_none]) := by
+  simp [← head_eq_headV h, head_filterMap h]
+
 @[simp, grind =] theorem getLast?_filterMap {f : α → Option β} {l : List α} : (l.filterMap f).getLast? = l.reverse.findSome? f := by
   rw [getLast?_eq_head?_reverse]
   simp [← filterMap_reverse]
@@ -136,6 +141,11 @@ theorem find?_eq_findSome?_guard {l : List α} : find? p l = findSome? (Option.g
 @[simp, grind =] theorem getLast_filterMap {f : α → Option β} {l : List α} (h) :
     (l.filterMap f).getLast h = (l.reverse.findSome? f).get (by simp_all [Option.isSome_iff_ne_none]) := by
   simp [getLast_eq_iff_getLast?_eq_some]
+
+theorem getLastV_filterMap {f : α → Option β} {l : List α} (h : (l.filterMap f) ≠ []) :
+    haveI : Nonempty β := ⟨(l.filterMap f).head h⟩
+    (l.filterMap f).getLastV = (l.reverse.findSome? f).get (by simp_all [Option.isSome_iff_ne_none]) := by
+  simp [← getLast_eq_getLastV h, getLast_filterMap h]
 
 @[simp, grind _=_] theorem map_findSome? {f : α → Option β} {g : β → γ} {l : List α} :
     (l.findSome? f).map g = l.findSome? (Option.map g ∘ f) := by
@@ -149,16 +159,26 @@ theorem findSome?_map {f : β → γ} {l : List β} : findSome? p (l.map f) = l.
     simp only [map_cons, findSome?]
     split <;> simp_all
 
-@[grind =]
 theorem head_flatten {L : List (List α)} (h : ∃ l, l ∈ L ∧ l ≠ []) :
     (flatten L).head (by simpa using h) = (L.findSome? head?).get (by simpa using h) := by
   simp [head_eq_iff_head?_eq_some, head?_flatten]
 
 @[grind =]
+theorem headV_flatten {L : List (List α)} (h : ∃ l, l ∈ L ∧ l ≠ []) :
+    haveI : Nonempty α := let ⟨l, _, hl⟩ := h; ⟨l.head hl⟩
+    (flatten L).headV = (L.findSome? head?).get (by simpa using h) := by
+  simp [← head_eq_headV (by simpa using h), head_flatten h]
+
 theorem getLast_flatten {L : List (List α)} (h : ∃ l, l ∈ L ∧ l ≠ []) :
     (flatten L).getLast (by simpa using h) =
       (L.reverse.findSome? getLast?).get (by simpa using h) := by
   simp [getLast_eq_iff_getLast?_eq_some, getLast?_flatten]
+
+@[grind =]
+theorem getLastV_flatten {L : List (List α)} (h : ∃ l, l ∈ L ∧ l ≠ []) :
+    haveI : Nonempty α := let ⟨l, _, hl⟩ := h; ⟨l.head hl⟩
+    (flatten L).getLastV = (L.reverse.findSome? getLast?).get (by simpa using h) := by
+  simp [← getLast_eq_getLastV (by simpa using h), getLast_flatten h]
 
 @[grind =]
 theorem findSome?_replicate : findSome? f (replicate n a) = if n = 0 then none else f a := by
@@ -337,6 +357,11 @@ grind_pattern get_find?_mem => (xs.find? p).get h
     (l.filter p).head h = (l.find? p).get (by simp_all [Option.isSome_iff_ne_none]) := by
   simp [head_eq_iff_head?_eq_some]
 
+theorem headV_filter {p : α → Bool} {l : List α} (h : (l.filter p) ≠ []) :
+    haveI : Nonempty α := ⟨(l.filter p).head h⟩
+    (l.filter p).headV = (l.find? p).get (by simp_all [Option.isSome_iff_ne_none]) := by
+  simp [← head_eq_headV h, head_filter h]
+
 @[simp, grind =] theorem getLast?_filter {p : α → Bool} {l : List α} : (l.filter p).getLast? = l.reverse.find? p := by
   rw [getLast?_eq_head?_reverse]
   simp [← filter_reverse]
@@ -344,6 +369,11 @@ grind_pattern get_find?_mem => (xs.find? p).get h
 @[simp, grind =] theorem getLast_filter {p : α → Bool} {l : List α} (h) :
     (l.filter p).getLast h = (l.reverse.find? p).get (by simp_all [Option.isSome_iff_ne_none]) := by
   simp [getLast_eq_iff_getLast?_eq_some]
+
+theorem getLastV_filter {p : α → Bool} {l : List α} (h : (l.filter p) ≠ []) :
+    haveI : Nonempty α := ⟨(l.filter p).head h⟩
+    (l.filter p).getLastV = (l.reverse.find? p).get (by simp_all [Option.isSome_iff_ne_none]) := by
+  simp [← getLast_eq_getLastV h, getLast_filter h]
 
 @[simp, grind =] theorem find?_filterMap {xs : List α} {f : α → Option β} {p : β → Bool} :
     (xs.filterMap f).find? p = (xs.find? (fun a => (f a).any p)).bind f := by
@@ -570,6 +600,11 @@ theorem findIdx_getElem {xs : List α} {w : xs.findIdx p < xs.length} :
     p xs[xs.findIdx p] :=
   xs.findIdx_of_getElem?_eq_some (getElem?_eq_getElem w)
 
+theorem findIdx_getElemV {p : α → Bool} {xs : List α}
+    (w : xs.findIdx p < xs.length) :
+    p xs｢xs.findIdx p｣ := by
+  simp [getElem_eq_getElemV, findIdx_getElem]
+
 grind_pattern findIdx_getElem => xs[xs.findIdx p]
 
 theorem findIdx_lt_length_of_exists {xs : List α} (h : ∃ x ∈ xs, p x) :
@@ -649,6 +684,11 @@ theorem not_of_lt_findIdx {p : α → Bool} {xs : List α} {i : Nat} (h : i < xs
 
 grind_pattern not_of_lt_findIdx => xs.findIdx p, xs[i]
 
+theorem not_of_lt_findIdxV {_ : Nonempty α} {p : α → Bool} {xs : List α} {i : Nat}
+    (h : i < xs.findIdx p) :
+    p xs｢i｣ = false := by
+  simp [getElem_eq_getElemV, not_of_lt_findIdx h]
+
 /-- If `¬ p xs[j]` for all `j < i`, then `i ≤ xs.findIdx p`. -/
 theorem le_findIdx_of_not {p : α → Bool} {xs : List α} {i : Nat} (h : i < xs.length)
     (h2 : ∀ j (hji : j < i), p (xs[j]'(Nat.lt_trans hji h)) = false) : i ≤ xs.findIdx p := by
@@ -676,6 +716,12 @@ theorem findIdx_eq {p : α → Bool} {xs : List α} {i : Nat} (h : i < xs.length
   intro h3
   simp at h3
   simp_all [not_of_lt_findIdx h3]
+
+theorem findIdxV_eq {p : α → Bool} {xs : List α} {i : Nat}
+    (h : i < xs.length) :
+    haveI : Nonempty α := ⟨xs[i]'h⟩
+    xs.findIdx p = i ↔ p xs｢i｣ ∧ ∀ j, j < i → p xs｢j｣ = false := by
+  simp [findIdx_eq h, getElem_eq_getElemV]
 
 @[simp]
 theorem lt_findIdx_iff (xs : List α) (p : α → Bool) (i : Nat) :

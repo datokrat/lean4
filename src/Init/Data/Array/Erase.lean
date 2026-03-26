@@ -424,6 +424,11 @@ theorem mem_eraseIdx_iff_getElem {x : α} {xs : Array α} {k} {h} : x ∈ xs.era
   rcases xs with ⟨xs⟩
   simp [List.mem_eraseIdx_iff_getElem, *]
 
+theorem mem_eraseIdx_iff_getElemV {x : α} {xs : Array α} {k : Nat} {h : k < xs.size} :
+    x ∈ xs.eraseIdx k h ↔ ∃ i, i < xs.size ∧ i ≠ k ∧ xs｢i｣ = x := by
+  haveI : Nonempty α := ⟨xs[k]⟩
+  simp only [mem_eraseIdx_iff_getElem, getElem_eq_getElemV]
+
 theorem mem_eraseIdx_iff_getElem? {x : α} {xs : Array α} {k} {h} : x ∈ xs.eraseIdx k h ↔ ∃ i ≠ k, xs[i]? = some x := by
   rcases xs with ⟨xs⟩
   simp [List.mem_eraseIdx_iff_getElem?, *]
@@ -439,10 +444,26 @@ theorem getElem_eraseIdx_of_lt {xs : Array α} {i : Nat} (w : i < xs.size) {j : 
   rcases xs with ⟨xs⟩
   simp [List.getElem_eraseIdx_of_lt, *]
 
+theorem getElemV_eraseIdx_of_lt {_ : Nonempty α} {xs : Array α} {i : Nat} (w : i < xs.size)
+    {j : Nat} (h' : j < i) :
+    (xs.eraseIdx i)｢j｣ = xs｢j｣ := by
+  have hj : j < (xs.eraseIdx i).size := by simp; omega
+  simp [getElemV_pos _ _ hj, getElemV_pos _ _ (by omega : j < xs.size),
+    getElem_eraseIdx_of_lt w hj h']
+
 theorem getElem_eraseIdx_of_ge {xs : Array α} {i : Nat} (w : i < xs.size) {j : Nat} (h : j < (xs.eraseIdx i).size) (h' : i ≤ j) :
     (xs.eraseIdx i)[j] = xs[j + 1]'(by simp at h; omega) := by
   rcases xs with ⟨xs⟩
   simp [List.getElem_eraseIdx_of_ge, *]
+
+theorem getElemV_eraseIdx_of_ge {_ : Nonempty α} {xs : Array α} {i : Nat} (w : i < xs.size)
+    {j : Nat} (h' : i ≤ j) :
+    (xs.eraseIdx i)｢j｣ = xs｢j + 1｣ := by
+  by_cases hj : j < (xs.eraseIdx i).size
+  · simp [getElemV_pos _ _ hj, getElemV_pos _ _ (by simp at hj; omega),
+      getElem_eraseIdx_of_ge w hj h']
+  · simp at hj
+    simp [getElemV_neg _ _ (by simpa using hj), getElemV_neg _ _ (by omega)]
 
 theorem eraseIdx_set_eq {xs : Array α} {i : Nat} {a : α} {h : i < xs.size} :
     (xs.set i a).eraseIdx i (by simp; omega) = xs.eraseIdx i := by

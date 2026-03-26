@@ -98,6 +98,11 @@ theorem getElem_eq_getElem_reverse {l : List α} {i} (h : i < l.length) :
   congr
   omega
 
+theorem getElemV_eq_getElemV_reverse {l : List α} {i} (h : i < l.length) :
+    haveI : Nonempty α := ⟨l[i]⟩
+    l｢i｣ = l.reverse｢l.length - 1 - i｣ := by
+  simp [getElem_eq_getElemV, getElem_eq_getElem_reverse h]
+
 /-! ### leftpad -/
 
 /-- The length of the List returned by `List.leftpad n a l` is equal
@@ -202,6 +207,12 @@ theorem getElem_eq_getElem_intersperse_two_mul (h : i < l.length) :
     l[i] = (l.intersperse sep)[2 * i]'(by rw [length_intersperse]; omega) := by
   simp
 
+theorem getElemV_eq_getElemV_intersperse_two_mul {l : List α} {sep : α} {i : Nat}
+    (h : i < l.length) :
+    haveI : Nonempty α := ⟨sep⟩
+    l｢i｣ = (l.intersperse sep)｢2 * i｣ := by
+  simp [getElem_eq_getElemV, getElem_eq_getElem_intersperse_two_mul h]
+
 end intersperse
 
 /-! ### eraseIdx -/
@@ -225,6 +236,10 @@ theorem mem_eraseIdx_iff_getElem? {x : α} {l} {k} : x ∈ eraseIdx l k ↔ ∃ 
   · rintro h;
     obtain ⟨h', -⟩ := getElem?_eq_some_iff.1 h
     exact ⟨h', h⟩
+
+theorem mem_eraseIdx_iff_getElemV {x : α} {l : List α} {k : Nat} :
+    x ∈ eraseIdx l k ↔ ∃ i, ∃ _ : i < l.length, i ≠ k ∧ l｢i｣ = x := by
+  simp [mem_eraseIdx_iff_getElem, getElem_eq_getElemV]
 
 /-! ### min? -/
 

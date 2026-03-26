@@ -277,6 +277,10 @@ theorem getElem_eq_iff {l : List α} {i : Nat} (h : i < l.length) : l[i] = x ↔
   simp only [getElem?_eq_some_iff]
   exact ⟨fun w => ⟨h, w⟩, fun h => h.2⟩
 
+theorem getElemV_eq_iff {l : List α} {i : Nat} (h : i < l.length) :
+    l｢i｣ = x ↔ l[i]? = some x := by
+  simp [getElem_eq_getElemV, getElem_eq_iff h]
+
 theorem getElem_eq_getElem?_get {l : List α} {i : Nat} (h : i < l.length) :
     l[i] = l[i]?.get (by simp [h]) := by
   simp [getElem?_eq_some_getElemV, h]
@@ -284,6 +288,10 @@ theorem getElem_eq_getElem?_get {l : List α} {i : Nat} (h : i < l.length) :
 theorem getElem_eq_getD {l : List α} {i : Nat} {h : i < l.length} (fallback : α) :
     l[i] = l.getD i fallback := by
   rw [getElem_eq_getElem?_get, List.getD, Option.get_eq_getD]
+
+theorem getElemV_eq_getD {l : List α} {i : Nat} (h : i < l.length) (fallback : α) :
+    l｢i｣ = l.getD i fallback := by
+  simp [getElem_eq_getElemV, getElem_eq_getD fallback]
 
 theorem getD_getElem? {l : List α} {i : Nat} {d : α} :
     l[i]?.getD d = if p : i < l.length then l[i]'p else d := by
@@ -319,6 +327,9 @@ such a rewrite, with `rw [getElem_of_eq h]`.
 -/
 theorem getElem_of_eq {l l' : List α} (h : l = l') {i : Nat} (w : i < l.length) :
     l[i] = l'[i]'(h ▸ w) := by cases h; rfl
+
+theorem getElemV_of_eq {_ : Nonempty α} {l l' : List α} (h : l = l') {i : Nat} :
+    l｢i｣ = l'｢i｣ := by cases h; rfl
 
 /-
 === CURRENT STATE: ===
@@ -391,6 +402,22 @@ theorem eq_getElem_of_length_eq_three : (l : List α) → (hl : l.length = 3) �
 
 theorem eq_getElem_of_length_eq_four : (l : List α) → (hl : l.length = 4) → l = [l[0]'(hl ▸ by decide), l[1]'(hl ▸ by decide), l[2]'(hl ▸ by decide), l[3]'(hl ▸ by decide)]
   | [_, _, _, _], _ => rfl
+
+theorem eq_getElemV_of_length_eq_one (l : List α) (hl : l.length = 1) :
+    l = [l｢0｣] := by
+  simp [getElem_eq_getElemV, eq_getElem_of_length_eq_one l hl]
+
+theorem eq_getElemV_of_length_eq_two (l : List α) (hl : l.length = 2) :
+    l = [l｢0｣, l｢1｣] := by
+  simp [getElem_eq_getElemV, eq_getElem_of_length_eq_two l hl]
+
+theorem eq_getElemV_of_length_eq_three (l : List α) (hl : l.length = 3) :
+    l = [l｢0｣, l｢1｣, l｢2｣] := by
+  simp [getElem_eq_getElemV, eq_getElem_of_length_eq_three l hl]
+
+theorem eq_getElemV_of_length_eq_four (l : List α) (hl : l.length = 4) :
+    l = [l｢0｣, l｢1｣, l｢2｣, l｢3｣] := by
+  simp [getElem_eq_getElemV, eq_getElem_of_length_eq_four l hl]
 
 /-! ### getD
 

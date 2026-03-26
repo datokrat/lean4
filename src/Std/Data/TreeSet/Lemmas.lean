@@ -313,6 +313,10 @@ theorem get_get? [TransCmp cmp] {k : α} {h} :
     (t.get? k).get h = t.get k (mem_iff_isSome_get?.mpr h) :=
   TreeMap.get_getKey?
 
+theorem getV_get? [TransCmp cmp] {_ : Nonempty α} {k : α} {h : (t.get? k).isSome} :
+    (t.get? k).getV = t.getV k := by
+  simp [Option.getV, getV_eq_getD_get?]
+
 theorem compare_get_self [TransCmp cmp] {k : α} (h' : k ∈ t) :
     cmp (t.get k h') k = .eq :=
   TreeMap.compare_getKey_self h'
@@ -1680,6 +1684,10 @@ theorem min_eq_head_toList [TransCmp cmp] {he} :
 theorem min_eq_getElem_toArray [TransCmp cmp] {he} :
    t.min he = t.toArray[0]'(Nat.zero_lt_of_ne_zero (by simpa [isEmpty_eq_size_eq_zero] using he)) :=
   TreeMap.minKey_eq_getElem_keysArray
+
+theorem minV_eq_getElemV_toArray [TransCmp cmp] {_ : Nonempty α} :
+    t.minV = t.toArray[0]ᵥ := by
+  simp [TreeSet.minV, Array.getElemV, minD_eq_getD_toArray]
 
 theorem min?_eq_some_min! [TransCmp cmp] [Inhabited α] (he : t.isEmpty = false) :
     t.min? = some t.min! :=
