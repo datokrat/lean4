@@ -8,6 +8,7 @@ The signature of a V lemma should be very consistent with the corresponding proo
 * The `V` lemma signatures should not have unnecessary requirements. If only a `Nonempty` instance is needed but the proof-taking counterpart requires a proof of, say, `i < xs.length`, then drop the proof. However, sometimes the proof is necessary to make the statement true. Flag cases in which you are unsure.
 * You can test whether a statement even type-checks by using the lean-lsp-mcp to run Lean code.
 * When the LHS is, say, `xs.headV`, and there's a `[Nonempty \a]` instance parameter, use `{_ : Nonempty \a}` instead: These lemmas are used by `rw` and `simp`, which will infer the instance by unification with `headV` in this case.
+* However, when the theorem is not an equation, Lean won't be able to obtain `Nonempty` by unification. In such cases, use `[Nonempty \a]`.
 * `omega` does not work in all files, especially not in the more basic files.
 * Use proof non-simp-normal-form parameters such as `i < (l.map f).length` only if you expect them to be inferred by unification of the LHS. Otherwise, use the simp normal form `i < l.length`.
 * Whenever an element witness of the right type is available in the signature (e.g., `x : α` being inserted/pushed), prefer `haveI : Nonempty α := ⟨x⟩` over `{_ : Nonempty α}`. This avoids requiring callers to provide a `Nonempty` instance when one can be derived from available data.
