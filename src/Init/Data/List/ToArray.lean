@@ -8,6 +8,7 @@ module
 prelude
 import all Init.Data.List.Control
 public import Init.Data.List.Monadic
+public import Init.Data.List.BasicAux
 import all Init.Data.Array.Basic
 import all Init.Data.Array.Set
 import Init.ByCases
@@ -101,7 +102,29 @@ theorem toArray_cons (a : α) (l : List α) : (a :: l).toArray = #[a] ++ l.toArr
 @[simp, grind =] theorem back?_toArray (l : List α) : l.toArray.back? = l.getLast? := by
   simp [back?, List.getLast?_eq_getElem?]
 
-@[simp, grind =] theorem back_toArray (l : List α) (h) :
+@[grind =]
+theorem _root_.Array.backV_eq_getElemV {_ : Nonempty α} {xs : Array α} :
+    xs.backV = xs｢xs.size - 1｣ := by
+  simp [backV, Array.getD]
+  split
+  · rfl
+  · simp [getElemV_neg, *]
+
+@[simp, grind norm]
+theorem _root_.Array.back_eq_backV {xs : Array α} (h) :
+    haveI : Nonempty α := ⟨xs.back h⟩
+    xs.back h = xs.backV := by
+  simp [back, backV_eq_getElemV]
+
+@[simp, grind =] theorem backV_toArray {_ : Nonempty α} (l : List α) :
+    l.toArray.backV = l.getLastV := by
+  simp [backV_eq_getElemV, List.getLastV_eq_getElemV]
+
+@[simp, grind =] theorem _root_.Array.getLastV_toList {_ : Nonempty α} (xs : Array α) :
+    xs.toList.getLastV = xs.backV := by
+  simp [← backV_toArray]
+
+theorem back_toArray (l : List α) (h) :
     l.toArray.back = l.getLast (by simp at h; exact ne_nil_of_length_pos h) := by
   simp [back, List.getLastV_eq_getElemV]
 
@@ -118,7 +141,7 @@ theorem toArray_cons (a : α) (l : List α) : (a :: l).toArray = #[a] ++ l.toArr
 @[simp, grind =] theorem _root_.Array.getLast_toList (xs : Array α) (h) :
     xs.toList.getLast h = xs.back (by simpa [ne_nil_iff_length_pos] using h) := by
   rcases xs with ⟨xs⟩
-  simp
+  simp [getLastV_eq_getElemV]
 
 @[simp, grind =] theorem set_toArray (l : List α) (i : Nat) (a : α) (h : i < l.length) :
     (l.toArray.set i a) = (l.set i a).toArray := rfl

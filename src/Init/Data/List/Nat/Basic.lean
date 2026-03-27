@@ -170,7 +170,7 @@ PLOG(getElem_intersperse_two_mul)
 theorem getElem_intersperse_two_mul (h : 2 * i < (l.intersperse sep).length) :
     (l.intersperse sep)[2 * i] = l[i]'(by rw [length_intersperse] at h; omega) := by
   rw [← Option.some_inj, ← getElem?_eq_getElem h]
-  have := getElem?_eq_some_getElemV_iff (c := l) (i := i) (by rw [length_intersperse] at h; omega)
+  have := _root_.getElem?_eq_some_getElemV_iff (c := l) (i := i) (by rw [length_intersperse] at h; omega)
   simp [this]
 
 @[simp] theorem getElemV_intersperse_two_mul {l : List α} {sep : α} {i : Nat}

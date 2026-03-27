@@ -265,8 +265,16 @@ theorem getElem_of_getElem? {l : List α} : l[i]? = some a → ∃ h : i < l.len
 theorem some_eq_getElem?_iff {l : List α} : some a = l[i]? ↔ ∃ h : i < l.length, l[i] = a := by
   rw [eq_comm, getElem?_eq_some_iff]
 
+theorem some_getElemV_eq_getElem?_iff {xs : List α} {i : Nat} (h : i < xs.length) :
+    (some xs｢i｣ = xs[i]?) ↔ True := by
+  simp [h]
+
 theorem some_getElem_eq_getElem?_iff {xs : List α} {i : Nat} (h : i < xs.length) :
     (some xs[i] = xs[i]?) ↔ True := by
+  simp [h]
+
+theorem getElem?_eq_some_getElemV_iff {xs : List α} {i : Nat} (h : i < xs.length) :
+    (xs[i]? = some xs｢i｣) ↔ True := by
   simp [h]
 
 theorem getElem?_eq_some_getElem_iff {xs : List α} {i : Nat} (h : i < xs.length) :
@@ -554,14 +562,14 @@ theorem ne_and_not_mem_of_not_mem_cons {a y : α} {l : List α} : a ∉ y :: l �
   fun p => ⟨ne_of_not_mem_cons p, not_mem_of_not_mem_cons p⟩
 
 theorem getElemV_of_mem {l : List α} (h : a ∈ l) :
-    ∃ (i : Nat) (_h : i < l.length), l｢i｣ = a :=
+    ∃ (i : Nat), i < l.length ∧ l｢i｣ = a :=
   match l, h with
   | _ :: _, .head .. => ⟨0, Nat.succ_pos _, rfl⟩
   | _ :: _, .tail _ m => let ⟨i, h, e⟩ := getElemV_of_mem m; ⟨i+1, Nat.succ_lt_succ h, e⟩
 
 theorem getElem_of_mem : ∀ {a} {l : List α}, a ∈ l → ∃ (i : Nat) (h : i < l.length), l[i]'h = a := by
   intros
-  simp [getElemV_of_mem, *]
+  simpa [← exists_prop] using getElemV_of_mem ‹_›
 
 theorem getElem?_of_mem {a} {l : List α} (h : a ∈ l) : ∃ i : Nat, l[i]? = some a := by
   let ⟨n, _, e⟩ := getElem_of_mem h
@@ -578,11 +586,11 @@ theorem mem_of_getElem {l : List α} {i : Nat} {h} {a : α} (e : l[i] = a) : a �
 theorem mem_of_getElem? {l : List α} {i : Nat} {a : α} (e : l[i]? = some a) : a ∈ l :=
   let ⟨_, e⟩ := getElem?_eq_some_iff.1 e; e ▸ getElem_mem ..
 
-theorem mem_iff_getElemV {a} {xs : List α} : a ∈ xs ↔ ∃ (i : Nat) (_h : i < xs.length), xs｢i｣ = a :=
+theorem mem_iff_getElemV {a} {xs : List α} : a ∈ xs ↔ ∃ (i : Nat), i < xs.length ∧ xs｢i｣ = a :=
   ⟨getElemV_of_mem, fun ⟨_, _, e⟩ => e ▸ getElemV_mem ‹_› ..⟩
 
 theorem mem_iff_getElem {a} {l : List α} : a ∈ l ↔ ∃ (i : Nat) (h : i < l.length), l[i]'h = a := by
-  simp [mem_iff_getElemV, - exists_prop]
+  simp [mem_iff_getElemV, ← exists_prop]
 
 theorem mem_iff_getElem? {a} {l : List α} : a ∈ l ↔ ∃ i : Nat, l[i]? = some a := by
   simp [getElem?_eq_some_iff, mem_iff_getElem]
@@ -3462,16 +3470,18 @@ theorem getLastV_filter_of_pos {_ : Nonempty α} {p : α → Bool} {l : List α}
   simp only [getLastV_eq_headV_reverse, ← filter_reverse]
   rw [headV_filter_of_pos (by simpa)]
 
-theorem getLastV_filterMap_of_eq_some {f : α → Option β} {l : List α} (w : l ≠ []) {b : β} (h : f (l.getLast w) = some b) :
-    (filterMap f l).getLast (ne_nil_of_mem (mem_filterMap.2 ⟨_, getLast_mem w, h⟩)) = b := by
-  simp only [getLast_eq_head_reverse, ← filterMap_reverse]
-  rw [head_filterMap_of_eq_some (by simp_all)]
-  simp_all
-
 theorem getLast_filter_of_pos {p : α → Bool} {l : List α} (w : l ≠ []) (h : p (getLast l w) = true) :
     getLast (filter p l) (ne_nil_of_mem (mem_filter.2 ⟨getLast_mem w, h⟩)) = getLast l w := by
   simp only [getLast_eq_head_reverse, ← filter_reverse]
   rw [head_filter_of_pos]
+  simp_all
+
+theorem getLastV_filterMap_of_eq_some {f : α → Option β} {l : List α} (w : l ≠ []) {b : β}
+    (h : haveI : Nonempty α := ⟨l.head w⟩; f l.getLastV = some b) :
+    haveI : Nonempty β := ⟨b⟩
+    (filterMap f l).getLastV = b := by
+  simp only [getLastV_eq_headV_reverse, ← filterMap_reverse]
+  rw [headV_filterMap_of_eq_some (by simp_all)]
   simp_all
 
 theorem getLast_filterMap_of_eq_some {f : α → Option β} {l : List α} (w : l ≠ []) {b : β} (h : f (l.getLast w) = some b) :
@@ -3500,8 +3510,7 @@ theorem getLastV_replicate (w : 0 < n) :
   rw [getLastV_eq_headV_reverse, reverse_replicate, headV_replicate w]
 
 theorem getLast_replicate (w : replicate n a ≠ []) : (replicate n a).getLast w = a := by
-  simp only [ne_eq, replicate_eq_nil_iff, Nat.ne_zero_iff_zero_lt] at w
-  simp [getLastV_replicate w]
+  simpa using getLastV_replicate (by simpa [Nat.ne_zero_iff_zero_lt] using w)
 
 /-! ## Additional operations -/
 
@@ -3681,9 +3690,7 @@ theorem getLastV_dropLast {xs : List α} (h : xs.dropLast ≠ []) :
 theorem getLast_dropLast {xs : List α} (h) :
    xs.dropLast.getLast h =
      xs[xs.length - 2]'(by match xs, h with | (_ :: _ :: _), _ => exact Nat.lt_trans (Nat.lt_add_one _) (Nat.lt_add_one _)) := by
-  rw [getLast_eq_getElem, getElem_dropLast]
-  congr 1
-  simp; rfl
+  simpa using getLastV_dropLast h
 
 theorem getLast?_dropLast {xs : List α} :
     xs.dropLast.getLast? = if xs.length ≤ 1 then none else xs[xs.length - 2]? := by
@@ -3951,15 +3958,15 @@ theorem getElem?_replace_of_ne [LawfulBEq α] {l : List α} {i : Nat} (h : l[i]?
   rw [← getElem?_eq_some_getElemV _ _ (by simpa using h), getElem?_replace]
   split <;> split <;> simp_all
 
-theorem getElemV_replace_of_ne [LawfulBEq α] {l : List α} {i : Nat} (h : i < l.length) (h' : l｢i｣ ≠ a) :
-    (l.replace a b)｢i｣ = l｢i｣ := by
-  rw [getElemV_replace h]
-  simp [*]
-
 theorem getElem_replace [LawfulBEq α] {l : List α} {i : Nat} (h : i < l.length) :
     (l.replace a b)[i]'(by simpa) = if l[i] == a then if a ∈ l.take i then a else b else l[i] := by
   open scoped Classical in -- for `Classical.propDecidable`
   simp [getElemV_replace h, getElem_eq_getElemV]
+
+theorem getElemV_replace_of_ne [LawfulBEq α] {l : List α} {i : Nat} (h : i < l.length) (h' : l｢i｣ ≠ a) :
+    (l.replace a b)｢i｣ = l｢i｣ := by
+  rw [getElemV_replace h]
+  simp [*]
 
 theorem getElem_replace_of_ne [LawfulBEq α] {l : List α} {i : Nat} {h : i < l.length} (h' : l[i] ≠ a) :
     (l.replace a b)[i]'(by simpa) = l[i]'(h) := by
@@ -3982,10 +3989,11 @@ theorem headV_replace {l : List α} {a b : α} (w : l ≠ []) :
         b
       else
         l.headV := by
-  apply Option.some.inj
-  rw [← head?_eq_some_headV, head?_replace, head?_eq_some_headV]
-  · simpa
-  · simpa [ne_nil_iff_length_pos] using w
+  cases l with
+  | nil => simp at w
+  | cons x xs =>
+    simp [replace_cons]
+    split <;> simp_all
 
 theorem head_replace {l : List α} {a b : α} (w) :
     (l.replace a b).head w =

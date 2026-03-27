@@ -178,7 +178,7 @@ theorem getElem_range (h : j < (range n).length) : (range n)[j] = j := by
   have : j < (range' 0 n).length := by simpa [range_eq_range'] using h
   simp [range_eq_range', getElemV_range' this]
 
-@[simp, grind =] theorem getElemV_range (h : j < (range n).length) : (range n)｢j｣ = j := by
+@[simp, grind =] theorem getElemV_range (h : j < n) : (range n)｢j｣ = j := by
   have : j < (range' 0 n).length := by simpa [range_eq_range'] using h
   simp [range_eq_range', getElemV_range' this]
 

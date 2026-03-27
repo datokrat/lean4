@@ -118,11 +118,16 @@ theorem mem_def {a : α} {as : Array α} : a ∈ as ↔ a ∈ as.toList :=
 theorem mem_toArray {a : α} {l : List α} : a ∈ l.toArray ↔ a ∈ l :=
   List.mem_toArray
 
-@[simp] theorem getElem_mem {xs : Array α} {i : Nat} (h : i < xs.size) : xs[i] ∈ xs := by
+@[simp] theorem getElemV_mem {xs : Array α} {i : Nat} (h : i < xs.size) : xs｢i｣ ∈ xs := by
+  rw [Array.mem_def, ← getElemV_toList]
+  apply List.getElemV_mem
+  simpa
+
+grind_pattern getElemV_mem => xs｢i｣ ∈ xs
+
+theorem getElem_mem {xs : Array α} {i : Nat} (h : i < xs.size) : xs[i] ∈ xs := by
   rw [Array.mem_def, ← getElem_toList]
   apply List.getElem_mem
-
-grind_pattern getElem_mem => xs[i] ∈ xs
 
 @[simp, grind =] theorem emptyWithCapacity_eq {α n} : @emptyWithCapacity α n = #[] := rfl
 
