@@ -258,14 +258,20 @@ theorem getElem_pmap {p : α → Prop} (f : ∀ a, p a → β) {l : List α} (h 
   | cons hd tl hl =>
     cases i
     · simp
-    · simp [hl]
+    · simp [hl, - getElem_eq_getElemV]
+
+/-
+PLOG(getElemV_pmap):
+Can't inline `this` again
+-/
 
 @[simp, grind =]
 theorem getElemV_pmap {p : α → Prop} (f : ∀ a, p a → β) {l : List α} (h : ∀ a ∈ l, p a)
     {i : Nat} (hn : i < l.length) :
     haveI : Nonempty β := ⟨f (l[i]'hn) (h _ (getElem_mem hn))⟩
-    (pmap f l h)｢i｣ = f l｢i｣ (h _ (getElem_mem hn)) := by
-  simp [getElemV_pos (by simpa using hn)]
+    (pmap f l h)｢i｣ = f l｢i｣ (h _ (getElemV_mem hn)) := by
+  have := getElem_pmap f h (by simpa using hn)
+  simpa using this
 
 @[simp, grind =]
 theorem getElem?_attachWith {xs : List α} {i : Nat} {P : α → Prop} {H : ∀ a ∈ xs, P a} :
@@ -282,12 +288,19 @@ theorem getElem_attachWith {xs : List α} {P : α → Prop} {H : ∀ a ∈ xs, P
     (xs.attachWith P H)[i] = ⟨xs[i]'(by simpa using h), H _ (getElem_mem (by simpa using h))⟩ :=
   getElem_pmap ..
 
+/-
+PLOG(getElemV_attachWith):
+Need to explicitly specify `H` for unclear reasons; can't inline `this`
+Some of this pain comes from `h` having to be in `simp` normal form, but we *want* this.
+-/
+
 @[simp, grind =]
 theorem getElemV_attachWith {xs : List α} {P : α → Prop} {H : ∀ a ∈ xs, P a}
     {i : Nat} (h : i < xs.length) :
     haveI : Nonempty { x // P x } := ⟨⟨xs[i]'h, H _ (getElem_mem h)⟩⟩
-    (xs.attachWith P H)｢i｣ = ⟨xs｢i｣, H _ (getElem_mem h)⟩ := by
-  simp [getElemV_pos (by simpa using h)]
+    (xs.attachWith P H)｢i｣ = ⟨xs｢i｣, H _ (getElemV_mem h)⟩ := by
+  have := getElem_attachWith (xs := xs) (H := H) (by simpa using h)
+  simpa using this
 
 theorem getElem_attach {xs : List α} {i : Nat} (h : i < xs.attach.length) :
     xs.attach[i] = ⟨xs[i]'(by simpa using h), getElem_mem (by simpa using h)⟩ :=
@@ -296,20 +309,30 @@ theorem getElem_attach {xs : List α} {i : Nat} (h : i < xs.attach.length) :
 @[simp, grind =]
 theorem getElemV_attach {xs : List α} {i : Nat} (h : i < xs.length) :
     haveI : Nonempty { x // x ∈ xs } := ⟨⟨xs[i]'h, getElem_mem h⟩⟩
-    xs.attach｢i｣ = ⟨xs｢i｣, getElem_mem h⟩ := by
-  simp [getElemV_pos (by simpa using h)]
+    xs.attach｢i｣ = ⟨xs｢i｣, getElemV_mem h⟩ := by
+  have := getElem_attach (by simpa using h)
+  simpa using this
+
+/-
+PLOG(pmap_attach):
+Previously, this was just `apply ext_getElem <;> simp`, implicitly using `getElem_pmap` and
+`getElem_attach`. But now, we normalize to `getElemV` and `simp` needs `+contextual` to be able to
+infer the conditions.
+Same for `pmap_attachWith`.
+-/
 
 @[simp] theorem pmap_attach {l : List α} {p : {x // x ∈ l} → Prop} {f : ∀ a, p a → β} (H) :
     pmap f l.attach H =
       l.pmap (P := fun a => ∃ h : a ∈ l, p ⟨a, h⟩)
         (fun a h => f ⟨a, h.1⟩ h.2) (fun a h => ⟨h, H ⟨a, h⟩ (by simp)⟩) := by
-  apply ext_getElem <;> simp
+  apply ext_getElemV <;> simp +contextual
+
 
 @[simp] theorem pmap_attachWith {l : List α} {p : {x // q x} → Prop} {f : ∀ a, p a → β} (H₁ H₂) :
     pmap f (l.attachWith q H₁) H₂ =
       l.pmap (P := fun a => ∃ h : q a, p ⟨a, h⟩)
         (fun a h => f ⟨a, h.1⟩ h.2) (fun a h => ⟨H₁ _ h, H₂ ⟨a, H₁ _ h⟩ (by simpa)⟩) := by
-  apply ext_getElem <;> simp
+  apply ext_getElem <;> simp +contextual
 
 @[simp, grind =] theorem head?_pmap {P : α → Prop} {f : (a : α) → P a → β} {xs : List α}
     (H : ∀ (a : α), a ∈ xs → P a) :
@@ -620,11 +643,18 @@ theorem getLast_attach {xs : List α} (h : xs.attach ≠ []) :
     xs.attach.getLast h = ⟨xs.getLast (by simpa using h), getLast_mem (by simpa using h)⟩ := by
   simp only [getLast_eq_head_reverse, reverse_attach, head_map, head_attach]
 
+/-
+PLOG(getlastV_attach):
+Cannot inline `this`, complicated `Nonempty`
+-/
+
 @[simp, grind =]
-theorem getLastV_attach {xs : List α} (h : xs.attach ≠ []) :
-    haveI : Nonempty { x // x ∈ xs } := ⟨⟨xs.head (by simpa using h), head_mem _⟩⟩
+theorem getLastV_attach {xs : List α} (h : xs ≠ []) :
+    haveI : Nonempty { x // x ∈ xs } := ⟨⟨xs.head h, head_mem h⟩⟩
+    haveI : Nonempty α := ⟨xs.head h⟩
     xs.attach.getLastV = ⟨xs.getLastV, getLastV_mem (by simpa using h)⟩ := by
-  simp [← getLast_eq_getLastV h, getLast_attach h, getLast_eq_getLastV]
+  have := getLast_attach (by simpa using h)
+  simpa using this
 
 @[simp]
 theorem countP_attach {l : List α} {p : α → Bool} :
@@ -711,10 +741,16 @@ def unattach {α : Type _} {p : α → Prop} (l : List { x // p x }) : List α :
     l.unattach[i]? = l[i]?.map Subtype.val := by
   simp [unattach]
 
+/-
+PLOG(getElem_unattach):
+need to simplify `h` so that `simp` correctly uses `getElemV_map`
+-/
+
 @[simp] theorem getElem_unattach
     {p : α → Prop} {l : List { x // p x }} (i : Nat) (h : i < l.unattach.length) :
     l.unattach[i] = (l[i]'(by simpa using h)).1 := by
-  simp [unattach]
+  simp only [length_unattach] at h
+  simp [unattach, h]
 
 /-! ### Recognizing higher order functions on subtypes using a function that only depends on the value. -/
 

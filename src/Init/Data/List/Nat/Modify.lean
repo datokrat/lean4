@@ -9,6 +9,7 @@ module
 prelude
 public import Init.Ext
 public import Init.NotationExtra
+public import Init.Data.List.BasicAux
 import Init.ByCases
 import Init.Data.List.Erase
 import Init.Data.List.Nat.Erase
@@ -39,36 +40,6 @@ theorem modifyHead_eq_set [Inhabited α] (f : α → α) (l : List α) :
 @[simp, grind =] theorem modifyHead_modifyHead {l : List α} {f g : α → α} :
     (l.modifyHead f).modifyHead g = l.modifyHead (g ∘ f) := by cases l <;> simp [modifyHead]
 
-theorem getElem_modifyHead {l : List α} {f : α → α} {i} (h : i < (l.modifyHead f).length) :
-    (l.modifyHead f)[i] = if h' : i = 0 then f (l[0]'(by simp at h; omega)) else l[i]'(by simpa using h) := by
-  cases l with
-  | nil => simp at h
-  | cons hd tl => cases i <;> simp
-
-@[grind =]
-theorem getElemV_modifyHead {_ : Nonempty α} {l : List α} {f : α → α} {i : Nat} :
-    (l.modifyHead f)｢i｣ = if i = 0 ∧ 0 < l.length then f l｢0｣ else l｢i｣ := by
-  simp only [getElemV_def, getElem?_modifyHead]
-  split
-  · simp_all [Option.map]
-    split <;> simp_all
-  · simp
-
-theorem getElem_modifyHead_zero {l : List α} {f : α → α} {h} :
-    (l.modifyHead f)[0] = f (l[0]'(by simpa using h)) := by simp [getElem_modifyHead]
-
-@[simp] theorem getElemV_modifyHead_zero {l : List α} {f : α → α} (h : 0 < l.length) :
-    haveI : Nonempty α := ⟨l[0]⟩
-    (l.modifyHead f)｢0｣ = f l｢0｣ := by
-  simp [getElem_eq_getElemV, getElem_modifyHead_zero (h := by simp [h])]
-
-theorem getElem_modifyHead_succ {l : List α} {f : α → α} {n} (h : n + 1 < (l.modifyHead f).length) :
-    (l.modifyHead f)[n + 1] = l[n + 1]'(by simpa using h) := by simp [getElem_modifyHead]
-
-@[simp] theorem getElemV_modifyHead_succ {_ : Nonempty α} {l : List α} {f : α → α} {n : Nat} :
-    (l.modifyHead f)｢n + 1｣ = l｢n + 1｣ := by
-  simp [getElemV_def, getElem?_modifyHead_succ]
-
 @[grind =]
 theorem getElem?_modifyHead {l : List α} {f : α → α} {i} :
     (l.modifyHead f)[i]? = if i = 0 then l[i]?.map f else l[i]? := by
@@ -81,6 +52,49 @@ theorem getElem?_modifyHead {l : List α} {f : α → α} {i} :
 
 @[simp] theorem getElem?_modifyHead_succ {l : List α} {f : α → α} {n} :
     (l.modifyHead f)[n + 1]? = l[n + 1]? := by simp [getElem?_modifyHead]
+
+@[grind =]
+theorem getElemV_modifyHead {_ : Nonempty α} {l : List α} {f : α → α} {i : Nat} :
+    (l.modifyHead f)｢i｣ = if i = 0 ∧ 0 < l.length then f l｢0｣ else l｢i｣ := by
+  simp only [getElemV_def, getElem?_modifyHead]
+  split
+  · simp_all [Option.map]
+    split <;> simp_all
+  · rename_i heq
+    split
+    · simp_all
+    · have : l[i]? = none := by split at heq <;> simp_all
+      simp [this]
+
+@[simp] theorem getElemV_modifyHead_zero {l : List α} {f : α → α} (h : l ≠ []) :
+    haveI : Nonempty α := ⟨l.head h⟩
+    (l.modifyHead f)｢0｣ = f l｢0｣ := by
+  simp +contextual [getElemV_modifyHead, h]
+
+@[simp] theorem getElemV_modifyHead_succ {_ : Nonempty α} {l : List α} {f : α → α} {n : Nat} :
+    (l.modifyHead f)｢n + 1｣ = l｢n + 1｣ := by
+  simp [getElemV_def, getElem?_modifyHead_succ]
+
+theorem getElem_modifyHead {l : List α} {f : α → α} {i} (h : i < (l.modifyHead f).length) :
+    (l.modifyHead f)[i] = if h' : i = 0 then f (l[0]'(by simp at h; omega)) else l[i]'(by simpa using h) := by
+  cases l with
+  | nil => simp at h
+  | cons hd tl => cases i <;> simp
+
+theorem getElem_modifyHead_zero {l : List α} {f : α → α} {h} :
+    (l.modifyHead f)[0] = f (l[0]'(by simpa using h)) := by
+    simp only [length_modifyHead, List.length_pos_iff] at h
+    simp [getElemV_modifyHead_zero h]
+
+theorem getElem_modifyHead_succ {l : List α} {f : α → α} {n} (h : n + 1 < (l.modifyHead f).length) :
+    (l.modifyHead f)[n + 1] = l[n + 1]'(by simpa using h) := by simp
+
+@[simp, grind =] theorem headV_modifyHead (f : α → α) (l : List α) (h : l ≠ []) :
+    haveI : Nonempty α := ⟨l.head h⟩
+    (l.modifyHead f).headV = f (l.headV) := by
+  cases l with
+  | nil => simp at h
+  | cons hd tl => simp
 
 @[simp, grind =] theorem head_modifyHead (f : α → α) (l : List α) (h) :
     (l.modifyHead f).head h = f (l.head (by simpa using h)) := by
@@ -234,19 +248,22 @@ theorem getElem_modify (f : α → α) (i) (l : List α) (j) (h : j < (l.modify 
   simp only [getElemV_def, getElem?_modify, Option.map_eq_map]
   split
   · rename_i h
-    obtain ⟨rfl, hj⟩ := h
-    simp [getElem?_eq_getElem hj]
+    by_cases i = j
+    · rename_i hh
+      simp only [hh, ↓reduceIte, Option.map_eq_some_iff, true_and] at ⊢ h
+      obtain ⟨fx, hfx, rfl⟩ := h
+      simp [hfx, show ¬ l.length ≤ j from Nat.not_le.mpr (getElem?_eq_some_iff.mp hfx).1]
+    · rename_i hh
+      simp only [hh, ↓reduceIte, Option.map_id_fun', id_eq, false_and] at ⊢ h
+      simp [h]
   · rename_i h
-    push_neg at h
-    cases h' : l[j]? with
-    | none =>
-      simp [h']
-    | some a =>
-      have hj : j < l.length := by simpa using h'
-      simp [h (by omega)]
+    simp only [Option.map_eq_none_iff, _root_.getElem?_eq_none_iff] at h
+    simp [h]
 
 theorem getElem_modify_eq (f : α → α) (i) (l : List α) (h) :
-    (l.modify i f)[i] = f (l[i]'(by simpa using h)) := by simp [getElem_modify]
+    (l.modify i f)[i] = f (l[i]'(by simpa using h)) := by
+  simp only [length_modify] at h
+  simp [getElemV_modify, h]
 
 @[simp] theorem getElemV_modify_eq {l : List α} (f : α → α) (i) (h : i < l.length) :
     haveI : Nonempty α := ⟨l[i]⟩
@@ -254,7 +271,7 @@ theorem getElem_modify_eq (f : α → α) (i) (l : List α) (h) :
   simp [getElemV_modify, h]
 
 theorem getElem_modify_ne (f : α → α) {i j} (l : List α) (h : i ≠ j) (h') :
-    (l.modify i f)[j] = l[j]'(by simpa using h') := by simp [getElem_modify, h]
+    (l.modify i f)[j] = l[j]'(by simpa using h') := by simp [getElemV_modify, h]
 
 @[simp] theorem getElemV_modify_ne {_ : Nonempty α} (f : α → α) {i j} (l : List α) (h : i ≠ j) :
     (l.modify i f)｢j｣ = l｢j｣ := by
@@ -288,17 +305,20 @@ theorem modify_modify_ne (f g : α → α) {i j} (l : List α) (h : i ≠ j) :
     simp only [getElem_modify]
     split <;> split <;> first | rfl | omega
 
-theorem modify_eq_set [Inhabited α] (f : α → α) (i) (l : List α) :
-    l.modify i f = l.set i (f (l[i]?.getD default)) := by
-  apply ext_getElem
+/-
+PLOG(modify_eq_set):
+`simp +contextual` helps to apply `m = i`, making LHS and RHS more similar.
+We need to manually pass a bounds proof to simp.
+The RHS used `l[i]?.getD default`; it seems better to use `l｢i｣` now.
+-/
+
+theorem modify_eq_set [Nonempty α] (f : α → α) (i) (l : List α) :
+    l.modify i f = l.set i (f l｢i｣) := by
+  apply ext_getElemV
   · simp
-  · intro m h₁ h₂
-    simp [getElem_modify, getElem_set]
-    split <;> rename_i h
-    · subst h
-      simp only [length_modify] at h₁
-      simp [h₁]
-    · rfl
+  · intro m h
+    simp only [length_modify] at h
+    simp +contextual [getElemV_modify, getElemV_set, h]
 
 theorem modify_eq_take_drop (f : α → α) :
     ∀ (l : List α) i, l.modify i f = l.take i ++ modifyHead f (l.drop i) :=
@@ -343,10 +363,10 @@ theorem drop_modify_of_lt (f : α → α) (i j) (l : List α) (h : i < j) :
 @[grind =]
 theorem drop_modify_of_ge (f : α → α) (i j) (l : List α) (h : i ≥ j) :
     (l.modify i f).drop j = (l.drop j).modify (i - j) f  := by
-  apply ext_getElem
+  apply ext_getElemV
   · simp
-  · intro m' h₁ h₂
-    simp [getElem_drop, getElem_modify]
+  · intro _ _
+    simp only [getElemV_drop, getElemV_modify, length_drop]
     split <;> split <;> first | rfl | omega
 
 theorem eraseIdx_modify_of_eq (f : α → α) (i) (l : List α) :

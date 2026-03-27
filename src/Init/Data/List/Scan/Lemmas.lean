@@ -140,16 +140,27 @@ theorem scanl_iff_nil {f : β → α → β} (c : β) : scanl f b l = [c] ↔ c 
   · simp [eq_comm]
   · simp
 
+/-
+PLOG(getElem_scanl):
+disabled normalization in order to do the induction proof
+-/
+
 theorem getElem_scanl {f : α → β → α} (h : i < (scanl f a l).length) :
     (scanl f a l)[i] = foldl f a (l.take i) := by
   induction l generalizing a i
-  · simp
-  · cases i <;> simp [*]
+  · simp [getElemV_singleton (by simpa using h)]
+  · cases i <;> simp [*, - getElem_eq_getElemV]
 
-@[simp, grind =] theorem getElemV_scanl {f : α → β → α} (h : i < (scanl f a l).length) :
+/-
+PLOG(getElemV_scanl):
+two-level `simpa` with *lots* of named parameters.
+-/
+
+@[simp, grind =] theorem getElemV_scanl {f : α → β → α} (h : i < l.length + 1) :
     haveI : Nonempty α := ⟨a⟩
     (scanl f a l)｢i｣ = foldl f a (l.take i) := by
-  simp only [← getElem_eq_getElemV _ _ h, getElem_scanl]
+  have := getElem_scanl (f := f) (l := l) (a := a) (by simpa using h)
+  simpa using this
 
 @[grind =]
 theorem getElem?_scanl {f : α → β → α} :
@@ -175,7 +186,7 @@ theorem getElem_scanl_zero {f : β → α → β} : (scanl f b l)[0] = b := by
   simp
 
 theorem head_scanl {f : β → α → β} (h : scanl f b l ≠ []) : (scanl f b l).head h = b := by
-  simp [head_eq_getElem]
+  simp [headV_eq_getElemV]
 
 @[simp] theorem headV_scanl {f : β → α → β} :
     haveI : Nonempty β := ⟨b⟩
@@ -188,7 +199,7 @@ theorem head?_scanl {f : β → α → β} : (scanl f b l).head? = some b := by
 
 theorem getLast_scanl {f : β → α → β} (h : scanl f b l ≠ []) :
     (scanl f b l).getLast h = foldl f b l := by
-  simp [getLast_eq_getElem]
+  simp [getLastV_eq_getElemV]
 
 theorem getLastV_scanl {f : β → α → β} :
     haveI : Nonempty β := ⟨b⟩
@@ -211,7 +222,7 @@ theorem getElem?_succ_scanl {f : β → α → β} :
   split
   · have : i < l.length := Nat.add_one_le_iff.mp ‹_›
     have : i ≤ l.length := Nat.le_of_lt ‹_›
-    simp [*, - take_append_getElem]
+    simp [*, - take_append_getElemV]
   · split
     · apply Eq.symm
       simpa using Nat.lt_add_one_iff.mp (Nat.not_le.mp ‹_›)
@@ -219,13 +230,15 @@ theorem getElem?_succ_scanl {f : β → α → β} :
 
 theorem getElem_succ_scanl {f : β → α → β} (h : i + 1 < (scanl f b l).length) :
     (scanl f b l)[i + 1] = f ((l.scanl f b)[i]'(Nat.lt_trans (Nat.lt_add_one _) h)) (l[i]'(by simpa using h)) := by
+  have : i < (scanl f b l).length := Nat.lt_trans (Nat.lt_add_one _) h
   simp only [length_scanl, Nat.add_lt_add_iff_right] at h
-  simp [take_add_one, *, - take_append_getElem]
+  simp [take_add_one, *, - take_append_getElemV, getElemV_scanl (by simpa using this)]
 
-theorem getElemV_succ_scanl {f : β → α → β} (h : i + 1 < (scanl f b l).length) :
+theorem getElemV_succ_scanl {f : β → α → β} (h : i < l.length) :
     haveI : Nonempty β := ⟨b⟩
     (scanl f b l)｢i + 1｣ = f (l.scanl f b)｢i｣ l｢i｣ := by
-  simp [getElem_eq_getElemV, getElem_succ_scanl h]
+  have := getElem_succ_scanl (f := f) (l := l) (b := b) (by simpa using h)
+  simpa using this
 
 @[grind =]
 theorem scanl_append {f : β → α → β} {l₁ l₂ : List α} :
@@ -292,7 +305,7 @@ theorem scanr_append {f : α → β → β} (l₁ l₂ : List α) :
 
 theorem head_scanr {f : α → β → β} (h : scanr f b l ≠ []) :
     (scanr f b l).head h = foldr f b l := by
-  simp [scanr_eq_scanl_reverse, - scanl_reverse, getLast_scanl, flip]
+  simp [scanr_eq_scanl_reverse, - scanl_reverse, getLastV_scanl, flip]
 
 @[simp] theorem headV_scanr {f : α → β → β} :
     haveI : Nonempty β := ⟨b⟩
@@ -330,13 +343,19 @@ theorem drop_scanr {f : α → β → β} (h : i ≤ l.length) :
 theorem getElem_scanr {f : α → β → β} (h : i < (scanr f b l).length) :
     (scanr f b l)[i] = foldr f b (l.drop i) := by
   induction l generalizing b i
-  · simp
-  · cases i <;> simp [*]
+  · simp [getElemV_singleton (by simpa using h)]
+  · cases i <;> simp [*, - getElem_eq_getElemV]
 
-@[simp, grind =] theorem getElemV_scanr {f : α → β → β} (h : i < (scanr f b l).length) :
+/-
+PLOG(getElemV_scanr):
+Same as with `scanl`.
+-/
+
+@[simp, grind =] theorem getElemV_scanr {f : α → β → β} (h : i < l.length + 1) :
     haveI : Nonempty β := ⟨b⟩
     (scanr f b l)｢i｣ = foldr f b (l.drop i) := by
-  simp only [← getElem_eq_getElemV _ _ h, getElem_scanr]
+  have := getElem_scanr (f := f) (l := l) (b := b) (by simpa using h)
+  simpa using this
 
 @[grind =]
 theorem getElem?_scanr {f : α → β → β} :

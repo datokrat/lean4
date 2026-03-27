@@ -101,7 +101,7 @@ theorem getElem_eq_getElem_reverse {l : List α} {i} (h : i < l.length) :
 theorem getElemV_eq_getElemV_reverse {l : List α} {i} (h : i < l.length) :
     haveI : Nonempty α := ⟨l[i]⟩
     l｢i｣ = l.reverse｢l.length - 1 - i｣ := by
-  simp [getElem_eq_getElemV, getElem_eq_getElem_reverse h]
+  simpa using getElem_eq_getElem_reverse h
 
 /-! ### leftpad -/
 
@@ -162,16 +162,22 @@ theorem getElem?_intersperse :
       simp
       omega
 
+/-
+PLOG(getElem_intersperse_two_mul)
+`getElem?_eq_some_getElemV_iff` (simp-annotated) requires a manual bounds proof.
+-/
+
 theorem getElem_intersperse_two_mul (h : 2 * i < (l.intersperse sep).length) :
     (l.intersperse sep)[2 * i] = l[i]'(by rw [length_intersperse] at h; omega) := by
   rw [← Option.some_inj, ← getElem?_eq_getElem h]
-  simp
+  have := getElem?_eq_some_getElemV_iff (c := l) (i := i) (by rw [length_intersperse] at h; omega)
+  simp [this]
 
 @[simp] theorem getElemV_intersperse_two_mul {l : List α} {sep : α} {i : Nat}
     (h : 2 * i < (l.intersperse sep).length) :
     haveI : Nonempty α := ⟨sep⟩
     (l.intersperse sep)｢2 * i｣ = l｢i｣ := by
-  simp [getElem_eq_getElemV, getElem_intersperse_two_mul h]
+  simpa using getElem_intersperse_two_mul h
 
 theorem getElem_intersperse_two_mul_add_one (h : 2 * i + 1 < (l.intersperse sep).length) :
     (l.intersperse sep)[2 * i + 1] = sep := by
@@ -183,7 +189,7 @@ theorem getElem_intersperse_two_mul_add_one (h : 2 * i + 1 < (l.intersperse sep)
     (h : 2 * i + 1 < (l.intersperse sep).length) :
     haveI : Nonempty α := ⟨sep⟩
     (l.intersperse sep)｢2 * i + 1｣ = sep := by
-  simp [getElem_eq_getElemV, getElem_intersperse_two_mul_add_one h]
+  simpa using getElem_intersperse_two_mul_add_one h
 
 theorem getElem_intersperse (h) :
     (l.intersperse sep)[i] =
@@ -196,26 +202,43 @@ theorem getElem_intersperse (h) :
     conv => lhs; simp +singlePass only [p]
     rw [getElem_intersperse_two_mul_add_one]
 
+/-
+PLOG(getElemV_intersperse):
+two-step simpa
+-/
+
 @[grind =]
 theorem getElemV_intersperse {l : List α} {sep : α} {i : Nat}
-    (h : i < (l.intersperse sep).length) :
+    (h : i < 2 * l.length - 1) :
     haveI : Nonempty α := ⟨sep⟩
     (l.intersperse sep)｢i｣ = if i % 2 = 0 then l｢i / 2｣ else sep := by
-  simp [getElemV_pos h]
+  have := getElem_intersperse (sep := sep) (by simpa using h)
+  simpa using this
+
+/-
+PLOG(getElem_eq_getElem_intersperse_two_mul):
+manual bounds proof for `getElemV_intersperse`.
+-/
 
 theorem getElem_eq_getElem_intersperse_two_mul (h : i < l.length) :
     l[i] = (l.intersperse sep)[2 * i]'(by rw [length_intersperse]; omega) := by
-  simp
+  have : 2 * i < 2 * l.length - 1 := by omega
+  simp [getElemV_intersperse this]
 
 theorem getElemV_eq_getElemV_intersperse_two_mul {l : List α} {sep : α} {i : Nat}
     (h : i < l.length) :
     haveI : Nonempty α := ⟨sep⟩
     l｢i｣ = (l.intersperse sep)｢2 * i｣ := by
-  simp [getElem_eq_getElemV, getElem_eq_getElem_intersperse_two_mul h]
+  simpa using getElem_eq_getElem_intersperse_two_mul h
 
 end intersperse
 
 /-! ### eraseIdx -/
+
+/-
+PLOG(mem_eraseIdx_iff_getElem):
+Had to exclude `exists_prop` from `simp` because of spurious dependency.
+-/
 
 theorem mem_eraseIdx_iff_getElem {x : α} :
     ∀ {l} {k}, x ∈ eraseIdx l k ↔ ∃ i h, i ≠ k ∧ l[i]'h = x
@@ -223,10 +246,10 @@ theorem mem_eraseIdx_iff_getElem {x : α} :
     simp only [eraseIdx, not_mem_nil, false_iff]
     rintro ⟨i, h, -⟩
     exact Nat.not_lt_zero _ h
-  | a::l, 0 => by simp [mem_iff_getElem, Nat.succ_lt_succ_iff]
+  | a::l, 0 => by simp [mem_iff_getElem, Nat.succ_lt_succ_iff, - exists_prop]
   | a::l, k+1 => by
     rw [← Nat.or_exists_add_one]
-    simp [mem_eraseIdx_iff_getElem, @eq_comm _ a, Nat.succ_lt_succ_iff]
+    simp [mem_eraseIdx_iff_getElem, @eq_comm _ a, Nat.succ_lt_succ_iff, - exists_prop]
 
 theorem mem_eraseIdx_iff_getElem? {x : α} {l} {k} : x ∈ eraseIdx l k ↔ ∃ i ≠ k, l[i]? = some x := by
   simp only [mem_eraseIdx_iff_getElem, getElem_eq_iff, exists_and_left]
@@ -237,9 +260,14 @@ theorem mem_eraseIdx_iff_getElem? {x : α} {l} {k} : x ∈ eraseIdx l k ↔ ∃ 
     obtain ⟨h', -⟩ := getElem?_eq_some_iff.1 h
     exact ⟨h', h⟩
 
+/-
+PLOG(mem_eraseIdx_iff_getElemV):
+Had to apply `exists_prop` in reverse because of spurious dependency.
+-/
+
 theorem mem_eraseIdx_iff_getElemV {x : α} {l : List α} {k : Nat} :
-    x ∈ eraseIdx l k ↔ ∃ i, ∃ _ : i < l.length, i ≠ k ∧ l｢i｣ = x := by
-  simp [mem_eraseIdx_iff_getElem, getElem_eq_getElemV]
+    x ∈ eraseIdx l k ↔ ∃ i, i < l.length ∧ i ≠ k ∧ l｢i｣ = x := by
+  simp [mem_eraseIdx_iff_getElem, getElem_eq_getElemV, ← exists_prop]
 
 /-! ### min? -/
 

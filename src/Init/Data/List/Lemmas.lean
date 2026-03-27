@@ -230,8 +230,8 @@ theorem getElem?_cons_zero {l : List α} : (a::l)[0]? = some a := rfl
 @[simp] theorem getElem?_cons_succ {l : List α} : (a::l)[i+1]? = l[i]? := rfl
 
 @[grind =]
-theorem getElemV_cons {l : List α} (w : i < (a :: l).length) :
-    haveI : Nonempty α := ⟨(a :: l)[i]⟩
+theorem getElemV_cons {l : List α} (w : i ≤ l.length) :
+    haveI : Nonempty α := ⟨(a :: l)[i]'(by simpa [Nat.lt_add_one_iff])⟩
     (a :: l)｢i｣ =
       if h : i = 0 then a else l｢i-1｣ := by
   cases i <;> simp
@@ -279,7 +279,7 @@ theorem getElem_eq_iff {l : List α} {i : Nat} (h : i < l.length) : l[i] = x ↔
 
 theorem getElemV_eq_iff {l : List α} {i : Nat} (h : i < l.length) :
     l｢i｣ = x ↔ l[i]? = some x := by
-  simp [getElem_eq_getElemV, getElem_eq_iff h]
+  simpa using getElem_eq_iff (x := x) h
 
 theorem getElem_eq_getElem?_get {l : List α} {i : Nat} (h : i < l.length) :
     l[i] = l[i]?.get (by simp [h]) := by
@@ -291,7 +291,7 @@ theorem getElem_eq_getD {l : List α} {i : Nat} {h : i < l.length} (fallback : �
 
 theorem getElemV_eq_getD {l : List α} {i : Nat} (h : i < l.length) (fallback : α) :
     l｢i｣ = l.getD i fallback := by
-  simp [getElem_eq_getElemV, getElem_eq_getD fallback]
+  simpa using getElem_eq_getD (h := h) fallback
 
 theorem getD_getElem? {l : List α} {i : Nat} {d : α} :
     l[i]?.getD d = if p : i < l.length then l[i]'p else d := by
@@ -404,20 +404,24 @@ theorem eq_getElem_of_length_eq_four : (l : List α) → (hl : l.length = 4) →
   | [_, _, _, _], _ => rfl
 
 theorem eq_getElemV_of_length_eq_one (l : List α) (hl : l.length = 1) :
+    haveI : Nonempty α := ⟨l[0]'(hl ▸ by decide)⟩
     l = [l｢0｣] := by
-  simp [getElem_eq_getElemV, eq_getElem_of_length_eq_one l hl]
+  simpa using eq_getElem_of_length_eq_one l hl
 
 theorem eq_getElemV_of_length_eq_two (l : List α) (hl : l.length = 2) :
+    haveI : Nonempty α := ⟨l[0]'(hl ▸ by decide)⟩
     l = [l｢0｣, l｢1｣] := by
-  simp [getElem_eq_getElemV, eq_getElem_of_length_eq_two l hl]
+  simpa using eq_getElem_of_length_eq_two l hl
 
 theorem eq_getElemV_of_length_eq_three (l : List α) (hl : l.length = 3) :
+    haveI : Nonempty α := ⟨l[0]'(hl ▸ by decide)⟩
     l = [l｢0｣, l｢1｣, l｢2｣] := by
-  simp [getElem_eq_getElemV, eq_getElem_of_length_eq_three l hl]
+  simpa using eq_getElem_of_length_eq_three l hl
 
 theorem eq_getElemV_of_length_eq_four (l : List α) (hl : l.length = 4) :
+    haveI : Nonempty α := ⟨l[0]'(hl ▸ by decide)⟩
     l = [l｢0｣, l｢1｣, l｢2｣, l｢3｣] := by
-  simp [getElem_eq_getElemV, eq_getElem_of_length_eq_four l hl]
+  simpa using eq_getElem_of_length_eq_four l hl
 
 /-! ### getD
 
@@ -1228,6 +1232,12 @@ theorem head_eq_headV {l : List α} (h : l ≠ []) : haveI : Nonempty α := ⟨l
   | nil => exact absurd rfl h
   | cons _ _ => unfold headV; simp
 
+theorem getElemV_zero {_ : Nonempty α} {l : List α} :
+    l｢0｣ = l.headV :=
+  match l with
+  | [] => rfl
+  | _ :: _ => rfl
+
 theorem headV_singleton {a : α} :
     haveI : Nonempty α := ⟨a⟩
     [a].headV = a := by
@@ -1333,7 +1343,7 @@ theorem head_tail {l : List α} (h : l.tail ≠ []) :
   | cons _ l => simp [headV_eq_getElemV]
 
 @[simp] theorem headV_tail {_ : Nonempty α} {l : List α} : (tail l).headV = l｢1｣ := by
-  cases l <;> simp [headV_eq_getElemV]
+  cases l <;> simp [headV_eq_getElemV, getElemV_def]
 
 @[simp] theorem head?_tail {l : List α} : (tail l).head? = l[1]? := by
   simp [head?_eq_getElem?]
@@ -1344,11 +1354,6 @@ theorem getLast_tail {l : List α} (h : l.tail ≠ []) :
   congr
   match l with
   | _ :: _ :: l => simp
-
-@[simp, grind =] theorem getLastV_tail {l : List α} (h : l.tail ≠ []) :
-    haveI : Nonempty α := ⟨(tail l).head h⟩
-    (tail l).getLastV = l.getLastV := by
-  simp only [← getLast_eq_getLastV h, ← getLast_eq_getLastV (ne_nil_of_tail_ne_nil h), getLast_tail]
 
 theorem getLast?_tail {l : List α} : (tail l).getLast? = if l.length = 1 then none else l.getLast? := by
   match l with
@@ -1368,6 +1373,18 @@ theorem cons_head_tail (h : l ≠ []) : l.head h :: l.tail = l := by
     haveI : Nonempty α := ⟨l.head h⟩
     l.headV :: l.tail = l := by
   simp only [← head_eq_headV h, cons_head_tail]
+
+/-! ### tailV -/
+
+@[simp, grind =] theorem getLastV_tail {l : List α} (h : l.tail ≠ []) :
+    haveI : Nonempty α := ⟨(tail l).head h⟩
+    (tail l).getLastV = l.getLastV := by
+  simp only [← getLast_eq_getLastV h, ← getLast_eq_getLastV (ne_nil_of_tail_ne_nil h), getLast_tail]
+
+theorem getLastV_eq_iff_getLast?_eq_some {xs : List α} (h : xs ≠ []) :
+    haveI : Nonempty α := ⟨xs.head h⟩
+    xs.getLastV = a ↔ xs.getLast? = some a := by
+  simp only [← getLast_eq_getLastV h, getLast_eq_iff_getLast?_eq_some]
 
 /-! ## Basic operations -/
 
@@ -1391,10 +1408,16 @@ theorem getElem_map (f : α → β) {l} {i : Nat} {h : i < (map f l).length} :
     (map f l)[i] = f (l[i]'(length_map f ▸ h)) :=
   Option.some.inj <| by rw [← getElem?_eq_getElem, getElem?_map, getElem?_eq_getElem]; rfl
 
+/-
+PLOG(getElemV_map):
+For some reason, this fails if we inline `this`.
+-/
+
 @[simp, grind =] theorem getElemV_map (f : α → β) {l : List α} {i : Nat} (h : i < l.length) :
     haveI : Nonempty β := ⟨f l[i]⟩
     (map f l)｢i｣ = f l｢i｣ := by
-  simp [getElemV_eq_getElem?_getD, getElem?_map, h]
+  have := getElem_map f (l := l) (i := i) (h := by simpa using h)
+  simpa using this
 
 @[simp] theorem map_id_fun : map (id : α → α) = id := by
   funext l
@@ -1515,10 +1538,17 @@ theorem head_map {f : α → β} {l : List α} (w) :
   · simp at w
   · simp_all
 
+/-
+PLOG(headV_map):
+Again, can't inline `this`.
+-/
+
 @[simp] theorem headV_map {f : α → β} {l : List α} (h : l ≠ []) :
+    haveI : Nonempty α := ⟨l.head h⟩
     haveI : Nonempty β := ⟨f (l.head h)⟩
     (map f l).headV = f l.headV := by
-  simp only [← head_eq_headV (by simpa using h), ← head_eq_headV h, head_map]
+  have := head_map (f := f) (w := by simpa using h)
+  simpa using this
 
 @[simp] theorem head?_map {f : α → β} {l : List α} : (map f l).head? = l.head?.map f := by
   cases l <;> rfl
@@ -1546,10 +1576,17 @@ theorem getLast_map {f : α → β} {l : List α} (h) :
     simp only [← map_cons, getElem_map]
     simp
 
+/-
+PLOG(getLastV_map):
+Again probably cannot inline `this`
+-/
+
 @[simp] theorem getLastV_map {f : α → β} {l : List α} (h : l ≠ []) :
+    haveI : Nonempty α := ⟨l.head h⟩
     haveI : Nonempty β := ⟨f (l.head h)⟩
     (map f l).getLastV = f l.getLastV := by
-  simp only [← getLast_eq_getLastV (by simpa using h), ← getLast_eq_getLastV h, getLast_map]
+  have := getLast_map (f := f) (h := by simpa using h)
+  simpa using this
 
 @[simp, grind _=_] theorem getLast?_map {f : α → β} {l : List α} : (map f l).getLast? = l.getLast?.map f := by
   cases l

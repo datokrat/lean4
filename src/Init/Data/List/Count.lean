@@ -143,7 +143,7 @@ theorem boole_getElem_le_countP {p : α → Bool} {l : List α} {i : Nat} (h : i
 
 theorem boole_getElemV_le_countP {p : α → Bool} {l : List α} {i : Nat} (h : i < l.length) :
     (if p l｢i｣ then 1 else 0) ≤ l.countP p := by
-  simp [getElem_eq_getElemV, boole_getElem_le_countP h]
+  simpa using boole_getElem_le_countP h
 
 grind_pattern boole_getElem_le_countP => l.countP p, l[i]
 
@@ -325,9 +325,9 @@ theorem boole_getElem_le_count {a : α} {l : List α} {i : Nat} (h : i < l.lengt
   rw [count_eq_countP]
   apply boole_getElem_le_countP (p := (· == a))
 
-theorem boole_getElemV_le_count [BEq α] {a : α} {l : List α} {i : Nat} (h : i < l.length) :
+theorem boole_getElemV_le_count {a : α} {l : List α} {i : Nat} (h : i < l.length) :
     (if l｢i｣ == a then 1 else 0) ≤ l.count a := by
-  simp [getElem_eq_getElemV, boole_getElem_le_count h]
+  simpa using boole_getElem_le_count h
 
 grind_pattern boole_getElem_le_count => l.count a, l[i]
 

@@ -103,7 +103,7 @@ theorem toArray_cons (a : α) (l : List α) : (a :: l).toArray = #[a] ++ l.toArr
 
 @[simp, grind =] theorem back_toArray (l : List α) (h) :
     l.toArray.back = l.getLast (by simp at h; exact ne_nil_of_length_pos h) := by
-  simp [back, List.getLast_eq_getElem]
+  simp [back, List.getLastV_eq_getElemV]
 
 @[simp, grind =] theorem _root_.Array.getLast!_toList [Inhabited α] (xs : Array α) :
     xs.toList.getLast! = xs.back! := by
@@ -598,7 +598,7 @@ theorem flatMap_toArray_cons {β} (f : α → Array β) (a : α) (as : List α) 
   · rw [eraseIdx_toArray]
     simp only [swap_toArray, toList_toArray, mk.injEq]
     rw [eraseIdx_set_gt (by simp), eraseIdx_set_eq]
-    simp
+    simp [set_getElemV_succ_eraseIdx_succ (by simpa using h')]
   · simp at h h'
     have t : i = l.length - 1 := by omega
     simp [t]
@@ -649,9 +649,15 @@ private theorem insertIdx_loop_toArray (i : Nat) (l : List α) (j : Nat) (hj : j
   · simp only [Nat.not_lt] at h'
     have : i = j := by omega
     subst this
-    simp
+    simp [getElemV_cons_drop (by simpa)]
 
-@[simp, grind =] theorem insertIdx_toArray (l : List α) (i : Nat) (a : α) (h : i ≤ l.toArray.size):
+/-
+PLOG(insertIdx_toArray):
+Lots of manual bounds proofs.
+Simp is much less automatic.
+-/
+
+@[simp, grind =] theorem insertIdx_toArray (l : List α) (i : Nat) (a : α) (h : i ≤ l.toArray.size) :
     l.toArray.insertIdx i a = (l.insertIdx i a).toArray := by
   rw [Array.insertIdx]
   rw [insertIdx_loop_toArray (h := h)]
@@ -659,20 +665,23 @@ private theorem insertIdx_loop_toArray (i : Nat) (l : List α) (j : Nat) (hj : j
   · simp at h
     simp [length_insertIdx, h]
     omega
-  · simp [length_insertIdx] at h₁ h₂
-    simp [getElem_insertIdx]
+  · simp only [size_toArray] at h
+    simp only [length_insertIdx, h,
+      push_toArray, size_toArray, getElem_eq_getElemV, Std.le_refl, getElemV_append_right,
+      Nat.sub_self, getElemV_cons_zero, take_left', drop_length_add_append, drop_succ_cons,
+      drop_nil, append_nil, length_append, length_take, length_cons, length_nil, Nat.zero_add,
+      length_drop, ↓reduceIte, getElemV_toArray] at h₁ h₂ ⊢
+    rw [getElemV_insertIdx (by omega)]
     split <;> rename_i h₃
-    · rw [getElem_append_left (by simp; split at h₂ <;> omega)]
-      simp only [getElem_take]
-      rw [getElem_append_left]
-    · rw [getElem_append_right (by simp; omega)]
-      rw [getElem_cons]
-      simp
+    · rw [getElemV_append_left (by simp; omega), getElemV_take h₃, getElemV_append_left]
+      simp at *; omega
+    · rw [getElemV_append_right (by simp; omega), getElemV_cons (by simp; omega)]
+      simp only [length_take, length_append, length_cons, length_nil, Nat.zero_add, getElemV_drop,
+        dite_eq_ite]
       split <;> rename_i h₄
-      · rw [dif_pos (by omega)]
-      · rw [dif_neg (by omega)]
-        congr
-        omega
+      · rw [if_pos (by omega)]
+      · rw [if_neg (by omega)]
+        congr; omega
 
 @[simp, grind =] theorem insertIdxIfInBounds_toArray (l : List α) (i : Nat) (a : α) :
     l.toArray.insertIdxIfInBounds i a = (l.insertIdx i a).toArray := by

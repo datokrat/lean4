@@ -364,7 +364,7 @@ attribute [local simp] Nat.add_one_lt_add_one_iff in
   - for all `j < i`, `l₁[j] == l₂[j]` and
   - `l₁[i] < l₂[i]`
 -/
-theorem lex_eq_true_iff_exists [BEq α] (lt : α → α → Bool) :
+theorem lex_eq_true_iff_exists_getElem [BEq α] (lt : α → α → Bool) :
     lex l₁ l₂ lt = true ↔
       (l₁.isEqv (l₂.take l₁.length) (· == ·) ∧ l₁.length < l₂.length) ∨
         (∃ (i : Nat) (h₁ : i < l₁.length) (h₂ : i < l₂.length),
@@ -390,7 +390,7 @@ theorem lex_eq_true_iff_exists [BEq α] (lt : α → α → Bool) :
             cases j with
             | zero => simp [hab]
             | succ j =>
-              simp only [getElem_cons_succ]
+              simp only [getElemV_cons_succ]
               rw [w₁]
               simpa using hj
           · simpa using w₂
@@ -409,13 +409,19 @@ theorem lex_eq_true_iff_exists [BEq α] (lt : α → α → Bool) :
               simpa using w₁ (j + 1) (by simpa)
             · simpa using w₂
 
-theorem lex_eq_true_iff_existsV [Nonempty α] [BEq α] {lt : α → α → Bool}
+/-
+PLOG(lex_eq_true_iff_exists):
+Had to use `← exist_prop` b/c of spurious dependency.
+Both also applies to `lex_eq_false_iff_exists`.
+-/
+
+theorem lex_eq_true_iff_exists [Nonempty α] [BEq α] {lt : α → α → Bool}
     {l₁ l₂ : List α} :
     lex l₁ l₂ lt = true ↔
       (l₁.isEqv (l₂.take l₁.length) (· == ·) ∧ l₁.length < l₂.length) ∨
-        (∃ (i : Nat) (_ : i < l₁.length) (_ : i < l₂.length),
+        (∃ (i : Nat), i < l₁.length ∧ i < l₂.length ∧
           (∀ j, j < i → l₁｢j｣ == l₂｢j｣) ∧ lt l₁｢i｣ l₂｢i｣) := by
-  simp [lex_eq_true_iff_exists, getElem_eq_getElemV]
+  simpa [← exists_prop] using lex_eq_true_iff_exists_getElem (l₁ := l₁) (l₂ := l₂) lt
 
 attribute [local simp] Nat.add_one_lt_add_one_iff in
 /--
@@ -433,7 +439,7 @@ This formulation requires that `==` and `lt` are compatible in the following sen
 - `lt` is asymmetric  (i.e. `lt x y = true → lt y x = false`)
 - `lt` is antisymmetric with respect to `==` (i.e. `lt x y = false → lt y x = false → x == y`)
 -/
-theorem lex_eq_false_iff_exists [BEq α] [PartialEquivBEq α] (lt : α → α → Bool)
+theorem lex_eq_false_iff_exists_getElem [BEq α] [PartialEquivBEq α] (lt : α → α → Bool)
     (lt_irrefl : ∀ x y, x == y → lt x y = false)
     (lt_asymm : ∀ x y, lt x y = true → lt y x = false)
     (lt_antisymm : ∀ x y, lt x y = false → lt y x = false → x == y) :
@@ -464,7 +470,7 @@ theorem lex_eq_false_iff_exists [BEq α] [PartialEquivBEq α] (lt : α → α �
               cases j with
               | zero => simpa using BEq.symm eq
               | succ j =>
-                simp only [getElem_cons_succ]
+                simp only [getElemV_cons_succ]
                 rw [w₁]
                 simpa using hj
             · simpa using w₂
@@ -489,7 +495,7 @@ theorem lex_eq_false_iff_exists [BEq α] [PartialEquivBEq α] (lt : α → α �
               simpa using w₁ (j + 1) (by simpa)
             · simpa using w₂
 
-theorem lex_eq_false_iff_existsV [Nonempty α] [BEq α] [PartialEquivBEq α] {lt : α → α → Bool}
+theorem lex_eq_false_iff_exists [BEq α] [PartialEquivBEq α] {lt : α → α → Bool}
     (lt_irrefl : ∀ x y, x == y → lt x y = false)
     (lt_asymm : ∀ x y, lt x y = true → lt y x = false)
     (lt_antisymm : ∀ x y, lt x y = false → lt y x = false → x == y)
@@ -497,20 +503,33 @@ theorem lex_eq_false_iff_existsV [Nonempty α] [BEq α] [PartialEquivBEq α] {lt
     lex l₁ l₂ lt = false ↔
       (l₂.isEqv (l₁.take l₂.length) (· == ·)) ∨
         (∃ (i : Nat) (_ : i < l₁.length) (_ : i < l₂.length),
-          (∀ j, j < i → l₁｢j｣ == l₂｢j｣) ∧ lt l₂｢i｣ l₁｢i｣) := by
-  simp [lex_eq_false_iff_exists lt_irrefl lt_asymm lt_antisymm, getElem_eq_getElemV]
+          (∀ j, (hj : j < i) →
+            haveI : j < l₁.length := Nat.lt_trans hj ‹_›
+            haveI : j < l₂.length := Nat.lt_trans hj ‹_›
+            l₁｢j｣ == l₂｢j｣) ∧ lt l₂｢i｣ l₁｢i｣) := by
+  simpa [← exists_prop] using lex_eq_false_iff_exists_getElem lt lt_irrefl lt_asymm lt_antisymm
 
-protected theorem lt_iff_exists [LT α] {l₁ l₂ : List α} :
+protected theorem lt_iff_exists_getElem [LT α] {l₁ l₂ : List α} :
     l₁ < l₂ ↔
       (l₁ = l₂.take l₁.length ∧ l₁.length < l₂.length) ∨
         (∃ (i : Nat) (h₁ : i < l₁.length) (h₂ : i < l₂.length),
           (∀ j, (hj : j < i) →
-            l₁[j]'(Nat.lt_trans hj h₁) = l₂[j]'(Nat.lt_trans hj h₂)) ∧ l₁[i] < l₂[i]) := by
+            l₁[j]'(Nat.lt_trans hj h₁) = l₂[j]'(Nat.lt_trans hj h₂)) ∧ l₁｢i｣ < l₂｢i｣) := by
   open Classical in
-  rw [← lex_eq_true_iff_lt, lex_eq_true_iff_exists]
+  rw [← lex_eq_true_iff_lt, lex_eq_true_iff_exists_getElem]
   simp
 
-protected theorem le_iff_exists [LT α]
+protected theorem lt_iff_exists [LT α] {l₁ l₂ : List α} :
+    l₁ < l₂ ↔
+      (l₁ = l₂.take l₁.length ∧ l₁.length < l₂.length) ∨
+        (∃ (i : Nat) (_ : i < l₁.length) (_ : i < l₂.length),
+          (∀ j, (hj : j < i) →
+            haveI : j < l₁.length := Nat.lt_trans hj ‹_›
+            haveI : j < l₂.length := Nat.lt_trans hj ‹_›
+            l₁｢j｣ = l₂｢j｣) ∧ l₁｢i｣ < l₂｢i｣) := by
+  simpa using List.lt_iff_exists_getElem
+
+protected theorem le_iff_exists_getElem [LT α]
     [Std.Asymm (· < · : α → α → Prop)]
     [Std.Trichotomous (· < · : α → α → Prop)] {l₁ l₂ : List α} :
     l₁ ≤ l₂ ↔
@@ -522,10 +541,23 @@ protected theorem le_iff_exists [LT α]
   rw [← lex_eq_false_iff_ge, lex_eq_false_iff_exists]
   · simp only [isEqv_eq, beq_iff_eq, decide_eq_true_eq]
     simp only [eq_comm]
-    conv => lhs; simp +singlePass [exists_comm]
+    conv => lhs; simp +singlePass only [exists_comm]
+    simp
   · simpa using Std.Irrefl.irrefl
   · simpa using Std.Asymm.asymm
   · simpa using Std.Trichotomous.trichotomous
+
+protected theorem le_iff_exists [LT α]
+    [Std.Asymm (· < · : α → α → Prop)]
+    [Std.Trichotomous (· < · : α → α → Prop)] {l₁ l₂ : List α} :
+    l₁ ≤ l₂ ↔
+      (l₁ = l₂.take l₁.length) ∨
+        (∃ (i : Nat) (h₁ : i < l₁.length) (h₂ : i < l₂.length),
+          (∀ j, (hj : j < i) →
+            haveI : j < l₁.length := Nat.lt_trans hj ‹_›
+            haveI : j < l₂.length := Nat.lt_trans hj ‹_›
+            l₁｢j｣ = l₂｢j｣) ∧ l₁｢i｣ < l₂｢i｣) := by
+  simpa using List.le_iff_exists_getElem
 
 theorem append_left_lt [LT α] {l₁ l₂ l₃ : List α} (h : l₂ < l₃) :
     l₁ ++ l₂ < l₁ ++ l₃ := by
@@ -566,6 +598,11 @@ protected theorem map_lt [LT α] [LT β]
   | cons a l₁, cons b l₂, .rel h =>
     simp [cons_lt_cons_iff, w, h]
 
+/-
+PLOG(map_le):
+manually added bounds proofs
+-/
+
 protected theorem map_le [LT α] [LT β]
     [Std.Asymm (· < · : α → α → Prop)]
     [Std.Trichotomous (· < · : α → α → Prop)]
@@ -580,7 +617,10 @@ protected theorem map_le [LT α] [LT β]
     simp
   · right
     refine ⟨i, by simpa using h₁, by simpa using h₂, ?_, ?_⟩
-    · simp +contextual [w₁]
-    · simpa using w _ _ w₂
+    · intro j hj
+      have h₁' : j < l₁.length := Nat.lt_trans hj h₁
+      have h₂' : j < l₂.length := Nat.lt_trans hj h₂
+      simp [w₁ _ hj, h₁', h₂']
+    · simpa [h₁, h₂] using w _ _ w₂
 
 end List
