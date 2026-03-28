@@ -85,6 +85,14 @@ theorem ext {xs ys : Array α}
 theorem ext' {xs ys : Array α} (h : xs.toList = ys.toList) : xs = ys := by
   cases xs; cases ys; simp at h; rw [h]
 
+theorem ext_getElemV {xs ys : Array α}
+    (h₁ : xs.size = ys.size)
+    (h₂ : (i : Nat) → (hi : i < xs.size) → haveI : Nonempty α := ⟨xs[i]⟩; xs｢i｣ = ys｢i｣)
+    : xs = ys := by
+  apply ext
+  case h₁ => assumption
+  case h₂ => simp +contextual [*]
+
 @[simp] theorem toArrayAux_eq {as : List α} {acc : Array α} : (as.toArrayAux acc).toList = acc.toList ++ as := by
   induction as generalizing acc <;> simp [*, List.toArrayAux, Array.push, List.append_assoc, List.concat_eq_append]
 
