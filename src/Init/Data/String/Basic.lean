@@ -2156,51 +2156,38 @@ theorem Slice.Pos.ne_endPos_of_lt {s : Slice} {p q : s.Pos} : p < q → p ≠ s.
   simp [lt_iff, Pos.ext_iff, Pos.Raw.lt_iff, Pos.Raw.ext_iff]
   omega
 
-set_option allowUnsafeReducibility true
-attribute [implicit_reducible] utf8EncodeChar
-
-theorem getElem_eq_sorry
-    (c : ByteArray) (i : Nat) (h : i < c.size) :
-    c[i] = sorry := by
-  sorry
-
-set_option backward.isDefEq.respectTransparency false in
 theorem Slice.Pos.next_le_of_lt {s : Slice} {p q : s.Pos} {h} : p < q → p.next h ≤ q := by
   -- Things like this will become a lot simpler once we have the `Splits` machinery developed,
   -- but this is `String.Basic`, so we have to suffer a little.
   refine fun hpq => le_of_not_lt (fun hq => ?_)
-  have := q.isUTF8FirstByte_byte (h := ne_endPos_of_lt hq)
-  rw [byte, getUTF8Byte, String.getUTF8Byte] at this
-  simp only [Pos.Raw.byteIdx_offsetBy] at this
-  have h₁ : q.offset.byteIdx = p.offset.byteIdx + (q.offset.byteIdx - p.offset.byteIdx) := by
-    simp [lt_iff, Pos.Raw.lt_iff] at hpq
-    omega
+  have hpq' : p.offset.byteIdx < q.offset.byteIdx := by
+    simpa [lt_iff, Pos.Raw.lt_iff] using hpq
   have h₂ : q.offset.byteIdx - p.offset.byteIdx < (p.get h).utf8Size := by
-    sorry
-    -- simp [lt_iff, Pos.Raw.lt_iff] at hq
-    -- omega
-  conv at this => congr; arg 2; rw [h₁, ← Nat.add_assoc]
-  rw [← ByteArray.getElem_extract (start := s.startInclusive.offset.byteIdx + p.offset.byteIdx)
-    (stop := s.startInclusive.offset.byteIdx + p.offset.byteIdx + (p.get h).utf8Size)] at this
-  rotate_left
-  · --sorry
-    simp only [ByteArray.size_extract, size_toByteArray]
-    rw [Nat.min_eq_left]
-    · show_term omega
-    · have := (p.next h).str.isValid.le_utf8ByteSize
-      simpa [Nat.add_assoc] using this
-  · simp only [← utf8Encode_get_eq_extract, List.utf8Encode_singleton] at this
-    have h₃ := List.getElem_toByteArray (l := utf8EncodeChar (p.get h))
-      (i := q.offset.byteIdx - p.offset.byteIdx) (h := by simpa)
-    simp only [getElem_eq_getElemV] at h₃
-    set_option trace.Meta.isDefEq true in
-    set_option diagnostics true in
-    set_option trace.diagnostics true in
-    -- rw [getElem_eq_sorry] at this
-    rw [getElem_eq_getElemV] at this
-    rw [h₃, UInt8.isUTF8FirstByte_getElemV_utf8EncodeChar] at this
-    simp only [lt_iff, Pos.Raw.lt_iff] at hpq
+    have hq' : q.offset.byteIdx < (p.next h).offset.byteIdx := by
+      simpa [lt_iff, Pos.Raw.lt_iff] using hq
+    simp only [Slice.Pos.next, Pos.Raw.byteIdx_increaseBy, Slice.Pos.utf8ByteSize_byte] at hq'
     omega
+  have hle : s.startInclusive.offset.byteIdx + p.offset.byteIdx + (p.get h).utf8Size
+      ≤ s.str.toByteArray.size := by
+    have hv := (p.next h).str.isValid.le_utf8ByteSize
+    simpa [Nat.add_assoc, ← size_toByteArray] using hv
+  have hb : (s.str.toByteArray｢s.startInclusive.offset.byteIdx + p.offset.byteIdx
+      + (q.offset.byteIdx - p.offset.byteIdx)｣).IsUTF8FirstByte := by
+    have h₀ := q.isUTF8FirstByte_byte (h := ne_endPos_of_lt hq)
+    simp only [byte, getUTF8Byte, String.getUTF8Byte, Pos.Raw.byteIdx_offsetBy,
+      getElem_eq_getElemV,
+      show s.startInclusive.offset.byteIdx + q.offset.byteIdx =
+          s.startInclusive.offset.byteIdx + p.offset.byteIdx
+            + (q.offset.byteIdx - p.offset.byteIdx) from by omega] at h₀
+    exact h₀
+  rw [← ByteArray.getElemV_extract
+    (stop := s.startInclusive.offset.byteIdx + p.offset.byteIdx + (p.get h).utf8Size)
+    (h := by omega)] at hb
+  simp only [← utf8Encode_get_eq_extract, List.utf8Encode_singleton,
+    List.getElemV_toByteArray,
+    UInt8.isUTF8FirstByte_getElemV_utf8EncodeChar (by simpa using h₂)] at hb
+  simp only [lt_iff, Pos.Raw.lt_iff] at hpq
+  omega
 
 theorem Pos.ofToSlice_le_iff {s : String} {p : s.toSlice.Pos} {q : s.Pos} :
     ofToSlice p ≤ q ↔ p ≤ q.toSlice := Iff.rfl
