@@ -110,7 +110,7 @@ theorem _root_.Array.backV_eq_getElemV {_ : Nonempty α} {xs : Array α} :
   · rfl
   · simp [getElemV_neg, *]
 
-@[simp, grind norm]
+@[simp]
 theorem _root_.Array.back_eq_backV {xs : Array α} (h) :
     haveI : Nonempty α := ⟨xs.back h⟩
     xs.back h = xs.backV := by

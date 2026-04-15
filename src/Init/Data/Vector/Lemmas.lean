@@ -1618,7 +1618,7 @@ theorem back_singleton {a : α} : #v[a].back = a := by simp
   rcases xs with ⟨xs, rfl⟩
   simp [Array.backV_eq_getElemV]
 
-@[simp, grind norm]
+@[simp]
 theorem back_eq_backV [NeZero n] {xs : Vector α n} :
     haveI : Nonempty α := ⟨xs.back⟩; xs.back = xs.backV := by
   rcases xs with ⟨xs, rfl⟩

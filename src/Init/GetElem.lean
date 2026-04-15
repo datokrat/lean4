@@ -190,7 +190,7 @@ theorem getElem?_pos [GetElem? cont idx elem dom] [LawfulGetElem cont idx elem d
   rw [getElem?_def]
   exact dif_pos h
 
-@[simp, grind norm]
+@[simp]
 theorem getElem_eq_getElemV [GetElem? cont idx elem dom]
     [LawfulGetElem cont idx elem dom]
     [GetElemV cont idx elem] [LawfulGetElemV cont idx elem dom]
