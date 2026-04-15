@@ -35,7 +35,10 @@ def buildTable (pat : Slice) : Vector Nat pat.utf8ByteSize :=
   else
     let arr := Array.emptyWithCapacity pat.utf8ByteSize
     let arr' := arr.push 0
-    go arr' (by simp [arr']) (by simp [arr', arr]; omega) (by simp [arr', arr])
+    go arr' (by simp [arr']) (by simp [arr', arr]; omega) (by
+      intro i hi
+      obtain rfl : i = 0 := by simp [arr', arr] at hi; omega
+      simp [arr', arr])
 where
   go (table : Array Nat) (ht₀ : 0 < table.size) (ht : table.size ≤ pat.utf8ByteSize) (h : ∀ (i : Nat) hi, table[i]'hi ≤ i) :
       Vector Nat pat.utf8ByteSize :=
@@ -65,7 +68,13 @@ where
       ⟨0, by simp⟩
     else
       have : table[guess - 1] < guess := by have := h (guess - 1) (by omega); omega
-      computeDistance patByte table ht h table[guess - 1] (by omega)
+      computeDistance patByte table ht h (table[guess - 1]) (by omega)
+  termination_by guess
+  decreasing_by
+    simp_wf
+    have := h (guess - 1) (by omega)
+    simp only [getElem_eq_getElemV] at this
+    omega
 
 theorem getElem_buildTable_le (pat : Slice) (i : Nat) (hi) : (buildTable pat)[i]'hi ≤ i := by
   rw [buildTable]
