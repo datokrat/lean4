@@ -8,6 +8,7 @@ module
 prelude
 public import Lean.Elab.InfoTree.Main
 public import Lean.Meta.AppBuilder
+public import Lean.Meta.CollectMVars
 public import Lean.Meta.MatchUtil
 public import Lean.Meta.Tactic.Assert
 
@@ -64,7 +65,25 @@ private def replaceLocalDeclCore (mvarId : MVarId) (fvarId : FVarId) (typeNew : 
         position we are inserting it.
         We must `instantiateMVars` first to ensure that there is no mvar in `typeNew` which is
         assigned to some later-occurring fvar. -/
-    let (_, localDecl') ← findMaxFVar (← instantiateMVars typeNew) |>.run localDecl
+    let typeNewInst ← instantiateMVars typeNew
+    let (_, localDecl') ← findMaxFVar typeNewInst |>.run localDecl
+    /- `typeNew` may also contain unassigned metavariables whose eventual
+        solutions reference fvars occurring later than `localDecl'`. Those
+        solutions are typechecked in the mvar's local context, so we must
+        treat every fvar in that context as a potential dependency and insert
+        after the latest such fvar. Otherwise `assertAfter` would revert those
+        later fvars and re-introduce them with fresh fvarIds, leaving the
+        mvar's eventual solution referencing stale fvarIds. -/
+    let lctx ← getLCtx
+    let mvars ← getMVars typeNewInst
+    let mut localDecl' := localDecl'
+    for m in mvars do
+      unless ← m.isAssigned do
+        let mLCtx := (← m.getDecl).lctx
+        for ldecl' in mLCtx do
+          if let some ldecl := lctx.find? ldecl'.fvarId then
+            if ldecl.index > localDecl'.index then
+              localDecl' := ldecl
     let result ← mvarId.assertAfter localDecl'.fvarId localDecl.userName typeNew typeNewPr
     (do let mvarIdNew ← result.mvarId.clear fvarId
         pure { result with mvarId := mvarIdNew })

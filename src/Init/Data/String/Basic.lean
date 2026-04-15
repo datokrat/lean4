@@ -780,6 +780,10 @@ theorem _root_.ByteArray.IsValidUTF8.isUTF8FirstByte_getElem_zero {b : ByteArray
   · exact List.isUTF8FirstByte_getElem_utf8Encode_singleton.2 rfl
   · simp [List.utf8Encode_singleton, Char.utf8Size_pos]
 
+theorem _root_.ByteArray.IsValidUTF8.isUTF8FirstByte_getElemV_zero {b : ByteArray}
+    (h : b.IsValidUTF8) (h₀ : 0 < b.size) : b｢0｣.IsUTF8FirstByte := by
+  simpa using h.isUTF8FirstByte_getElem_zero h₀
+
 theorem isUTF8FirstByte_getUTF8Byte_zero {b : String} {h} : (b.getUTF8Byte 0 h).IsUTF8FirstByte :=
   b.isValidUTF8.isUTF8FirstByte_getElem_zero _
 

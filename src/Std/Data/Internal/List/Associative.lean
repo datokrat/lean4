@@ -562,7 +562,7 @@ def getEntry [BEq α] (a : α) (l : List ((a : α) × β a)) (h : containsKey a 
 
 theorem getEntry?_eq_some_getEntry [BEq α] {l : List ((a : α) × β a)} {a : α}
     (h : containsKey a l) : getEntry? a l = some (getEntry a l h) := by
-  simp [getEntry]
+  simp [getEntry, containsKey_eq_isSome_getEntry?.symm.trans h]
 
 theorem getEntry_eq_of_getEntry?_eq_some [BEq α] {l : List ((a : α) × β a)} {k a : α} {v : β k}
     (h : getEntry? a l = some ⟨k, v⟩) {h'} : getEntry a l h' = ⟨k, v⟩ := by
