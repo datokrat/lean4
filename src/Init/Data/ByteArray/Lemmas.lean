@@ -356,4 +356,11 @@ theorem extract_eq_extract_iff_getElem {as bs : ByteArray} {i j len : Nat}
     · exact h k hk'
     · exact (by omega : k = len) ▸ h'
 
+theorem extract_eq_extract_iff_getElemV {as bs : ByteArray} {i j len : Nat}
+    (hi : i + len ≤ as.size) (hj : j + len ≤ bs.size) :
+    as.extract i (i + len) = bs.extract j (j + len) ↔ ∀ k, k < len → as｢i + k｣ = bs｢j + k｣ := by
+  rw [extract_eq_extract_iff_getElem hi hj]
+  refine forall_congr' fun k => forall_congr' fun hk => ?_
+  rw [getElem_eq_getElemV (h := by omega), getElem_eq_getElemV (h := by omega)]
+
 end ByteArray
