@@ -1248,7 +1248,8 @@ public theorem ByteArray.utf8DecodeChar?_utf8EncodeChar_append {b : ByteArray} {
     rw [utf8DecodeChar?_append_eq_assemble₄ hc' (parseFirstByte_utf8EncodeChar_eq_threeMore hc)]
     exact (assemble₄_eq_some_iff_utf8EncodeChar_eq.2 (List.eq_getElemV_of_length_eq_four _ hc')).2
 
-public theorem String.toByteArray_utf8EncodeChar_of_utf8DecodeChar?_eq_some {b : ByteArray} {c : Char} (h : b.utf8DecodeChar? 0 = some c) :
+public theorem String.toByteArray_utf8EncodeChar_of_utf8DecodeChar?_eq_some {b : ByteArray} {c : Char}
+    (h : b.utf8DecodeChar? 0 = some c) :
     (String.utf8EncodeChar c).toByteArray = b.extract 0 c.utf8Size := by
   have := utf8Size_le_of_utf8DecodeChar?_eq_some h
   match hc : c.utf8Size, c.utf8Size_pos, c.utf8Size_le_four with
@@ -1258,7 +1259,7 @@ public theorem String.toByteArray_utf8EncodeChar_of_utf8DecodeChar?_eq_some {b :
     rw [ByteArray.extract_add_one (by omega)]
     congr
     rw [← assemble₁_eq_some_iff_utf8EncodeChar_eq]
-    exact ⟨by simpa using this, h⟩
+    exact ⟨by simpa using this, by simpa using h⟩
   | 2, _, _ =>
     have := parseFirstByte_eq_oneMore_of_utf8DecodeChar?_eq_some h hc (by omega)
     rw [utf8DecodeChar?_eq_assemble₂ (by omega) this] at h

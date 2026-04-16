@@ -258,13 +258,17 @@ theorem extract_eq_extract_left {a : ByteArray} {i i' j : Nat} :
   simp [ByteArray.ext_iff, Array.extract_eq_extract_left]
 
 theorem extract_add_one {a : ByteArray} {i : Nat} (ha : i + 1 ≤ a.size) :
-    a.extract i (i + 1) = [a[i]].toByteArray := by
+    a.extract i (i + 1) = [a｢i｣].toByteArray := by
   ext
   · simp
     omega
   · rename_i j hj hj'
     obtain rfl : j = 0 := by simpa using hj'
     simp [ByteArray.getElemV_eq_getElemV_data]
+
+theorem extract_add_one_eq_getElem {a : ByteArray} {i : Nat} (ha : i + 1 ≤ a.size) :
+    a.extract i (i + 1) = [a[i]].toByteArray := by
+  simpa using extract_add_one ha
 
 theorem extract_add_two {a : ByteArray} {i : Nat} (ha : i + 2 ≤ a.size) :
     a.extract i (i + 2) = [a[i], a[i + 1]].toByteArray := by
@@ -340,9 +344,9 @@ theorem ext_getElem {a b : ByteArray} (h₀ : a.size = b.size) (h : ∀ (i : Nat
 theorem _root_.List.toByteArray_inj {l l' : List UInt8} : l.toByteArray = l'.toByteArray ↔ l = l' := by
   simp [ByteArray.ext_iff]
 
-theorem extract_eq_extract_iff_getElem {as bs : ByteArray} {i j len : Nat}
+theorem extract_eq_extract_iff_getElemV {as bs : ByteArray} {i j len : Nat}
     (hi : i + len ≤ as.size) (hj : j + len ≤ bs.size) :
-    as.extract i (i + len) = bs.extract j (j + len) ↔ ∀ k, (hk : k < len) → as[i + k] = bs[j + k] := by
+    as.extract i (i + len) = bs.extract j (j + len) ↔ ∀ k, k < len → as｢i + k｣ = bs｢j + k｣ := by
   induction len with
   | zero => simp
   | succ len ih =>
@@ -356,11 +360,9 @@ theorem extract_eq_extract_iff_getElem {as bs : ByteArray} {i j len : Nat}
     · exact h k hk'
     · exact (by omega : k = len) ▸ h'
 
-theorem extract_eq_extract_iff_getElemV {as bs : ByteArray} {i j len : Nat}
+theorem extract_eq_extract_iff_getElem {as bs : ByteArray} {i j len : Nat}
     (hi : i + len ≤ as.size) (hj : j + len ≤ bs.size) :
-    as.extract i (i + len) = bs.extract j (j + len) ↔ ∀ k, k < len → as｢i + k｣ = bs｢j + k｣ := by
-  rw [extract_eq_extract_iff_getElem hi hj]
-  refine forall_congr' fun k => forall_congr' fun hk => ?_
-  rw [getElem_eq_getElemV (h := by omega), getElem_eq_getElemV (h := by omega)]
+    as.extract i (i + len) = bs.extract j (j + len) ↔ ∀ k, (hk : k < len) → as[i + k] = bs[j + k] := by
+  simpa using extract_eq_extract_iff_getElemV hi hj
 
 end ByteArray
