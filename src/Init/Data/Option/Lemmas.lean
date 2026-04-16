@@ -70,7 +70,7 @@ theorem getD_eq_iff {o : Option α} {a b} : o.getD a = b ↔ (o = some b ∨ o =
 theorem get_eq_get! [Inhabited α] : (o : Option α) → {h : o.isSome} → o.get h = o.get!
   | some _, _ => rfl
 
-@[simp]
+@[simp, grind norm]
 theorem get_eq_getV : (o : Option α) → {h : o.isSome} → haveI : Nonempty α := ⟨o.get h⟩; o.get h = o.getV
   | some _, _ => (rfl)
 

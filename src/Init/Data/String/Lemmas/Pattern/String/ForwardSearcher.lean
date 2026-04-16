@@ -371,14 +371,10 @@ theorem Invariants.inc {pat s : Slice} {stackPos needlePos : String.Pos.Raw}
     (h : pat.getUTF8Byte needlePos h₁ = s.getUTF8Byte stackPos h₂) :
     Invariants pat s needlePos.inc stackPos.inc where
   isEmpty_eq_false := h₀.isEmpty_eq_false
-  partialMatch := partialMatch_add_one_add_one_iff.2 ⟨h₀.partialMatch, ⟨by
-    have := h₀.partialMatch.stackPos_le_size
-    simp [Pos.Raw.lt_iff] at h₁ ⊢
-    simpa using h₁, by
-    have := h₀.partialMatch.stackPos_le_size
-    simp [Pos.Raw.lt_iff] at h₂
-    simpa using h₂,
-    by simp only [getUTF8Byte_eq_getUTF8Byte_copy, String.getUTF8Byte] at h; exact h⟩⟩
+  partialMatch := partialMatch_add_one_add_one_iff.2 ⟨h₀.partialMatch, ⟨
+    by simpa [Pos.Raw.lt_iff] using h₁,
+    by simpa [Pos.Raw.lt_iff] using h₂,
+    by simpa [getUTF8Byte_eq_getUTF8Byte_copy, String.getUTF8Byte] using h⟩⟩
   isValidForSlice' := by simp
 
 theorem Invariants.isValidForSlice {pat s : Slice} {needlePos stackPos : String.Pos.Raw}
